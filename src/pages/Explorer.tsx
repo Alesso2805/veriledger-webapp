@@ -8,6 +8,23 @@ export function Explorer() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [minerAddress, setMinerAddress] = useState('');
+  const [mining, setMining] = useState(false);
+
+  const mineBlock = async () => {
+    if (!minerAddress) return;
+    setMining(true);
+    setError(null);
+    try {
+      await api.post('/blocks/mine', { miner_address: minerAddress });
+      await fetchBlocks();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to mine block');
+    } finally {
+      setMining(false);
+    }
+  };
+
   const fetchBlocks = async () => {
     try {
       const response = await api.get<Paginated<Block>>('/blocks');
@@ -38,6 +55,29 @@ export function Explorer() {
         >
           Refresh
         </button>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Mine Pending Transactions</h2>
+        <p className="text-sm text-slate-500 mb-4">
+          Provide your wallet address to receive the block reward (50.0) plus transaction fees.
+        </p>
+        <div className="flex space-x-3">
+          <input
+            type="text"
+            value={minerAddress}
+            onChange={(e) => setMinerAddress(e.target.value)}
+            placeholder="Miner Wallet Address (Public Key)"
+            className="flex-1 px-3 py-2 rounded-md border border-slate-300 font-mono text-sm"
+          />
+          <button
+            onClick={mineBlock}
+            disabled={mining || !minerAddress}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm disabled:opacity-50 transition-colors"
+          >
+            {mining ? 'Mining (PoW)...' : 'Mine Block'}
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-6">

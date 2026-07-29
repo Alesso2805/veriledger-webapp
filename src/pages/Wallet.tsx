@@ -8,6 +8,24 @@ export function Wallet() {
   const [loading, setLoading] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
+  const [balanceAddress, setBalanceAddress] = useState('');
+  const [balance, setBalance] = useState<number | null>(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+
+  const checkBalance = async () => {
+    if (!balanceAddress) return;
+    setBalanceLoading(true);
+    try {
+      const response = await api.get(`/wallets/${balanceAddress}/balance`);
+      setBalance(response.data.balance);
+    } catch (err) {
+      console.error('Failed to get balance', err);
+      setBalance(null);
+    } finally {
+      setBalanceLoading(false);
+    }
+  };
+
   const generateWallet = async () => {
     setLoading(true);
     try {
@@ -90,6 +108,32 @@ export function Wallet() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        <h2 className="text-xl font-bold text-slate-900 mb-4 text-center">Check Balance</h2>
+        <div className="flex space-x-2">
+          <input
+            type="text"
+            value={balanceAddress}
+            onChange={e => setBalanceAddress(e.target.value)}
+            className="flex-1 px-3 py-2 rounded-md border border-slate-300 bg-white font-mono text-sm"
+            placeholder="Enter public key (address)"
+          />
+          <button
+            onClick={checkBalance}
+            disabled={!balanceAddress || balanceLoading}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-800 hover:bg-slate-900 focus:outline-none disabled:opacity-50"
+          >
+            {balanceLoading ? 'Checking...' : 'Check'}
+          </button>
+        </div>
+        {balance !== null && (
+          <div className="mt-4 text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-slate-600 uppercase tracking-wider font-semibold">Current Balance</p>
+            <p className="text-3xl font-bold text-blue-700 mt-1">${balance.toFixed(2)}</p>
           </div>
         )}
       </div>
