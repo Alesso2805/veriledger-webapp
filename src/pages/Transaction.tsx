@@ -9,6 +9,7 @@ export function Transaction() {
   const [privateKey, setPrivateKey] = useState('');
   const [receiver, setReceiver] = useState('');
   const [amount, setAmount] = useState('');
+  const [fee, setFee] = useState('0.0');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -21,13 +22,19 @@ export function Transaction() {
 
     try {
       const amountNum = parseFloat(amount);
+      const feeNum = parseFloat(fee);
+      
       if (isNaN(amountNum) || amountNum <= 0) {
         throw new Error('Amount must be a positive number');
+      }
+      if (isNaN(feeNum) || feeNum < 0) {
+        throw new Error('Fee must be zero or a positive number');
       }
 
       // Prepare deterministic payload
       const payload = {
         amount: amountNum,
+        fee: feeNum,
         receiver_address: receiver,
         sender_address: sender,
       };
@@ -35,6 +42,7 @@ export function Transaction() {
       // Sort keys like python's sort_keys=True
       const sortedPayload = {
         amount: payload.amount,
+        fee: payload.fee,
         receiver_address: payload.receiver_address,
         sender_address: payload.sender_address,
       };
@@ -54,12 +62,14 @@ export function Transaction() {
         sender_address: sender,
         receiver_address: receiver,
         amount: amountNum,
+        fee: feeNum,
         signature: signatureHex,
       });
 
       setSuccess(true);
       setReceiver('');
       setAmount('');
+      setFee('0.0');
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Failed to submit transaction');
     } finally {
@@ -146,21 +156,40 @@ export function Transaction() {
                 placeholder="e.g. wallet_bob"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Amount</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-slate-500 sm:text-sm">$</span>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Amount</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-slate-500 sm:text-sm">$</span>
+                  </div>
+                  <input
+                    type="number"
+                    step="0.00000001"
+                    required
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    className="w-full pl-7 pr-3 py-2 rounded-md border border-slate-300 bg-white"
+                    placeholder="0.00"
+                  />
                 </div>
-                <input
-                  type="number"
-                  step="0.00000001"
-                  required
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  className="w-full pl-7 pr-3 py-2 rounded-md border border-slate-300 bg-white"
-                  placeholder="0.00"
-                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Network Fee</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-slate-500 sm:text-sm">$</span>
+                  </div>
+                  <input
+                    type="number"
+                    step="0.00000001"
+                    required
+                    value={fee}
+                    onChange={e => setFee(e.target.value)}
+                    className="w-full pl-7 pr-3 py-2 rounded-md border border-slate-300 bg-white"
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
             </div>
           </div>
