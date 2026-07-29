@@ -6,17 +6,22 @@ This is the frontend dashboard for the VeriLedger project, built with modern web
 - React 19
 - Vite
 - TypeScript
-- Tailwind CSS v4
+- Tailwind CSS v4 (Dark Mode Premium UI)
 - Zustand (State Management)
 - Axios (HTTP Client)
 - Lucide React (Icons)
 - `@noble/curves` (Ed25519 Cryptography for browser-side wallet signing)
 
-## Features
-- **Wallet Generation:** Creates secure Ed25519 keypairs entirely in the browser.
-- **Transaction Signing:** Cryptographically signs transactions before sending them to the network.
-- **Blockchain Explorer:** Visualizes mined blocks, nonces, and transactions.
-- **P2P Network Management:** Allows connecting to other nodes and manually triggering consensus resolution.
+## Application Flow & Architecture
+
+VeriLedger is a fully functional, decentralized Blockchain application. Here is how the frontend interacts with the ledger:
+
+1. **Identity & Wallets:** The browser generates an Ed25519 cryptographic keypair locally. The Private Key never leaves the browser, ensuring absolute security. The Public Key acts as the user's address.
+2. **Transaction Signing:** When sending funds or notarizing a document, the frontend deterministically formats the payload and signs it using the user's Private Key via `@noble/curves`.
+3. **Mempool:** The signed transaction is sent to the backend. The backend verifies the signature mathematically against the public key. If valid, it enters the pending Mempool.
+4. **Mining (Proof of Work):** Any user can navigate to the Explorer and click "Start Mining". The backend bundles pending transactions, solves a cryptographic puzzle (finding a valid nonce), and creates a permanent block. The miner receives a block reward.
+5. **Data Notarization (Proof of Existence):** Users can submit a cryptographic hash of a document instead of funds. Once mined, the Explorer displays a special "Notarization Certificate", proving the document existed at that exact timestamp because the blockchain is immutable.
+6. **P2P Consensus:** Using the Network tab, users can connect multiple VeriLedger nodes. The "Resolve Conflicts" action polls all peers and replaces the local chain if a valid, longer chain is found, achieving decentralized consensus.
 
 ## Setup & Running Locally
 
@@ -41,6 +46,24 @@ To generate a production-ready optimized build:
 npm run build
 ```
 The build artifacts will be placed in the `dist/` directory.
+
+## Useful Commands (Frontend)
+
+Here are some helpful commands for daily development:
+
+```bash
+# Start the development server with hot-reload
+npm run dev
+
+# Run the linter to check for code quality issues
+npm run lint
+
+# Build the application for production
+npm run build
+
+# Preview the production build locally
+npm run preview
+```
 
 ## Backend Connection
 By default, the dashboard expects the VeriLedger API (backend) to be running at `http://127.0.0.1:8000`. You can configure this globally in `src/services/api.ts` if your backend is hosted elsewhere.
