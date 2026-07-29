@@ -20,16 +20,18 @@ export function Layout() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="bg-white border-b border-slate-200">
+    <div className="min-h-screen flex flex-col">
+      <header className="sticky top-0 z-50 glass-panel border-b border-[#2d3142]/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Blocks className="h-8 w-8 text-blue-600" />
-                <span className="ml-2 text-xl font-bold text-slate-900">VeriLedger</span>
+                <div className="bg-[#1e2130] p-1.5 rounded-lg border border-[#3b82f6]/30 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                  <Blocks className="h-6 w-6 text-[#00f0ff]" />
+                </div>
+                <span className="ml-3 text-xl font-bold neon-text tracking-wide">VeriLedger</span>
               </div>
-              <nav className="ml-8 flex space-x-8">
+              <nav className="ml-10 flex space-x-6">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
@@ -39,11 +41,11 @@ export function Layout() {
                       to={item.path}
                       className={`${
                         isActive
-                          ? 'border-blue-500 text-slate-900'
-                          : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                      } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                          ? 'text-[#00f0ff] border-b-2 border-[#00f0ff]'
+                          : 'text-slate-400 hover:text-slate-200 hover:border-b-2 hover:border-slate-500 border-transparent'
+                      } inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors`}
                     >
-                      <Icon className="h-4 w-4 mr-2" />
+                      <Icon className={`h-4 w-4 mr-2 ${isActive ? 'text-[#00f0ff]' : ''}`} />
                       {item.name}
                     </Link>
                   );
@@ -53,7 +55,7 @@ export function Layout() {
             <div className="flex items-center">
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-slate-500 hover:text-slate-700 focus:outline-none"
+                className="inline-flex items-center px-4 py-2 bg-[#1e2130] border border-[#2d3142] text-sm font-medium rounded-lg text-slate-300 hover:text-white hover:border-[#3b82f6] hover:shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-all focus:outline-none"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout

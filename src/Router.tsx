@@ -5,6 +5,7 @@ import { Login } from './pages/Login';
 import { Explorer } from './pages/Explorer';
 import { Wallet } from './pages/Wallet';
 import { Transaction } from './pages/Transaction';
+import { TransactionDetail } from './pages/TransactionDetail';
 import { Network } from './pages/Network';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -39,6 +40,7 @@ export function AppRouter() {
         }
       >
         <Route index element={<Explorer />} />
+        <Route path="transaction/:hash" element={<TransactionDetail />} />
         <Route path="wallet" element={<Wallet />} />
         <Route path="transact" element={<Transaction />} />
         <Route path="network" element={<Network />} />

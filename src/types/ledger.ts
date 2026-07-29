@@ -7,6 +7,8 @@ export interface Transaction {
   timestamp: string;
   signature?: string;
   tx_hash?: string;
+  payload?: string | null;
+  fee: number;
   block_id?: string;
 }
 

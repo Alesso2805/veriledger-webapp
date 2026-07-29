@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { api } from '../services/api';
-import { Send, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle2, ShieldCheck, FileDigit } from 'lucide-react';
 // @ts-ignore
 import { ed25519 } from '@noble/curves/ed25519.js';
 
 export function Transaction() {
+  const [tab, setTab] = useState<'transfer' | 'notarize'>('transfer');
+  
   const [sender, setSender] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const [receiver, setReceiver] = useState('');
   const [amount, setAmount] = useState('');
   const [fee, setFee] = useState('0.0');
+  const [payload, setPayload] = useState('');
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -21,31 +25,40 @@ export function Transaction() {
     setSuccess(false);
 
     try {
-      const amountNum = parseFloat(amount);
+      const amountNum = tab === 'transfer' ? parseFloat(amount) : 0.0;
       const feeNum = parseFloat(fee);
       
-      if (isNaN(amountNum) || amountNum <= 0) {
+      if (tab === 'transfer' && (isNaN(amountNum) || amountNum <= 0)) {
         throw new Error('Amount must be a positive number');
       }
       if (isNaN(feeNum) || feeNum < 0) {
         throw new Error('Fee must be zero or a positive number');
       }
+      if (tab === 'notarize' && !payload) {
+        throw new Error('Document Hash (Payload) is required for notarization');
+      }
+
+      // Receiver is self if notarization
+      const finalReceiver = tab === 'notarize' ? sender : receiver;
 
       // Prepare deterministic payload
-      const payload = {
+      const txPayload: any = {
         amount: amountNum,
         fee: feeNum,
-        receiver_address: receiver,
+        receiver_address: finalReceiver,
         sender_address: sender,
       };
+      
+      if (tab === 'notarize') {
+        txPayload.payload = payload;
+      }
 
       // Sort keys like python's sort_keys=True
-      const sortedPayload = {
-        amount: payload.amount,
-        fee: payload.fee,
-        receiver_address: payload.receiver_address,
-        sender_address: payload.sender_address,
-      };
+      const sortedKeys = Object.keys(txPayload).sort();
+      const sortedPayload: any = {};
+      for (const k of sortedKeys) {
+        sortedPayload[k] = txPayload[k];
+      }
       
       const payloadStr = JSON.stringify(sortedPayload);
       const message = new TextEncoder().encode(payloadStr);
@@ -60,15 +73,20 @@ export function Transaction() {
       // Submit transaction
       await api.post('/transactions', {
         sender_address: sender,
-        receiver_address: receiver,
+        receiver_address: finalReceiver,
         amount: amountNum,
         fee: feeNum,
         signature: signatureHex,
+        payload: tab === 'notarize' ? payload : undefined,
       });
 
       setSuccess(true);
-      setReceiver('');
-      setAmount('');
+      if (tab === 'transfer') {
+        setReceiver('');
+        setAmount('');
+      } else {
+        setPayload('');
+      }
       setFee('0.0');
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Failed to submit transaction');
@@ -90,116 +108,181 @@ export function Transaction() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <div className="flex items-center mb-8">
-          <div className="bg-blue-100 p-3 rounded-xl mr-4">
-            <Send className="w-6 h-6 text-blue-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Send Transaction</h1>
-            <p className="text-slate-500">Sign and broadcast a new transaction to the network.</p>
+    <div className="max-w-3xl mx-auto space-y-8">
+      <div className="glass-panel rounded-2xl p-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
+        
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center">
+            <div className="bg-[#1e2130] p-3 rounded-xl border border-[#3b82f6]/30 shadow-[0_0_15px_rgba(59,130,246,0.3)] mr-4">
+              <Send className="w-6 h-6 text-[#00f0ff]" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Broadcast Transaction</h1>
+              <p className="text-slate-400 text-sm mt-1">Sign and send transactions directly to the network.</p>
+            </div>
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex space-x-2 mb-8 bg-[#0f111a] p-1 rounded-xl border border-[#2d3142]">
+          <button
+            onClick={() => setTab('transfer')}
+            className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all ${
+              tab === 'transfer'
+                ? 'bg-gradient-to-r from-[#00f0ff] to-[#3b82f6] text-[#0f111a] shadow-[0_0_10px_rgba(0,240,255,0.4)]'
+                : 'text-slate-400 hover:text-white hover:bg-[#1e2130]'
+            }`}
+          >
+            Transfer Funds
+          </button>
+          <button
+            onClick={() => setTab('notarize')}
+            className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all ${
+              tab === 'notarize'
+                ? 'bg-gradient-to-r from-purple-500 to-[#8a2be2] text-white shadow-[0_0_10px_rgba(138,43,226,0.4)]'
+                : 'text-slate-400 hover:text-white hover:bg-[#1e2130]'
+            }`}
+          >
+            Notarize Document
+          </button>
+        </div>
+
         {error && (
-          <div className="mb-6 bg-red-50 text-red-700 p-4 rounded-lg flex items-start border border-red-200">
+          <div className="mb-6 bg-red-900/30 text-red-400 p-4 rounded-xl flex items-start border border-red-500/50">
             <AlertCircle className="w-5 h-5 mr-3 mt-0.5 shrink-0" />
             <p className="text-sm">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 bg-green-50 text-green-800 p-4 rounded-lg flex items-start border border-green-200">
+          <div className="mb-6 bg-green-900/30 text-green-400 p-4 rounded-xl flex items-start border border-green-500/50">
             <CheckCircle2 className="w-5 h-5 mr-3 mt-0.5 shrink-0" />
-            <p className="text-sm font-medium">Transaction submitted successfully! It is now pending and waiting to be mined in the next block.</p>
+            <p className="text-sm font-medium">Transaction submitted successfully! It is now pending and waiting to be mined.</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <h3 className="font-semibold text-slate-700 text-sm uppercase tracking-wider">Sender Info</h3>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Your Public Key (Address)</label>
-              <input
-                type="text"
-                required
-                value={sender}
-                onChange={e => setSender(e.target.value)}
-                className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-mono text-sm"
-                placeholder="e.g. 4655ec4f..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Your Private Key (For signing)</label>
-              <input
-                type="password"
-                required
-                value={privateKey}
-                onChange={e => setPrivateKey(e.target.value)}
-                className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-mono text-sm"
-                placeholder="Never share this!"
-              />
+          {/* Global Identity Section */}
+          <div className="space-y-4 p-5 bg-[#0f111a] rounded-xl border border-[#2d3142]">
+            <h3 className="font-semibold text-[#00f0ff] text-xs uppercase tracking-wider">Sender Identity</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1">Public Key (Address)</label>
+                <input
+                  type="text"
+                  required
+                  value={sender}
+                  onChange={e => setSender(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-[#1e2130] border border-[#2d3142] text-white font-mono text-sm focus:ring-[#00f0ff] focus:border-[#00f0ff] outline-none"
+                  placeholder="e.g. 4655ec4f..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1">Private Key (For Signing)</label>
+                <input
+                  type="password"
+                  required
+                  value={privateKey}
+                  onChange={e => setPrivateKey(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-[#1e2130] border border-[#2d3142] text-white font-mono text-sm focus:ring-[#00f0ff] focus:border-[#00f0ff] outline-none"
+                  placeholder="Never share this!"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <h3 className="font-semibold text-slate-700 text-sm uppercase tracking-wider">Transaction Details</h3>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Receiver Address</label>
-              <input
-                type="text"
-                required
-                value={receiver}
-                onChange={e => setReceiver(e.target.value)}
-                className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-mono text-sm"
-                placeholder="e.g. wallet_bob"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Amount</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-slate-500 sm:text-sm">$</span>
-                  </div>
+          {/* Type Specific Fields */}
+          <div className={`space-y-4 p-5 bg-[#0f111a] rounded-xl border ${tab === 'notarize' ? 'border-purple-500/30' : 'border-[#2d3142]'}`}>
+            <h3 className={`font-semibold text-xs uppercase tracking-wider flex items-center ${tab === 'notarize' ? 'text-purple-400' : 'text-[#3b82f6]'}`}>
+              {tab === 'notarize' ? <><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Document Details</> : 'Transfer Details'}
+            </h3>
+            
+            {tab === 'transfer' ? (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Receiver Address</label>
                   <input
-                    type="number"
-                    step="0.00000001"
+                    type="text"
                     required
-                    value={amount}
-                    onChange={e => setAmount(e.target.value)}
-                    className="w-full pl-7 pr-3 py-2 rounded-md border border-slate-300 bg-white"
-                    placeholder="0.00"
+                    value={receiver}
+                    onChange={e => setReceiver(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-[#1e2130] border border-[#2d3142] text-white font-mono text-sm focus:ring-[#3b82f6] focus:border-[#3b82f6] outline-none"
+                    placeholder="e.g. wallet_bob"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Network Fee</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-slate-500 sm:text-sm">$</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Amount</label>
+                    <input
+                      type="number"
+                      step="0.00000001"
+                      required
+                      value={amount}
+                      onChange={e => setAmount(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-[#1e2130] border border-[#2d3142] text-white focus:ring-[#3b82f6] focus:border-[#3b82f6] outline-none"
+                      placeholder="0.00"
+                    />
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Network Fee</label>
+                    <input
+                      type="number"
+                      step="0.00000001"
+                      required
+                      value={fee}
+                      onChange={e => setFee(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-[#1e2130] border border-[#2d3142] text-white focus:ring-[#3b82f6] focus:border-[#3b82f6] outline-none"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-slate-400 mb-2">Notarize a document by embedding its cryptographic hash into the blockchain. The amount sent will be 0.0, but you must pay the mining fee.</p>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Document Hash (Payload)</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FileDigit className="h-4 w-4 text-purple-400" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={payload}
+                      onChange={e => setPayload(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#1e2130] border border-purple-500/30 text-white font-mono text-sm focus:ring-purple-500 focus:border-purple-500 outline-none"
+                      placeholder="e.g. a8b4c92..."
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Network Fee</label>
                   <input
                     type="number"
                     step="0.00000001"
                     required
                     value={fee}
                     onChange={e => setFee(e.target.value)}
-                    className="w-full pl-7 pr-3 py-2 rounded-md border border-slate-300 bg-white"
+                    className="w-full px-3 py-2 rounded-lg bg-[#1e2130] border border-[#2d3142] text-white focus:ring-purple-500 focus:border-purple-500 outline-none"
                     placeholder="0.00"
                   />
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={loading || !sender || !privateKey || !receiver || !amount}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={loading || !sender || !privateKey || (tab === 'transfer' && (!receiver || !amount)) || (tab === 'notarize' && !payload)}
+            className={`w-full py-4 rounded-xl shadow-lg font-bold transition-all ${
+              tab === 'notarize'
+                ? 'bg-gradient-to-r from-purple-600 to-[#8a2be2] text-white hover:opacity-90 shadow-[0_0_20px_rgba(138,43,226,0.3)] disabled:opacity-50 disabled:shadow-none'
+                : 'bg-gradient-to-r from-[#00f0ff] to-[#3b82f6] text-[#0f111a] hover:opacity-90 shadow-[0_0_20px_rgba(0,240,255,0.3)] disabled:opacity-50 disabled:shadow-none'
+            }`}
           >
-            {loading ? 'Signing & Sending...' : 'Sign & Broadcast Transaction'}
+            {loading ? 'Signing & Sending...' : tab === 'notarize' ? 'Sign & Notarize Document' : 'Sign & Broadcast Transaction'}
           </button>
         </form>
       </div>
