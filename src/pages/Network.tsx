@@ -53,7 +53,7 @@ export function Network() {
         text: response.data.replaced ? 'Chain replaced with a longer one from the network!' : 'Our chain is already authoritative (longest).', 
         type: 'success' 
       });
-    } catch (err: any) {
+    } catch {
       setMessage({ text: 'Failed to resolve conflicts', type: 'error' });
     } finally {
       setResolving(false);
