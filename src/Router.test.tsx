@@ -45,6 +45,27 @@ describe('routes', () => {
     await waitFor(() => expect(path).toHaveTextContent(/^\/wallet$/));
   });
 
+  it('drops a stored token whose exp has passed, and says the session expired', async () => {
+    const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) - 60 })).replace(/=+$/, '');
+    useAppStore.setState({ token: `header.${payload}.signature` });
+    const path = visit('/wallet');
+
+    await waitFor(() => expect(path).toHaveTextContent(/^\/login$/));
+    expect(screen.getByText(/Your session expired/)).toBeInTheDocument();
+    expect(useAppStore.getState().token).toBeNull();
+  });
+
+  it('takes the person to the login when the API ends the session mid-visit', async () => {
+    useAppStore.setState({ token: 'abc.def.ghi' });
+    const path = visit('/wallet');
+    await waitFor(() => expect(path).toHaveTextContent(/^\/wallet$/));
+
+    act(() => useAppStore.getState().expire());
+
+    await waitFor(() => expect(path).toHaveTextContent(/^\/login$/));
+    expect(screen.getByText(/Your session expired/)).toBeInTheDocument();
+  });
+
   it('returns to the protected page after signing in', async () => {
     const path = visit('/wallet');
     await waitFor(() => expect(path).toHaveTextContent(/^\/login$/));

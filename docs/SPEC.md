@@ -22,7 +22,7 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 
 | Page | Route | What it does | Status |
 | --- | --- | --- | --- |
-| Login | `/login` | Email and password against `POST /auth/login` (OAuth2 form); stores the token. "Try the demo" starts a 24-hour trader account with one click (API ADR-0006) | Built (VLW-01). VLW-33 adds design E, an empty form, the 401 shake and the return to the page the person was on. The session-expired redirect comes with VLW-17 and the demo with VLW-34 |
+| Login | `/login` | Email and password against `POST /auth/login` (OAuth2 form); stores the token. "Try the demo" starts a 24-hour trader account with one click (API ADR-0006) | Built (VLW-01). VLW-33 adds design E, an empty form, the 401 shake and the return to the page the person was on. VLW-17 adds the session-expired redirect. The demo comes with VLW-34 |
 | Explorer → Tower | `/` | Latest blocks (refresh every 10 s), stats, mining with a miner address, search by transaction hash | Built (VLW-04); block search in VLW-19; the tower, waiting list and honest states in VLW-28 |
 | Transaction detail | `/transaction/:hash` | Status, hash, parties, value, fee, block; a notarization (amount 0 + payload) is shown as a certificate | Built (VLW-05); links from a block open the wrong key until VLW-19 |
 | Wallet | `/wallet` | Create a key pair, check any address's balance | Built (VLW-02); the pair is created in the browser since VLW-16 |
@@ -41,14 +41,14 @@ A single-page app built by Vite into static files (ADR-0001).
 | `src/pages` | One component per route | `components`, `lib`, `services`, `store`, `types` |
 | `src/components` | Shared UI: `Layout` and the route guards (`RouteGuards.tsx`) today; loading, empty and error states with design E (VLW-27, VLW-28, VLW-33) | `lib`, `services`, `store`, `types` |
 | `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), hex helpers. Planned (VLW-15, VLW-16) | `types`, `@noble/*` |
-| `src/services` | The axios instance with the base URL and the token interceptor; the 401 handler (VLW-17) | `lib`, `store`, `types`, axios |
+| `src/services` | The axios instance with the base URL, the token interceptor, and the 401 handler that ends an expired session (VLW-17) | `lib`, `store`, `types`, axios |
 | `src/store` | Zustand stores: the session token, persisted in `localStorage` under `veriledger-storage`; the toasts (`useToastStore`, each closes after 4 s), shown by `ToastRegion` on every page; whether the API answers (`useHealthStore`), which the header status, the login and the offline banner read | `types` |
 | `src/types` | Types of the API's responses; generated from its OpenAPI document in VLW-19 | Nothing |
 
 `src/Router.tsx` exports the route table as data (`routes`), so that AR-08 can walk it.
 - Every route except `/login` is wrapped in `ProtectedRoute` (`src/components/RouteGuards.tsx`), which redirects to `/login` without a token.
   - It keeps the page in the router state (`LoginRedirectState`), so `PublicRoute` returns there after signing in.
-  - VLW-17 adds `reason: 'expired'` to that state.
+  - A 401 on a request that carried the session, or a stored token whose `exp` has passed (`src/lib/jwt.ts`), ends the session. The guards then send the person to the login with `reason: 'expired'` (VLW-17).
 - `src/App.tsx` renders the table with `useRoutes`, and `src/main.tsx` mounts it inside `BrowserRouter`.
 - The tests of the architecture rules live in `src/architecture/`.
 
