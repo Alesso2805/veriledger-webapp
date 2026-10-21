@@ -46,3 +46,12 @@ export function buildSignedMessage(fields: SignedFields): string {
 export function signMessage(message: string, privateKey: string): string {
   return bytesToHex(ed25519.sign(new TextEncoder().encode(message), hexToBytes(privateKey)));
 }
+
+// Whether the signature is the address's over the message. Malformed hex counts as not signed, never as an error.
+export function verifySignature(message: string, signature: string, publicKey: string): boolean {
+  try {
+    return ed25519.verify(hexToBytes(signature), new TextEncoder().encode(message), hexToBytes(publicKey));
+  } catch {
+    return false;
+  }
+}

@@ -26,6 +26,15 @@ export async function getBlock(blockHash: string): Promise<FullBlock> {
   return asBlock<FullBlock>(response.data, '/blocks/{block_hash}');
 }
 
+// One transaction by the hash its links use; a 404 means this node has no such transaction.
+export async function getTransaction(txHash: string): Promise<Transaction> {
+  const response = await api.get(`/transactions/${encodeURIComponent(txHash)}`);
+  if (typeof (response.data as Transaction | undefined)?.tx_hash !== 'string') {
+    throw new Error('The API did not answer /transactions/{tx_hash}');
+  }
+  return response.data as Transaction;
+}
+
 // The mempool, newest first; the API takes 1 to 100 per page.
 export async function getPendingTransactions(skip: number, limit: number): Promise<Paginated<Transaction>> {
   const response = await api.get('/transactions', { params: { status: 'PENDING', skip, limit } });

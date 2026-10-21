@@ -35,8 +35,9 @@ describe('hashes', () => {
     expect(shortHash(alice)).toBe('4655ec4f…a19d');
   });
 
-  it('keeps a longer tail when asked', () => {
+  it('keeps a longer tail, or a shorter head, when asked', () => {
     expect(shortHash(alice, 8)).toBe('4655ec4f…b0d4a19d');
+    expect(shortHash(alice, 4, 4)).toBe('4655…a19d');
   });
 
   it('leaves a short value whole, such as the reward sender', () => {
