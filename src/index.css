@@ -26,6 +26,7 @@
   --color-vl-cube-right-on: #3A3F4B;
   --color-vl-shadow: #12151B;
   --color-vl-danger-soft: #2A1714;
+  --color-vl-inset: #090A0D;
   --font-vl-sans: "Instrument Sans", system-ui, sans-serif;
   --font-vl-mono: "Martian Mono", ui-monospace, monospace;
   --ease-vl-out: cubic-bezier(.2, .7, .2, 1);
