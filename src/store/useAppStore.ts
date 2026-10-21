@@ -1,3 +1,4 @@
+import '../services/api';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
