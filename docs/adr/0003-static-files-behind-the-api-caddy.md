@@ -28,3 +28,7 @@ Option 2, with option 3 as its production value.
 - One extra request before the first render (a few hundred bytes, same origin).
 - In production the browser sees one origin, so the API needs no CORS for it.
 - If the product owner chooses a static host instead (the API's ADR-0005, option 1), only the static server's configuration moves to that host's format; `config.json` keeps working.
+
+## Update (2026-10-21)
+
+The image is published to GHCR, public, as `ghcr.io/alesso2805/veriledger-webapp`, like the API's (VLW-25). The API's production Compose runs it behind its Caddy, which sends `/` to it and `/api/*` to the API (VLA-27). Until there is a server, both sides rehearse that locally.
