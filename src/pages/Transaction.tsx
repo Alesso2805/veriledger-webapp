@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { api } from '../services/api';
+import { api, detailOf, statusOf } from '../services/api';
+import { getNextNonce } from '../services/wallets';
 import { Send, AlertCircle, CheckCircle2, ShieldCheck, FileDigit } from 'lucide-react';
 import { buildSignedMessage, signMessage, toAmount, type SignedFields } from '../lib/signing';
 
@@ -29,11 +30,13 @@ export function Transaction() {
       }
 
       // A notarization sends nothing to the sender's own address; the request carries the signed strings as is.
+      // The nonce is read just before signing, so it is the one the API expects now (VLA-16).
       const fields: SignedFields = {
         sender_address: sender,
         receiver_address: tab === 'notarize' ? sender : receiver,
         amount: toAmount(tab === 'transfer' ? amount : '0'),
         fee: toAmount(fee),
+        nonce: await getNextNonce(sender),
         payload: tab === 'notarize' ? payload : undefined,
       };
       if (tab === 'transfer' && fields.amount === '0.00000000') {
@@ -51,8 +54,15 @@ export function Transaction() {
         setPayload('');
       }
       setFee('0.0');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to submit transaction');
+    } catch (err) {
+      const detail = detailOf(err, 'Failed to submit transaction');
+      if (statusOf(err) === 409) {
+        // Another transaction from this sender took the nonce first; signing again uses the next one.
+        const next = await getNextNonce(sender).catch(() => null);
+        setError(next === null ? detail : `${detail}. Sign again to use nonce ${next}.`);
+      } else {
+        setError(detail);
+      }
     } finally {
       setLoading(false);
     }
