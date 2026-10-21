@@ -41,7 +41,7 @@ A single-page app built by Vite into static files (ADR-0001).
 | `src/components` | Shared UI: `Layout` and the route guards (`RouteGuards.tsx`) today; loading, empty and error states with design E (VLW-27, VLW-28, VLW-33) | `lib`, `services`, `store`, `types` |
 | `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), hex helpers. Planned (VLW-15, VLW-16) | `types`, `@noble/*` |
 | `src/services` | The axios instance with the base URL and the token interceptor; the 401 handler (VLW-17) | `lib`, `store`, `types`, axios |
-| `src/store` | Zustand store: the session token, persisted in `localStorage` under `veriledger-storage` | `types` |
+| `src/store` | Zustand stores: the session token, persisted in `localStorage` under `veriledger-storage`; the toasts (`useToastStore`, each closes after 4 s), shown by `ToastRegion` on every page | `types` |
 | `src/types` | Types of the API's responses; generated from its OpenAPI document in VLW-19 | Nothing |
 
 `src/Router.tsx` exports the route table as data (`routes`), so that AR-08 can walk it.
