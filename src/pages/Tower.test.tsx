@@ -314,5 +314,6 @@ describe('Tower mining', () => {
 
     expect(await screen.findByRole('button', { name: 'Mine the genesis block' })).toBeInTheDocument();
     expect(screen.getByText('The first block you mine becomes the genesis block.')).toBeInTheDocument();
+    await expect(document.body).toPassAxe();
   });
 });

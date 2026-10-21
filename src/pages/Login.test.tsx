@@ -141,6 +141,7 @@ describe('Login', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid credentials.');
     expect(screen.getByRole('button', { name: 'Sign in' }).closest('form')).toHaveClass('animate-vl-shake');
     expect(screen.getByLabelText('Email')).toHaveClass('border-vl-danger');
+    await expect(document.body).toPassAxe();
   });
 
   it('clears the error once the person edits a field', async () => {

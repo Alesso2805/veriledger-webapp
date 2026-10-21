@@ -74,6 +74,7 @@ describe('Network', () => {
 
     expect(await screen.findByText(/The peer's host is not a public address: 10.0.0.5/)).toBeInTheDocument();
     expect(screen.getByLabelText('Peer address')).toHaveAttribute('aria-invalid', 'true');
+    await expect(document.body).toPassAxe();
   });
 
   it('keeps the field and its focus when the person types after a refusal', async () => {

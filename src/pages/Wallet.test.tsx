@@ -69,6 +69,7 @@ describe('Wallet', () => {
     expect(useKeyStore.getState().saved).toBe(true);
     expect(screen.getByRole('heading', { name: 'Your key is saved' })).toBeInTheDocument();
     click.mockRestore();
+    await expect(document.body).toPassAxe();
   });
 
   it('opens a key file as a key that is already saved', async () => {
@@ -89,6 +90,7 @@ describe('Wallet', () => {
     fireEvent.change(screen.getByLabelText('Choose a key file'), { target: { files: [new File(['nope'], 'key.json')] } });
 
     expect(await screen.findByRole('alert')).toHaveTextContent('This file is not a key file: it is not JSON.');
+    await expect(document.body).toPassAxe();
   });
 
   it('asks inline before forgetting the key, and keeps it on "Keep it"', () => {
