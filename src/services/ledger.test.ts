@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from './api';
-import { getBlock, getBlocks, getPendingTransactions, mineBlock, sendTransaction } from './ledger';
+import { getBlock, getBlocks, getPendingTransactions, getTransaction, mineBlock, sendTransaction } from './ledger';
 
 const block = {
   id: 'b1',
@@ -46,6 +46,21 @@ describe('ledger endpoints', () => {
     vi.spyOn(api, 'get').mockResolvedValue({ data: indexHtml });
 
     await expect(getBlock('0000bb')).rejects.toThrow('did not answer');
+  });
+
+  it('getTransaction reads one transaction by its hash, escaped for the path', async () => {
+    const transaction = { id: 't1', tx_hash: 'h1', status: 'CONFIRMED', block_number: 3 };
+    const get = vi.spyOn(api, 'get').mockResolvedValue({ data: transaction });
+
+    await expect(getTransaction('h1')).resolves.toEqual(transaction);
+    await getTransaction('a/b');
+    expect(get.mock.calls.map(([url]) => url)).toEqual(['/transactions/h1', '/transactions/a%2Fb']);
+  });
+
+  it('getTransaction rejects an answer without a transaction hash', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({ data: indexHtml });
+
+    await expect(getTransaction('h1')).rejects.toThrow('The API did not answer /transactions/{tx_hash}');
   });
 
   it('getPendingTransactions reads the mempool', async () => {
