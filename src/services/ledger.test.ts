@@ -1,6 +1,7 @@
+import { AxiosError, type AxiosResponse } from 'axios';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from './api';
-import { getBlock, getBlocks, getPendingTransactions, getTransaction, mineBlock, sendTransaction } from './ledger';
+import { findBlockNumber, findHash, getBlock, getBlocks, getPendingTransactions, getTransaction, mineBlock, sendTransaction } from './ledger';
 
 const block = {
   id: 'b1',
@@ -61,6 +62,50 @@ describe('ledger endpoints', () => {
     vi.spyOn(api, 'get').mockResolvedValue({ data: indexHtml });
 
     await expect(getTransaction('h1')).rejects.toThrow('The API did not answer /transactions/{tx_hash}');
+  });
+
+  describe('search', () => {
+    const notFound = () =>
+      new AxiosError('Not Found', 'ERR_BAD_REQUEST', undefined, null, { status: 404, data: { detail: 'Not found' } } as AxiosResponse);
+    const hash = 'ab'.repeat(32);
+
+    it('findHash finds a block by its hash, and a transaction it is not', async () => {
+      vi.spyOn(api, 'get').mockImplementation(async (url: string) => {
+        if (url.startsWith('/blocks/')) return { data: { ...block, block_hash: hash, transactions: [] } };
+        throw notFound();
+      });
+
+      await expect(findHash(hash)).resolves.toEqual([{ kind: 'block', number: 3, hash }]);
+    });
+
+    it('findHash finds a transaction by its hash', async () => {
+      const transaction = { id: 't1', tx_hash: hash, status: 'PENDING' };
+      vi.spyOn(api, 'get').mockImplementation(async (url: string) => {
+        if (url.startsWith('/transactions/')) return { data: transaction };
+        throw notFound();
+      });
+
+      await expect(findHash(hash)).resolves.toEqual([{ kind: 'transaction', transaction }]);
+    });
+
+    it('findHash answers nothing for a hash neither has, and fails only when the node does', async () => {
+      vi.spyOn(api, 'get').mockRejectedValue(notFound());
+      await expect(findHash(hash)).resolves.toEqual([]);
+
+      vi.spyOn(api, 'get').mockRejectedValue(new Error('Network Error'));
+      await expect(findHash(hash)).rejects.toThrow('Network Error');
+    });
+
+    it('findBlockNumber reads block n, and nothing above the top', async () => {
+      const get = vi.spyOn(api, 'get').mockImplementation(async (_url, config) => {
+        const skip = (config?.params as { skip: number } | undefined)?.skip ?? 0;
+        return { data: { items: [{ ...block, block_number: 9 - skip, block_hash: 'h' }], total: 10, page: 1, size: 1 } };
+      });
+
+      await expect(findBlockNumber(7)).resolves.toEqual([{ kind: 'block', number: 7, hash: 'h' }]);
+      expect(get).toHaveBeenLastCalledWith('/blocks', { params: { skip: 2, limit: 1 } });
+      await expect(findBlockNumber(12)).resolves.toEqual([]);
+    });
   });
 
   it('getPendingTransactions reads the mempool', async () => {
