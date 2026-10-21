@@ -96,8 +96,16 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
   - The container runs `docker/write-config.sh`, which writes `{"apiBaseUrl": "<API_BASE_URL>"}` to `/config.json`. `API_BASE_URL` defaults to `/api`.
   - `src/main.tsx` reads that file (`src/services/config.ts`) before rendering. Without a usable file, the base URL is `VITE_API_URL`, set in `.env.development` and `.env.test` as `http://127.0.0.1:8000`, or else the same origin's `/api`.
   - No URL is built into the production bundle (AR-07).
-- Every unknown path answers `index.html`, so `/wallet` and `/transaction/<hash>` survive a reload (VLW-22).
-- Hashed assets are cached for a year; `index.html` and `config.json` are never cached (VLW-22).
+- **The image** (VLW-22, `Dockerfile`):
+  - Node 22 builds the files, and Caddy serves them as a non-root user on port 8080. Both bases are pinned by digest.
+  - At start the container runs `write-config.sh`.
+  - It is built for amd64 and arm64 by the Image workflow.
+- **`docker/Caddyfile`:**
+  - Every unknown path answers `index.html`, so `/wallet` and `/transaction/<hash>` survive a reload.
+  - `/assets/*` is cached for a year (`immutable`); everything else, `index.html` and `config.json` included, is `no-store`.
+  - It sends the security headers: a Content Security Policy with `'self'` everywhere and `connect-src 'self'`, widened only by `CSP_CONNECT_SRC` for an API on another origin; `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`; and no `Server` header.
+- **No `data:` URIs** (`build.assetsInlineLimit: 0`), so the policy needs no `data:` source.
+- **`docker/smoke-test.sh`** checks a running image for deep links, caching, `config.json`, inline `data:` URIs and the headers. The Image workflow runs it on every PR.
 
 ## Non-functional requirements and security
 
@@ -105,11 +113,11 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 | --- | --- | --- |
 | Security | The private key never leaves the browser | A test that records every request of the generate → transfer → notarize flow and finds no private key (AR-05, VLW-16) |
 | Security | No pre-filled credentials; an expired session returns to the login | Component tests (VLW-17) |
-| Security | Content Security Policy and security headers on the served files | Header check in the end-to-end tests (VLW-22) |
+| Security | Content Security Policy and security headers on the served files | `docker/smoke-test.sh` on the built image, in the Image workflow (VLW-22) |
 | Security | No known high or critical vulnerability in dependencies | `npm audit --audit-level=high` in CI (VLW-11) |
 | Correctness | Transactions signed here are accepted by the API | The API's golden vectors in Vitest (AR-06, VLW-15) and an end-to-end transfer (VLW-23) |
 | Correctness | Response types match the API | Types generated from the API's OpenAPI document (AR-09, VLW-19) |
-| Deployment | One image for any hostname; deep links survive a reload | End-to-end tests on the built image (VLW-21, VLW-22) |
+| Deployment | One image for any hostname; deep links survive a reload | `docker/smoke-test.sh` on the built image (VLW-21, VLW-22); end-to-end tests (VLW-23) |
 | Reproducibility | `npm ci && npm run build` from a clean clone | CI (VLW-10, VLW-11) |
 | Accessibility | Every input has a label; visible focus; usable at 360 px with no horizontal scroll; no serious or critical axe-core violation | axe-core in the component tests and Playwright at 360 px (VLW-24) |
 | Quality | `tsc` strict, oxlint without warnings, architecture tests and Vitest green | GitHub Actions (VLW-10, VLW-13) |
@@ -158,7 +166,7 @@ veriledger-webapp/
 │   └── legacy.css                # neon classes of the pages not yet replaced; deleted by VLW-32
 ├── public/favicon.svg
 ├── e2e/                          # Playwright (VLW-23)
-├── docker/                       # write-config.sh (VLW-21); the static server config (VLW-22)
+├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh
 ├── docs/
 │   ├── SPEC.md                   # this document
 │   ├── DESIGN.md                 # design E: tokens, motion, views
@@ -168,9 +176,11 @@ veriledger-webapp/
 │   ├── COMMENTS_REVIEW.md        # what the comment cleanup kept and removed (VLW-14)
 │   ├── adr/
 │   └── sprints/
-├── .github/workflows/ci.yml
+├── .github/workflows/          # ci.yml (checks), image.yml (amd64 and arm64 image, smoke test)
 ├── .dependency-cruiser.cjs       # import rules AR-01 to AR-04
-├── Dockerfile                    # VLW-22
+├── Dockerfile
+├── .dockerignore
+├── .gitattributes                # LF for the container files
 ├── .env.development, .env.test # VITE_API_URL for the dev server and the tests
 ├── .nvmrc
 ├── index.html
