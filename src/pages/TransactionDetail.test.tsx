@@ -1,14 +1,14 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import vectors from '../lib/__fixtures__/signing-vectors.json';
 import { statusOf } from '../services/api';
-import { getBlocks, getTransaction } from '../services/ledger';
+import { getBlock, getBlocks, getTransaction } from '../services/ledger';
 import { useHealthStore } from '../store/useHealthStore';
-import type { Block, Paginated, Transaction } from '../types/ledger';
+import type { Block, FullBlock, Paginated, Transaction } from '../types/ledger';
 import { TransactionDetail } from './TransactionDetail';
 
-vi.mock('../services/ledger', () => ({ getTransaction: vi.fn(), getBlocks: vi.fn() }));
+vi.mock('../services/ledger', () => ({ getTransaction: vi.fn(), getBlocks: vi.fn(), getBlock: vi.fn() }));
 vi.mock('../services/api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../services/api')>()),
   statusOf: vi.fn(),
@@ -57,6 +57,7 @@ describe('TransactionDetail', () => {
   beforeEach(() => {
     useHealthStore.setState({ online: true });
     vi.mocked(getBlocks).mockResolvedValue(height(5));
+    vi.mocked(getBlock).mockResolvedValue({ timestamp: '2026-10-20T16:21:55Z' } as FullBlock);
   });
 
   afterEach(() => {
@@ -95,6 +96,7 @@ describe('TransactionDetail', () => {
     expect(screen.getByText('Waiting')).toBeInTheDocument();
     expect(screen.getByText('Waiting for the next block. This page checks again every 10 s.')).toBeInTheDocument();
     expect(screen.queryByText('Sealed in')).not.toBeInTheDocument();
+    expect(screen.queryByText('PROOF OF EXISTENCE')).not.toBeInTheDocument();
 
     vi.mocked(getTransaction).mockResolvedValue(stored('notarization', { block_number: 5 }));
     await act(() => vi.advanceTimersByTimeAsync(10_000));
@@ -132,5 +134,25 @@ describe('TransactionDetail', () => {
     renderPage();
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Can’t load this transaction: Internal Server Error. Retrying every 10 s.');
+  });
+
+  it("certifies a sealed notarization at its block's seal, and checks a file in the browser", async () => {
+    const abc = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
+    vi.mocked(getTransaction).mockResolvedValue(stored('notarization', { payload: abc }));
+    renderPage();
+
+    expect(await screen.findByRole('heading', { name: 'This document existed on 20 October 2026 at 16:21:55 UTC.' })).toBeInTheDocument();
+    expect(getBlock).toHaveBeenCalledWith(stored('notarization').block_hash);
+    const groups = screen.getByRole('list', { name: 'Document fingerprint, SHA-256' });
+    expect(groups.querySelectorAll('li')).toHaveLength(8);
+    expect(groups).toHaveTextContent('ba7816bf8f01cfea');
+
+    const chooser = screen.getByLabelText(/Choose a file/);
+    fireEvent.change(chooser, { target: { files: [new File(['abc'], 'contract.txt')] } });
+    expect(await screen.findByText('contract.txt is exactly the certified document.')).toBeInTheDocument();
+
+    fireEvent.change(chooser, { target: { files: [new File(['abd'], 'contract (edited).txt')] } });
+    expect(await screen.findByText('No match')).toBeInTheDocument();
+    expect(screen.getByText(/contract \(edited\)\.txt differs from the certified document/)).toBeInTheDocument();
   });
 });

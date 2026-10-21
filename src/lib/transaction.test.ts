@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Transaction } from '../types/ledger';
 import vectors from './__fixtures__/signing-vectors.json';
-import { blocksOnTop, checkSignature, journeyOf, signedFieldsOf, transactionTitle } from './transaction';
+import { blocksOnTop, checkSignature, fingerprintGroups, journeyOf, signedFieldsOf, transactionTitle } from './transaction';
 
 const vector = (name: string) => vectors.vectors.find((candidate) => candidate.name === name)!;
 
@@ -60,6 +60,14 @@ describe('journeyOf', () => {
 
   it('says how many blocks are on top', () => {
     expect([0, 1, 2].map(blocksOnTop)).toEqual(['nothing on top yet', '1 block on top', '2 blocks on top']);
+  });
+});
+
+describe('fingerprintGroups', () => {
+  it('splits a SHA-256 into 8 groups of 8', () => {
+    const hash = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
+
+    expect(fingerprintGroups(hash)).toEqual(['ba7816bf', '8f01cfea', '414140de', '5dae2223', 'b00361a3', '96177a9c', 'b410ff61', 'f20015ad']);
   });
 });
 

@@ -189,7 +189,11 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - A mining reward has no signature: "the block's proof of work seals it".
   - A row from before VLA-16 has no nonce, so it cannot be checked, and the page says so.
 - **Sealed in:** a card linking to `/?block=n`, with the block's hash and how many blocks are on top.
-- **Certificate** (amount 0 with a payload): the fingerprint in 8 groups and "Check a file": `crypto.subtle.digest('SHA-256', file)` compared with `payload`. The file never leaves the browser.
+- **Certificate** (a sealed notarization, VLW-29b):
+  - "This document existed on 21 October 2026 at 15:06:45 UTC." The moment is the block's seal from `GET /blocks/{block_hash}`, which the chain backs, not the time the node received the transaction. Until it loads, the heading says the document existed when block #n was sealed.
+  - The fingerprint is in 8 groups of 8, in a grid that fits its container: four a row on a desktop, three at 360 px.
+  - "Check a file against it": `crypto.subtle.digest('SHA-256', file)` is compared with `payload`. "Match" fades up and "No match" shakes. The file never leaves the browser.
+  - A waiting notarization has no certificate yet.
 - **Not found** (a 404): explains that rejected transactions leave no trace, with "Back to the tower". Any other failure shows a card with the API's `detail` and "Retry now" when `/health` answers; otherwise the shell's banner speaks.
 - **Stories:** VLW-29 (with VLA-20).
 

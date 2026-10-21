@@ -48,6 +48,14 @@ export function formatSealed(iso: string, timeZone?: string): string {
   return `${day.format(date)} · ${time.format(date)}`;
 }
 
+// The moment a certificate states, always in UTC: "20 October 2026 at 16:21:55 UTC".
+export function formatCertified(iso: string): string {
+  const date = new Date(iso);
+  const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
+  return `${day.format(date)} at ${time.format(date)} UTC`;
+}
+
 export function formatClock(iso: string, timeZone?: string): string {
   return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone }).format(new Date(iso));
 }

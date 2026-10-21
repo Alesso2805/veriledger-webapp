@@ -58,5 +58,10 @@ export function transactionTitle(transaction: Transaction): string {
   }
 }
 
+// A document's fingerprint in 8 groups of 8 characters, easier to read aloud and compare than one long line.
+export function fingerprintGroups(hash: string): string[] {
+  return Array.from({ length: Math.ceil(hash.length / 8) }, (_, index) => hash.slice(index * 8, index * 8 + 8));
+}
+
 export const blocksOnTop = (above: number) =>
   above === 0 ? 'nothing on top yet' : `${above} ${above === 1 ? 'block' : 'blocks'} on top`;
