@@ -3,6 +3,11 @@ import { keyPairFromSecret } from './keys';
 
 export class KeyFileError extends Error {}
 
+// What "Download .json" saves, and what parseKeyFile reads back.
+export function keyFileText(pair: Wallet): string {
+  return `${JSON.stringify({ public_key: pair.public_key, private_key: pair.private_key }, null, 2)}\n`;
+}
+
 const HEX64 = /^[0-9a-f]{64}$/i;
 
 // A key file is the JSON the wallet saves, {"public_key", "private_key"}: raw Ed25519 keys in hex. The public

@@ -14,7 +14,8 @@ export function NoKey() {
     event.target.value = '';
     if (!file) return;
     try {
-      hold(parseKeyFile(await file.text()));
+      // A key that comes from its file is already saved.
+      hold(parseKeyFile(await file.text()), true);
     } catch (failure) {
       setError(failure instanceof KeyFileError ? failure.message : 'This file could not be read.');
     }

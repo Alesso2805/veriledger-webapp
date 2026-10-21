@@ -230,11 +230,12 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 - **Artboard:** "E · Wallet". Tweaks: `start` (no wallet, existing wallet).
 - **Data:** keys from `@noble/curves` in the browser (VLW-16); balance `GET /wallets/{address}/balance`; activity `GET /wallets/{address}/transactions` (*new*, VLA-34).
 - **Behaviour:**
-  - create or open a key file;
-  - the identity cube drops in;
-  - "Download .json" saves the key with a Blob download, then a checkbox confirms it was stored;
-  - "Forget this key" asks inline, with no browser dialog;
-  - looking up another address builds its cube as the person types.
+  - Create a key pair, or open a key file. Either becomes the key the tab signs with (`useKeyStore`), which Sign and send shares.
+  - The identity cube drops in, only when the key was just created or opened on this page. The address shows in 8 groups, and the balance pops when it arrives.
+  - "Download .json" saves `{"public_key", "private_key"}` (`keyFileText`) with a Blob download named `veriledger-<first 8>.json`. Then the checkbox confirms the file was stored, and the steps fold away (`grid-template-rows`).
+  - The store remembers whether a file of the key exists. A key opened from its file counts as saved, so the page does not ask again after a visit to another page (VLW-31a).
+  - "Forget this key in this tab" asks inline, with no browser dialog. Forgetting returns to create or open.
+  - Looking up another address builds its cube as the person types (VLW-31b).
 - **Stories:** VLW-31 (with VLW-16, VLA-34).
 
 ### Network — `/network`
