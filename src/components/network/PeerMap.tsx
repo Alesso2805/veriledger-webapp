@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { MAP, peerLabel, ringPoints } from '../../lib/peers';
 import type { Peer } from '../../types/network';
 import type { ResolvePhase } from './ResolveCard';
@@ -23,9 +24,17 @@ const pulse = 'absolute top-0 left-0 size-3 rounded-full animate-vl-travel';
 export function PeerMap({ peers, height, fresh, phase, round }: Props) {
   const points = ringPoints(peers.length);
   const label = `This node${height === null ? '' : ` at height ${height}`}, with ${peers.length} ${peers.length === 1 ? 'peer' : 'peers'}`;
+  const box = useRef<HTMLElement>(null);
+
+  // A narrow box opens on this node, in the middle of the map, rather than on the map's empty left edge.
+  useLayoutEffect(() => {
+    const element = box.current;
+    if (element) element.scrollLeft = (element.scrollWidth - element.clientWidth) / 2;
+  }, []);
 
   return (
     <section
+      ref={box}
       aria-label="Peer map"
       tabIndex={0}
       className="min-w-0 flex-[999_1_640px] overflow-x-auto rounded-2xl border border-vl-line bg-vl-surface"

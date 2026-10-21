@@ -35,6 +35,21 @@ describe('Network', () => {
     expect(screen.getByText('127.0.0.1')).toBeInTheDocument();
   });
 
+  it('opens a narrow map on this node, in its middle', async () => {
+    // jsdom has no layout: give the map's box a phone's width and the map's own.
+    const scrollWidth = vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(860);
+    const clientWidth = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(326);
+    try {
+      render(<Network />);
+      await screen.findByRole('heading', { name: 'Registered peers · 2' });
+
+      expect(screen.getByRole('region', { name: 'Peer map' }).scrollLeft).toBe(267);
+    } finally {
+      scrollWidth.mockRestore();
+      clientWidth.mockRestore();
+    }
+  });
+
   it('adds a peer, and lists it once the node has it', async () => {
     vi.mocked(registerPeer).mockResolvedValue(peer('https://node-e.example.org'));
     render(<Network />);
