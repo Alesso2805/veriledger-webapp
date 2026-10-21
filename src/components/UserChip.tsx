@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { getMe } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
-import type { CurrentUser } from '../types/session';
 
 export function UserChip() {
   const token = useAppStore((state) => state.token);
-  const [user, setUser] = useState<CurrentUser | null>(null);
+  const user = useAppStore((state) => state.user);
+  const setUser = useAppStore((state) => state.setUser);
 
   useEffect(() => {
     if (!token) return;
@@ -18,7 +18,7 @@ export function UserChip() {
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [token, setUser]);
 
   if (!user) return null;
 
