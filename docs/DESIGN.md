@@ -138,12 +138,12 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
     - Enter opens the first result, and Escape closes the dropdown;
   - `/health` status, polled every 10 s;
   - signed in: email and role from `GET /auth/me`, then a "Sign out" pill (added 2026-10-20; the first artboards had no way to sign out). A demo account shows "Guest XXXX · demo · N h left";
-  - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34);
+  - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34). "Sign in" came with VLW-34a and returns to the page the visitor was on; "Try the demo" comes with VLW-34b;
   - skip link, which slides in with `transform` on focus; toast region;
   - offline banner under the header: "Can’t reach <API host>. Retrying every 10 s." with "Retry now". When `/health` answers again, it closes and a "Back online." toast appears. The first artboard also promised "the last data we had" and "Data is up to date"; the pages do not keep or refresh data yet, so that text was removed (2026-10-20);
   - 404 page: a tower with a missing cube.
 - **At 360 px** (shown in "E · Estados del shell"):
-  - the status ("online") and "Sign out" share the logo's row;
+  - the status ("online") and "Sign out", or "Sign in", share the logo's row;
   - the search drops to its own line;
   - the tabs scroll sideways;
   - the user chip is hidden.
@@ -164,7 +164,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 ### Tower — `/` (and `/?block=<number>` for a deep link)
 
 - **Artboard:** "E · Torre". Tweaks: `role` (admin, trader, viewer, demo, signed out), `state` (ready, loading, empty, error), `incoming` (a block that joined the chain).
-- **Signed out:** the tower, list, detail and waiting list are public (VLA-36). The mine button reads "Try the demo to mine" and starts a demo account in place (VLW-34).
+- **Signed out:** the tower, list, detail and waiting list are public (VLA-36, ADR-0005). The mine button reads "Try the demo to mine" and starts a demo account in place (VLW-34b). Until VLA-35 brings the demo, it reads "Sign in to mine" with "Anyone can look. To mine, sign in.", and opens the login, which comes back to the tower (VLW-34a).
 - **Data:**
   - blocks: `GET /blocks?skip&limit`. The newest 10 are drawn as the tower; "Load older blocks" pages back; the height is the top block's number (VLA-20).
   - selected block: `GET /blocks/{block_hash}` (VLA-20), with the mining reward first and every transaction linked by `tx_hash`.
@@ -265,7 +265,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
     - "Adopted a longer valid chain", with the height before and after.
     - "Could not finish resolving", with the API's words, and the card shakes.
   - Disabled without peers, and for other roles.
-- **Other roles** see the map and the list, with "Only an admin can add peers or resolve conflicts." Until `/auth/me` answers the form shows, and the API refuses anyone else with a 403.
+- **Other roles and visitors** see the map and the list, with "Only an admin can add peers or resolve conflicts." Signed in, the form shows until `/auth/me` answers, and the API refuses anyone else with a 403. A visitor never sees it (ADR-0005).
 - **The list:** every peer reads "registered". If `GET /nodes` fails, the page says the node did not answer instead of showing an empty list.
 - **Stories:** VLW-32 (with VLA-19).
 
@@ -273,7 +273,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 
 - **Artboard:** "E · Estados del shell" (404 card).
 - **Where:** inside the shell, as the catch-all child route.
-  - Without a session, an unknown address leads to the login first, like any other page (AR-08).
+  - It opens without a session too, like the tower it leads back to (ADR-0005, product owner, 2026-10-21).
   - The card's heading is the page's `h1`; on the artboard it is an `h2`, because it sits among other states.
 - **Story:** VLW-33.
 
