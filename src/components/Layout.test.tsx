@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getMe, startDemo } from '../services/auth';
@@ -100,6 +100,35 @@ describe('Layout (the shell)', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Sign in' }));
 
     expect(screen.getByText('login page, back to /transaction/abc?from=search')).toBeInTheDocument();
+  });
+
+  it('shows a demo account as its guest name, "demo" and the hours it has left', async () => {
+    const expires = new Date(Date.now() + 23.5 * 3_600_000).toISOString();
+    vi.mocked(getMe).mockResolvedValue({ ...ME, email: null, display_name: 'Guest 4F2A', expires_at: expires });
+    renderShell('/');
+
+    expect(await screen.findByText('Guest 4F2A')).toBeInTheDocument();
+    expect(screen.getByText('demo · 23 h left')).toBeInTheDocument();
+    expect(screen.queryByText('trader')).not.toBeInTheDocument();
+  });
+
+  it('counts a demo down from when it starts, not from when the page opened', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      useAppStore.setState({ token: null, user: null });
+      renderShell('/');
+      await apiStatus('api · online');
+      // The visitor looks around for half an hour before starting the demo (found in the browser).
+      vi.setSystemTime(Date.now() + 30 * 60_000);
+      const expires = new Date(Date.now() + 24 * 3_600_000 - 1_000).toISOString();
+      vi.mocked(getMe).mockResolvedValue({ ...ME, email: null, display_name: 'Guest 4F2A', expires_at: expires });
+
+      act(() => useAppStore.getState().setToken('demo.jwt.token'));
+
+      expect(await screen.findByText('demo · 23 h left')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('starts a demo from the header without leaving the page', async () => {
