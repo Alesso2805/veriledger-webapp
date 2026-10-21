@@ -12,9 +12,8 @@ module.exports = {
     },
     {
       name: 'AR-02-noble-only-in-lib',
-      comment: 'Known violation: src/pages/Transaction.tsx signs inline until VLW-15 moves signing to src/lib.',
       severity: 'error',
-      from: { path: '^src/', pathNot: ['^src/lib/', '^src/pages/Transaction\\.tsx$'] },
+      from: { path: '^src/', pathNot: '^src/lib/' },
       to: { path: '(^|/)node_modules/@noble/' },
     },
     {

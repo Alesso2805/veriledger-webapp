@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { api } from '../services/api';
 import { Send, AlertCircle, CheckCircle2, ShieldCheck, FileDigit } from 'lucide-react';
-// @ts-ignore
-import { ed25519 } from '@noble/curves/ed25519.js';
+import { buildSignedMessage, signMessage, toAmount, type SignedFields } from '../lib/signing';
 
 export function Transaction() {
   const [tab, setTab] = useState<'transfer' | 'notarize'>('transfer');
@@ -25,60 +24,24 @@ export function Transaction() {
     setSuccess(false);
 
     try {
-      const amountNum = tab === 'transfer' ? parseFloat(amount) : 0.0;
-      const feeNum = parseFloat(fee);
-      
-      if (tab === 'transfer' && (isNaN(amountNum) || amountNum <= 0)) {
-        throw new Error('Amount must be a positive number');
-      }
-      if (isNaN(feeNum) || feeNum < 0) {
-        throw new Error('Fee must be zero or a positive number');
-      }
       if (tab === 'notarize' && !payload) {
         throw new Error('Document Hash (Payload) is required for notarization');
       }
 
-      // Receiver is self if notarization
-      const finalReceiver = tab === 'notarize' ? sender : receiver;
-
-      // Prepare deterministic payload
-      const txPayload: any = {
-        amount: amountNum,
-        fee: feeNum,
-        receiver_address: finalReceiver,
+      // A notarization sends nothing to the sender's own address; the request carries the signed strings as is.
+      const fields: SignedFields = {
         sender_address: sender,
-      };
-      
-      if (tab === 'notarize') {
-        txPayload.payload = payload;
-      }
-
-      // Sort keys like python's sort_keys=True
-      const sortedKeys = Object.keys(txPayload).sort();
-      const sortedPayload: any = {};
-      for (const k of sortedKeys) {
-        sortedPayload[k] = txPayload[k];
-      }
-      
-      const payloadStr = JSON.stringify(sortedPayload);
-      const message = new TextEncoder().encode(payloadStr);
-
-      // Convert hex private key to bytes
-      const privateBytes = h2b(privateKey);
-      
-      // Sign the payload
-      const signature = ed25519.sign(message, privateBytes);
-      const signatureHex = b2h(signature);
-
-      // Submit transaction
-      await api.post('/transactions', {
-        sender_address: sender,
-        receiver_address: finalReceiver,
-        amount: amountNum,
-        fee: feeNum,
-        signature: signatureHex,
+        receiver_address: tab === 'notarize' ? sender : receiver,
+        amount: toAmount(tab === 'transfer' ? amount : '0'),
+        fee: toAmount(fee),
         payload: tab === 'notarize' ? payload : undefined,
-      });
+      };
+      if (tab === 'transfer' && fields.amount === '0.00000000') {
+        throw new Error('Amount must be more than zero');
+      }
+
+      const signature = signMessage(buildSignedMessage(fields), privateKey);
+      await api.post('/transactions', { ...fields, signature });
 
       setSuccess(true);
       if (tab === 'transfer') {
@@ -93,18 +56,6 @@ export function Transaction() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const h2b = (hex: string) => {
-    const bytes = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < bytes.length; i++) {
-      bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-    }
-    return bytes;
-  };
-
-  const b2h = (bytes: Uint8Array) => {
-    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
   };
 
   return (
