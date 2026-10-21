@@ -87,7 +87,7 @@ export function Login() {
 
       <main className="flex min-w-0 flex-[1_1_420px] items-center justify-center px-6 py-10">
         <div className="w-full max-w-[400px] animate-vl-fade-up">
-          {reason === 'expired' && (
+          {reason && (
             <div
               role="status"
               className="mb-5 flex animate-vl-fade-up items-start gap-2.5 rounded-xl border border-vl-accent bg-vl-surface px-3.5 py-3"
@@ -96,7 +96,11 @@ export function Login() {
                 <circle cx="9" cy="9" r="7.5" fill="none" strokeWidth="1.5" className="stroke-vl-accent" />
                 <path d="M9 5v4.5l2.5 1.5" fill="none" strokeWidth="1.5" className="stroke-vl-accent" />
               </svg>
-              <span>Your session expired. Sign in again to continue where you were.</span>
+              <span>
+                {reason === 'demo-ended'
+                  ? 'Your demo ended after 24 h. Start a new demo or sign in. What it recorded is still on the chain.'
+                  : 'Your session expired. Sign in again to continue where you were.'}
+              </span>
             </div>
           )}
           <h1 className="text-[32px] font-bold tracking-[-0.02em]">Sign in</h1>

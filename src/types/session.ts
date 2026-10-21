@@ -13,10 +13,13 @@ export interface CurrentUser {
   updated_at: string;
 }
 
-// Router state of a redirect to /login: where to return after signing in, and why the session ended (VLW-17).
+// Why a session ended without a sign-out: its time ran out (VLW-17), or it was a demo account (VLW-34).
+export type SessionEndReason = 'expired' | 'demo-ended';
+
+// Router state of a redirect to /login: where to return after signing in, and why the session ended.
 export interface LoginRedirectState {
   from?: { pathname: string; search?: string };
-  reason?: 'expired';
+  reason?: SessionEndReason;
 }
 
 export interface Health {

@@ -1,16 +1,16 @@
 import { useEffect } from 'react';
-import { isExpired } from '../lib/jwt';
+import { endReason, isExpired } from '../lib/jwt';
 import { useAppStore } from '../store/useAppStore';
 
-// The stored token, unless its exp has passed; an expired token is cleared and remembered as expired.
+// The stored token, unless its exp has passed; an expired token is cleared, remembering whether it was a demo.
 export function useSessionToken() {
   const token = useAppStore((state) => state.token);
   const expire = useAppStore((state) => state.expire);
-  const expired = token !== null && isExpired(token);
+  const ended = token !== null && isExpired(token) ? endReason(token) : null;
 
   useEffect(() => {
-    if (expired) expire();
-  }, [expired, expire]);
+    if (ended) expire(ended);
+  }, [ended, expire]);
 
-  return { token: expired ? null : token, expired };
+  return { token: ended ? null : token, ended };
 }

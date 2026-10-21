@@ -104,6 +104,14 @@ describe('Login', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Your session expired.');
   });
 
+  it('explains that a demo ended, and that what it recorded stays on the chain', () => {
+    renderLogin({ reason: 'demo-ended' });
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Your demo ended after 24 h. Start a new demo or sign in. What it recorded is still on the chain.',
+    );
+  });
+
   it('returns to the page the person was on', async () => {
     vi.mocked(login).mockResolvedValue('abc.def.ghi');
     renderLogin({ from: { pathname: '/wallet' } });
