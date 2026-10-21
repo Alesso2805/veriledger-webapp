@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { generateKeyPair } from '../lib/keys';
 import { api } from '../services/api';
+import { useKeyStore } from '../store/useKeyStore';
 import type { Wallet as WalletType } from '../types/ledger';
 import { KeyRound, ShieldCheck, Copy, Check, Search } from 'lucide-react';
 
@@ -26,8 +27,13 @@ export function Wallet() {
     }
   };
 
+  const holdKey = useKeyStore((state) => state.hold);
+
+  // The new pair is also held in this tab's memory, so "Sign and send" can sign with it (VLW-30).
   const generateWallet = () => {
-    setWallet(generateKeyPair());
+    const pair = generateKeyPair();
+    setWallet(pair);
+    holdKey(pair);
   };
 
   const copyToClipboard = (text: string, type: string) => {

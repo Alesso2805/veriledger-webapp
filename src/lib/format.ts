@@ -12,9 +12,10 @@ export function formatCount(value: number): string {
   return COUNT.format(value);
 }
 
-// "4655ec4f…a19d" tells addresses and hashes apart in a list; the full value is on the detail.
-export function shortHash(value: string): string {
-  return value.length > 14 ? `${value.slice(0, 8)}…${value.slice(-4)}` : value;
+// "4655ec4f…a19d" tells addresses and hashes apart in a list; the full value is on the detail. Where one
+// address matters more, such as the key a page signs with, the artboards keep 8 characters at the end.
+export function shortHash(value: string, tail = 4): string {
+  return value.length > 10 + tail ? `${value.slice(0, 8)}…${value.slice(-tail)}` : value;
 }
 
 // The leading zeros are the proof of work, which the tower highlights.

@@ -184,7 +184,12 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 ### Sign and send — `/transact`
 
 - **Artboard:** "E · Firmar y enviar". Tweaks: `keyState` (loaded, none), `serverReply` (accepted, invalid signature, insufficient funds, nonce used).
-- **Data:** the key held in memory for the tab (ADR-0002); balance `GET /wallets/{address}/balance`; nonce `GET /wallets/{address}/nonce` (VLA-16); `POST /transactions`.
+- **Data:** the key held in memory for the tab (`useKeyStore`, ADR-0002); balance `GET /wallets/{address}/balance`; nonce `GET /wallets/{address}/nonce` (VLA-16); `POST /transactions`.
+- **The key** (VLW-30a):
+  - The wallet page leaves the pair it creates in the tab's memory.
+  - "Open a key file" reads the JSON the wallet saves, `{"public_key", "private_key"}` (VLW-31 writes the same format). The public key is derived again from the private one, and a file whose halves do not match is refused with the reason.
+  - A reload forgets the key, and signing out clears it.
+  - "Signing as" shows the identity cube, the address (8 characters on each side) and the balance.
 - **Behaviour:**
   - the canonical message is rebuilt on every keystroke (`src/lib/signing.ts`, VLW-15);
   - editing after signing discards the signature;
