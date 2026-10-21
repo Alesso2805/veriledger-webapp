@@ -9,5 +9,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
+    // Vitest returns '' for CSS unless it is listed here; AR-10 reads index.css as text.
+    css: { include: [/src\/index\.css/] },
   },
 })
