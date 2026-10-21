@@ -17,6 +17,7 @@ Each rule is one sentence that a test can prove or refute. A rule about "every" 
 | AR-07 | No module under `src` contains an absolute `http(s)://` URL, other than XML namespaces and form placeholders (example text shown to the user, never requested); the API base URL comes from runtime configuration. | SPEC › Deployment; ADR-0003 | Vitest `src/architecture/no-absolute-urls.test.ts` reads every module under `src` and fails on an `http://` or `https://` literal outside the allowlist (`http://www.w3.org/2000/svg`) and outside `placeholder="…"`. | Checked, one known violation |
 | AR-08 | Every route except `/login` renders only with a session. | SPEC › Architecture (`ProtectedRoute`) | Vitest `src/architecture/protected-routes.test.tsx` walks the route table that `src/Router.tsx` exports and renders each path without a token, expecting `/login`. The public paths are listed in the test; VLW-34 adds the public reads there and here. | Checked |
 | AR-09 | The types of the API's responses are generated from the API's OpenAPI document, not written by hand. | SPEC › API usage | CI runs `openapi-typescript` against the API's committed `docs/openapi.json` into `src/types/api.ts` and fails on `git diff`; `tsc` then catches every mismatch. | Comes with VLW-19; no `openapi.json` is published yet (VLA-30) |
+| AR-10 | `src/index.css` is the CSS block of DESIGN.md › Tokens and motion, character for character. | DESIGN.md › The promise (same tokens in the canvas and the code); ADR-0004 | Vitest `src/architecture/design-tokens.test.ts` reads both files as text and compares them. | Checked |
 
 ## Known violations
 
@@ -78,6 +79,7 @@ Alternatives considered:
 | `src/architecture/no-server-generated-keys.test.ts` | AR-05 (no `/wallets/generate`) | `npm test` |
 | `src/architecture/no-absolute-urls.test.ts` | AR-07 | `npm test` |
 | `src/architecture/protected-routes.test.tsx` | AR-08 | `npm test` |
+| `src/architecture/design-tokens.test.ts` | AR-10 | `npm test` |
 | `src/lib/signing.test.ts` | AR-06 | VLW-15 |
 | The request-recording test | AR-05 (no private key in any request) | VLW-16 |
 | CI step `npm run types:api` + `git diff --exit-code` | AR-09 | VLW-19 |
@@ -94,5 +96,6 @@ Alternatives considered:
 | `api.ts` loses its URL, so the known violation is fixed but still listed | AR-07 fails |
 | Another page mentions `/wallets/generate` | AR-05 fails |
 | A route outside `ProtectedRoute` | AR-08 fails for that path |
+| One token changed in `index.css` only, then in DESIGN.md only | AR-10 fails both times |
 
 A deliberately broken PR also failed CI; see Sprint 1's notes.
