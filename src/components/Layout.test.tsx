@@ -1,14 +1,15 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getMe } from '../services/auth';
+import { getMe, startDemo } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
 import { useKeyStore } from '../store/useKeyStore';
+import { useToastStore } from '../store/useToastStore';
 import type { LoginRedirectState } from '../types/session';
 import { Layout } from './Layout';
 
-vi.mock('../services/auth', () => ({ getMe: vi.fn() }));
+vi.mock('../services/auth', () => ({ getMe: vi.fn(), startDemo: vi.fn() }));
 
 const ME = { id: '1', email: 'trader@veriledger.test', display_name: 'trader@veriledger.test', expires_at: null, role: 'trader' as const, created_at: '', updated_at: '' };
 
@@ -42,7 +43,7 @@ function renderShell(path = '/wallet') {
 describe('Layout (the shell)', () => {
   beforeEach(() => {
     useAppStore.setState({ token: 'abc.def.ghi' });
-    useHealthStore.setState({ online: true });
+    useHealthStore.setState({ online: true, demoMode: false });
     vi.mocked(getMe).mockResolvedValue(ME);
   });
 
@@ -99,6 +100,45 @@ describe('Layout (the shell)', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Sign in' }));
 
     expect(screen.getByText('login page, back to /transaction/abc?from=search')).toBeInTheDocument();
+  });
+
+  it('starts a demo from the header without leaving the page', async () => {
+    useAppStore.setState({ token: null, user: null });
+    useHealthStore.setState({ online: true, demoMode: true });
+    vi.mocked(startDemo).mockResolvedValue('demo.jwt.token');
+    renderShell('/transaction/abc');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Try the demo' }));
+
+    expect(await screen.findByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+    expect(useAppStore.getState().token).toBe('demo.jwt.token');
+    expect(screen.getByTestId('path')).toHaveTextContent(/^\/transaction\/abc$/);
+  });
+
+  it("says in a toast why the API refused a demo, in the API's words", async () => {
+    useAppStore.setState({ token: null, user: null });
+    useHealthStore.setState({ online: true, demoMode: true });
+    useToastStore.setState({ toasts: [] });
+    vi.mocked(startDemo).mockRejectedValue(new Error('The demo is full right now; try again later'));
+    renderShell('/');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Try the demo' }));
+
+    await waitFor(() =>
+      expect(useToastStore.getState().toasts.map(({ text, kind }) => ({ text, kind }))).toEqual([
+        { text: 'The demo is full right now; try again later', kind: 'err' },
+      ]),
+    );
+    expect(screen.getByRole('button', { name: 'Try the demo' })).toBeEnabled();
+  });
+
+  it('offers no demo on a node without demo mode', async () => {
+    useAppStore.setState({ token: null, user: null });
+    useHealthStore.setState({ online: true, demoMode: false });
+    renderShell('/');
+    await apiStatus('api · online');
+
+    expect(screen.queryByRole('button', { name: 'Try the demo' })).not.toBeInTheDocument();
   });
 
   it('has the search for blocks and transactions in its header', async () => {

@@ -1,6 +1,8 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAppStore } from '../store/useAppStore';
+import { useHealthStore } from '../store/useHealthStore';
 import { useKeyStore } from '../store/useKeyStore';
+import { useToastStore } from '../store/useToastStore';
 import type { LoginRedirectState } from '../types/session';
 import { HeaderSearch } from './HeaderSearch';
 import { HealthStatus } from './HealthStatus';
@@ -8,6 +10,7 @@ import { LogoMark } from './LogoMark';
 import { OfflineBanner } from './OfflineBanner';
 import { UserChip } from './UserChip';
 import { useSessionToken } from './useSessionToken';
+import { useStartDemo } from './useStartDemo';
 
 const TABS = [
   { label: 'Tower', to: '/', end: true },
@@ -29,6 +32,9 @@ export function Layout() {
   const navigate = useNavigate();
   const logout = useAppStore((state) => state.logout);
   const { token } = useSessionToken();
+  const demoMode = useHealthStore((state) => state.demoMode);
+  const show = useToastStore((state) => state.show);
+  const demo = useStartDemo((text) => show(text, 'err'));
 
   // Signing out also forgets the key this tab held, so the next person at this browser cannot sign with it.
   const signOut = () => {
@@ -62,10 +68,24 @@ export function Layout() {
                 Sign out
               </button>
             ) : (
-              // After signing in, the login returns the visitor to this page. "Try the demo" joins it in VLW-34b.
-              <Link to="/login" state={{ from: { pathname, search } } satisfies LoginRedirectState} className={pillClass}>
-                Sign in
-              </Link>
+              <>
+                {/* After signing in, the login returns the visitor to this page; a demo starts right here. */}
+                <Link to="/login" state={{ from: { pathname, search } } satisfies LoginRedirectState} className={pillClass}>
+                  Sign in
+                </Link>
+                {demoMode && (
+                  <button
+                    type="button"
+                    onClick={() => void demo.start()}
+                    disabled={demo.starting}
+                    className={`inline-flex h-9 items-center rounded-full bg-vl-accent px-3 text-[13px] font-semibold whitespace-nowrap text-vl-on-accent ${
+                      demo.starting ? 'animate-vl-pulse' : ''
+                    }`}
+                  >
+                    {demo.starting ? 'Starting…' : 'Try the demo'}
+                  </button>
+                )}
+              </>
             )}
           </div>
           <nav aria-label="Main" className="order-3 flex basis-full gap-0.5 overflow-x-auto sm:order-none">

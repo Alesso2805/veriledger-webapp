@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
-import { useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { LogoMark } from '../components/LogoMark';
+import { useStartDemo } from '../components/useStartDemo';
 import { cubeFaces } from '../lib/isometric';
 import { apiHost } from '../services/api';
 import { InvalidCredentialsError, login } from '../services/auth';
@@ -23,7 +24,11 @@ export function Login() {
   const reason = (useLocation().state as LoginRedirectState | null)?.reason;
   const setToken = useAppStore((state) => state.setToken);
   const online = useHealthStore((state) => state.online);
+  const demoMode = useHealthStore((state) => state.demoMode);
   const healthState = online === null ? 'checking' : online ? 'online' : 'offline';
+  // A started demo only stores the token too, so the visitor also returns to the page they were on.
+  const [demoRefusal, setDemoRefusal] = useState<{ text: string; attempt: number } | null>(null);
+  const demo = useStartDemo((text) => setDemoRefusal((last) => ({ text, attempt: (last?.attempt ?? 0) + 1 })));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -159,7 +164,47 @@ export function Login() {
             </button>
           </form>
 
-          <p className="mt-[18px] text-[13px] text-vl-muted">Regular accounts are created by an administrator.</p>
+          {demoMode && (
+            <>
+              <div aria-hidden="true" className="my-[22px] flex items-center gap-3 text-[13px] text-vl-muted">
+                <span className="h-px flex-auto bg-vl-line" />
+                or
+                <span className="h-px flex-auto bg-vl-line" />
+              </div>
+              <section aria-labelledby="demo-h" className="rounded-[14px] border border-vl-line bg-vl-surface p-4">
+                <h2 id="demo-h" className="text-base font-bold">
+                  Just looking around?
+                </h2>
+                <p className="mt-1 mb-3 text-sm text-vl-muted">
+                  Start a demo with one click: a temporary account with the trader role, no email. The account is
+                  deleted after 24 h; what you record on the chain stays, like on any ledger.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void demo.start()}
+                  disabled={demo.starting}
+                  className={`h-[46px] w-full rounded-[10px] border text-[15px] font-semibold ${
+                    demo.starting ? 'animate-vl-pulse border-vl-line text-vl-muted' : 'border-vl-accent text-vl-text'
+                  }`}
+                >
+                  {demo.starting ? 'Creating a demo account…' : 'Try the demo · no account needed'}
+                </button>
+                {/* Keyed by attempt so the shake replays on each refusal (DESIGN.md › The promise, rule 4). */}
+                {demoRefusal && !demo.starting && (
+                  <p key={demoRefusal.attempt} role="alert" className="mt-3 animate-vl-shake text-sm text-vl-danger">
+                    {demoRefusal.text}
+                  </p>
+                )}
+              </section>
+            </>
+          )}
+
+          <p className="mt-[18px] text-[13px] text-vl-muted">
+            Regular accounts are created by an administrator.{' '}
+            <Link to="/" className="text-vl-text underline underline-offset-2">
+              Browse the tower without an account →
+            </Link>
+          </p>
         </div>
       </main>
     </div>

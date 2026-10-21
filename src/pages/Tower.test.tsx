@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { startDemo } from '../services/auth';
 import { getBlock, getBlocks, getPendingTransactions, mineBlock } from '../services/ledger';
 import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
@@ -14,6 +15,7 @@ vi.mock('../services/ledger', () => ({
   getPendingTransactions: vi.fn(),
   mineBlock: vi.fn(),
 }));
+vi.mock('../services/auth', () => ({ startDemo: vi.fn() }));
 
 const sealed = '2026-10-21T15:00:00Z';
 const hash = (n: number) => `0000${String(n).padStart(4, '0')}${'ab'.repeat(28)}`;
@@ -211,7 +213,7 @@ describe('Tower mining', () => {
   }
 
   beforeEach(() => {
-    useHealthStore.setState({ online: true });
+    useHealthStore.setState({ online: true, demoMode: false });
     useToastStore.setState({ toasts: [] });
     useAppStore.setState({
       token: 'abc.def.ghi',
@@ -265,8 +267,26 @@ describe('Tower mining', () => {
     expect(screen.getByRole('button', { name: 'Mine block #3' })).toBeDisabled();
   });
 
+  it('starts a demo in place from the mine button, and then mines with it', async () => {
+    useAppStore.setState({ token: null, user: null });
+    useHealthStore.setState({ online: true, demoMode: true });
+    let created: (token: string) => void = () => {};
+    vi.mocked(startDemo).mockReturnValue(new Promise((resolve) => (created = resolve)));
+    serve(chainOf(3));
+    await readyToMine();
+    expect(screen.getByText('Anyone can look. To mine, start a demo: one click, no email.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Try the demo to mine' }));
+
+    expect(screen.getByRole('button', { name: 'Starting a demo…' })).toBeDisabled();
+    await act(async () => created('demo.jwt.token'));
+    expect(useAppStore.getState().token).toBe('demo.jwt.token');
+    expect(screen.getByRole('button', { name: 'Mine block #3' })).toBeEnabled();
+  });
+
   it('lets a visitor look, and offers to sign in to mine', async () => {
     useAppStore.setState({ token: null, user: null });
+    useHealthStore.setState({ online: true, demoMode: false });
     serve(chainOf(3), [transfer]);
     await readyToMine('/?block=1');
 
