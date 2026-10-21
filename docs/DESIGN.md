@@ -206,6 +206,9 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 ### Not found — any unknown route
 
 - **Artboard:** "E · Estados del shell" (404 card).
+- **Where:** inside the shell, as the catch-all child route.
+  - Without a session, an unknown address leads to the login first, like any other page (AR-08).
+  - The card's heading is the page's `h1`; on the artboard it is an `h2`, because it sits among other states.
 - **Story:** VLW-33.
 
 ## What the design does not show

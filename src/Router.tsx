@@ -7,6 +7,7 @@ import { Wallet } from './pages/Wallet';
 import { Transaction } from './pages/Transaction';
 import { TransactionDetail } from './pages/TransactionDetail';
 import { Network } from './pages/Network';
+import { NotFound } from './pages/NotFound';
 
 // The route table is data so that AR-08 can walk every route (src/architecture/protected-routes.test.tsx).
 export const routes: RouteObject[] = [
@@ -31,6 +32,7 @@ export const routes: RouteObject[] = [
       { path: 'wallet', element: <Wallet /> },
       { path: 'transact', element: <Transaction /> },
       { path: 'network', element: <Network /> },
+      { path: '*', element: <NotFound /> },
     ],
   },
 ];

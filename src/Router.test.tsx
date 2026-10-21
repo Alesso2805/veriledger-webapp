@@ -54,6 +54,21 @@ describe('routes', () => {
     await waitFor(() => expect(path).toHaveTextContent(/^\/wallet$/));
   });
 
+  it('shows the 404 tower for an unknown address, inside the shell', async () => {
+    useAppStore.setState({ token: 'abc.def.ghi' });
+    visit('/no/such/page');
+
+    expect(await screen.findByRole('heading', { name: 'This page is not in the tower' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to the tower' })).toHaveAttribute('href', '/');
+  });
+
+  it('sends a visitor without a session from an unknown address to /login', async () => {
+    const path = visit('/no/such/page');
+
+    await waitFor(() => expect(path).toHaveTextContent(/^\/login$/));
+  });
+
   it('sends a signed-in user away from /login to /', async () => {
     useAppStore.setState({ token: 'abc.def.ghi' });
     const path = visit('/login');
