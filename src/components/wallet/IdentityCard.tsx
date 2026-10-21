@@ -9,9 +9,11 @@ interface Props {
   // The cube drops in only when the key was just created or opened on this page.
   fresh: boolean;
   balance: number | 'unknown' | null;
+  // What the activity adds up to, when the whole of it is loaded.
+  note: string | null;
 }
 
-export function IdentityCard({ address, fresh, balance }: Props) {
+export function IdentityCard({ address, fresh, balance, note }: Props) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -57,6 +59,7 @@ export function IdentityCard({ address, fresh, balance }: Props) {
               <span className="text-base">VL</span>
             </p>
             {balance === 'unknown' && <p className="mt-1 text-[13px] text-vl-muted">The node did not say.</p>}
+            {note && <p className="mt-1 font-vl-mono text-[11px] text-vl-muted">{note}</p>}
           </div>
           <div className="flex flex-wrap gap-2">
             <button
