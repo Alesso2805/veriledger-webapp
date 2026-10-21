@@ -53,13 +53,12 @@ A React single-page app where a visitor (1) signs in, (2) creates an Ed25519 wal
 - If a story changes the architecture, update docs/ARCHITECTURE_RULES.md, its tests and the corresponding ADR in the same PR.
 
 # Next sprint (when I tell you)
-Sprint 2 of docs/BACKLOG.md (Sprint 1 closed on 2026-10-20, see docs/sprints/sprint-1.md). The order:
+Sprint 3 of docs/BACKLOG.md (Sprint 2 closed on 2026-10-21, see docs/sprints/sprint-2.md). The order, agreed on 2026-10-21:
 
-1. VLW-15, after VLA-15 publishes the signing vectors. The API's ADR-0004 was accepted on 2026-10-20.
-2. VLW-16.
-3. VLW-30, on top of VLW-15 and VLW-16.
-4. VLW-18, once the API's nonce exists (VLA-16).
-5. VLW-17.
-6. VLW-28, when VLA-20 and VLA-33 are merged.
+1. VLW-29, the transaction page and its certificate. Its data (VLA-20) is on the API's main.
+2. VLW-31, the wallet. Its activity (VLA-34) is on the API's main.
+3. VLW-19, links and search. Its generated types need the API to publish `docs/openapi.json`.
+4. VLW-34, visitors and the one-click demo, when VLA-35 is merged. VLA-36 is already merged.
+5. VLW-32, the network, when VLA-19 is merged.
 
-When finished, show me how to verify each story and update docs/sprints/sprint-2.md.
+When finished, show me how to verify each story and update docs/sprints/sprint-3.md.
