@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AppRouter } from './Router';
+import { App } from './App';
 import { useAppStore } from './store/useAppStore';
 
 // The pages fetch on mount; these tests only follow redirects, so requests stay pending instead of leaving.
@@ -16,34 +16,38 @@ function CurrentPath() {
   return <output data-testid="path">{useLocation().pathname}</output>;
 }
 
-function renderAt(path: string) {
+function visit(path: string) {
   render(
     <MemoryRouter initialEntries={[path]}>
-      <AppRouter />
+      <App />
       <CurrentPath />
     </MemoryRouter>,
   );
   return screen.getByTestId('path');
 }
 
-describe('AppRouter', () => {
+describe('routes', () => {
   beforeEach(() => {
     useAppStore.setState({ token: null });
   });
 
-  it('sends a visitor without a session from a protected page to /login', () => {
-    expect(renderAt('/wallet')).toHaveTextContent(/^\/login$/);
+  it('sends a visitor without a session from a protected page to /login', async () => {
+    const path = visit('/wallet');
+
+    await waitFor(() => expect(path).toHaveTextContent(/^\/login$/));
   });
 
-  it('opens a protected page for a signed-in user', () => {
+  it('opens a protected page for a signed-in user', async () => {
     useAppStore.setState({ token: 'abc.def.ghi' });
+    const path = visit('/wallet');
 
-    expect(renderAt('/wallet')).toHaveTextContent(/^\/wallet$/);
+    await waitFor(() => expect(path).toHaveTextContent(/^\/wallet$/));
   });
 
-  it('sends a signed-in user away from /login to /', () => {
+  it('sends a signed-in user away from /login to /', async () => {
     useAppStore.setState({ token: 'abc.def.ghi' });
+    const path = visit('/login');
 
-    expect(renderAt('/login')).toHaveTextContent(/^\/$/);
+    await waitFor(() => expect(path).toHaveTextContent(/^\/$/));
   });
 });
