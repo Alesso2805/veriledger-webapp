@@ -11,7 +11,7 @@ vi.mock('../services/nodes', () => ({ getPeers: vi.fn(), registerPeer: vi.fn(), 
 vi.mock('../services/ledger', () => ({ getBlocks: vi.fn() }));
 
 const peer = (url: string): Peer => ({ id: url, url, status: 'ACTIVE' });
-const admin = { id: '1', email: 'admin@veriledger.test', role: 'admin' as const, created_at: '', updated_at: '' };
+const admin = { id: '1', email: 'admin@veriledger.test', display_name: 'admin@veriledger.test', expires_at: null, role: 'admin' as const, created_at: '', updated_at: '' };
 
 describe('Network', () => {
   beforeEach(() => {

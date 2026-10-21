@@ -215,7 +215,7 @@ describe('Tower mining', () => {
     useToastStore.setState({ toasts: [] });
     useAppStore.setState({
       token: 'abc.def.ghi',
-      user: { id: '1', email: 'trader@veriledger.test', role: 'trader', created_at: '', updated_at: '' },
+      user: { id: '1', email: 'trader@veriledger.test', display_name: 'trader@veriledger.test', expires_at: null, role: 'trader', created_at: '', updated_at: '' },
     });
   });
 
@@ -257,7 +257,7 @@ describe('Tower mining', () => {
   });
 
   it('tells a viewer that mining needs the trader or admin role', async () => {
-    useAppStore.setState({ user: { id: '2', email: 'viewer@veriledger.test', role: 'viewer', created_at: '', updated_at: '' } });
+    useAppStore.setState({ user: { id: '2', email: 'viewer@veriledger.test', display_name: 'viewer@veriledger.test', expires_at: null, role: 'viewer', created_at: '', updated_at: '' } });
     serve(chainOf(3));
     await readyToMine();
 

@@ -10,7 +10,7 @@ import { Layout } from './Layout';
 
 vi.mock('../services/auth', () => ({ getMe: vi.fn() }));
 
-const ME = { id: '1', email: 'trader@veriledger.test', role: 'trader' as const, created_at: '', updated_at: '' };
+const ME = { id: '1', email: 'trader@veriledger.test', display_name: 'trader@veriledger.test', expires_at: null, role: 'trader' as const, created_at: '', updated_at: '' };
 
 const apiStatus = (text: string) => waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(text));
 
