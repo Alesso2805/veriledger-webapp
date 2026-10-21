@@ -122,13 +122,17 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 - **Artboard:** the header of every view, and "E · Estados del shell".
 - **Pieces:**
   - logo and tabs (Tower, Sign and send, Wallet, Network);
-  - search: block number or hash → dropdown of matches (VLW-19);
+  - search: block number or hash → dropdown of matches (VLW-19). Until then it finds transactions by hash and reads "Transaction hash";
   - `/health` status, polled every 10 s;
-  - signed in: email and role from `GET /auth/me`; a demo account shows "Guest XXXX · demo · N h left";
+  - signed in: email and role from `GET /auth/me`, then a "Sign out" pill (added 2026-10-20; the first artboards had no way to sign out). A demo account shows "Guest XXXX · demo · N h left";
   - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34);
-  - skip link, toast region, offline banner;
+  - skip link, which slides in with `transform` on focus; toast region; offline banner;
   - 404 page: a tower with a missing cube.
-- **At 360 px:** the search drops to its own line and the tabs scroll sideways (shown in "E · Estados del shell").
+- **At 360 px** (shown in "E · Estados del shell"):
+  - the status ("online") and "Sign out" share the logo's row;
+  - the search drops to its own line;
+  - the tabs scroll sideways;
+  - the user chip is hidden.
 - **Stories:** VLW-27 (tokens, fonts, shell, toasts), VLW-33 (login, session expiry, offline, 404), VLW-17 (401 handling).
 
 ### Login — `/login`
