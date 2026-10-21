@@ -18,15 +18,15 @@ A visitor should be able to see, in a few minutes and without installing anythin
 
 Status: **Built** (exists on `main`, see the audit for its defects), **Planned** (a story in the backlog).
 
-The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The Explorer becomes the **Tower** (VLW-28) and every page gets the new shell (VLW-27, VLW-33); the "Status" column describes what exists today.
+The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The Explorer became the **Tower** (VLW-28) and every page gets the new shell (VLW-27, VLW-33); the "Status" column describes what exists today.
 
 | Page | Route | What it does | Status |
 | --- | --- | --- | --- |
 | Login | `/login` | Email and password against `POST /auth/login` (OAuth2 form); stores the token. "Try the demo" starts a 24-hour trader account with one click (API ADR-0006) | Built (VLW-01). VLW-33 adds design E, an empty form, the 401 shake and the return to the page the person was on. VLW-17 adds the session-expired redirect. The demo comes with VLW-34 |
-| Explorer → Tower | `/` | Latest blocks (refresh every 10 s), stats, mining with a miner address, search by transaction hash | Built (VLW-04); block search in VLW-19; the tower, waiting list and honest states in VLW-28 |
+| Tower | `/` | The newest 10 blocks drawn as a tower; the list with "Load older blocks"; the selected block with its transactions; what waits for the next block. Height, waiting count and last block, refreshed every 10 s. `?block=n` opens a block | Built (VLW-28a, 28b), replacing the explorer of VLW-04. Mining returns with 28c; block search comes in VLW-19 |
 | Transaction detail | `/transaction/:hash` | Status, hash, parties, value, fee, block; a notarization (amount 0 + payload) is shown as a certificate | Built (VLW-05); links from a block open the wrong key until VLW-19 |
 | Wallet | `/wallet` | Create a key pair, check any address's balance | Built (VLW-02); the pair is created in the browser since VLW-16 |
-| Transact | `/transact` | Transfer or notarize: signs in the browser and sends the signed transaction | Built (VLW-03); the API rejects its signatures until VLW-15 |
+| Transact | `/transact` | Transfer or notarize: signs in the browser and sends the signed transaction | Built (VLW-03). It has signed the API's canonical message since VLW-15. The API requires a `nonce` since VLA-16, so it answers 422 until VLW-18 |
 | Network | `/network` | Add a peer URL, list peers, resolve conflicts | Built (VLW-06) |
 | Not found | any other path | The 404 tower with "Back to the tower", inside the shell | Built (VLW-33) |
 
@@ -39,9 +39,9 @@ A single-page app built by Vite into static files (ADR-0001).
 | Folder | Holds | May import |
 | --- | --- | --- |
 | `src/pages` | One component per route | `components`, `lib`, `services`, `store`, `types` |
-| `src/components` | Shared UI: `Layout` and the route guards (`RouteGuards.tsx`) today; loading, empty and error states with design E (VLW-27, VLW-28, VLW-33) | `lib`, `services`, `store`, `types` |
-| `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), hex helpers. Planned (VLW-15, VLW-16) | `types`, `@noble/*` |
-| `src/services` | The axios instance with the base URL, the token interceptor, and the 401 handler that ends an expired session (VLW-17) | `lib`, `store`, `types`, axios |
+| `src/components` | Shared UI: `Layout`, the route guards (`RouteGuards.tsx`) and the shell's pieces; the tower's pieces in `components/tower/` (drawing, block list, block detail, waiting list, freshness line) | `lib`, `services`, `store`, `types` |
+| `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), the token's expiry (`jwt.ts`), display formats (`format.ts`), merging pages of blocks (`chain.ts`), cube geometry (`isometric.ts`) | `types`, `@noble/*` |
+| `src/services` | The axios instance with the base URL, the token interceptor, the 401 handler that ends an expired session (VLW-17) and `detailOf` for the API's error messages; one module per area (`auth.ts`, `health.ts`, `ledger.ts`, `config.ts`). Each read checks the shape of the answer | `lib`, `store`, `types`, axios |
 | `src/store` | Zustand stores: the session token, persisted in `localStorage` under `veriledger-storage`; the toasts (`useToastStore`, each closes after 4 s), shown by `ToastRegion` on every page; whether the API answers (`useHealthStore`), which the header status, the login and the offline banner read | `types` |
 | `src/types` | Types of the API's responses; generated from its OpenAPI document in VLW-19 | Nothing |
 
@@ -51,8 +51,6 @@ A single-page app built by Vite into static files (ADR-0001).
   - A 401 on a request that carried the session, or a stored token whose `exp` has passed (`src/lib/jwt.ts`), ends the session. The guards then send the person to the login with `reason: 'expired'` (VLW-17).
 - `src/App.tsx` renders the table with `useRoutes`, and `src/main.tsx` mounts it inside `BrowserRouter`.
 - The tests of the architecture rules live in `src/architecture/`.
-
-**Today** `Transaction.tsx` imports `@noble/curves` and builds the signed message itself, and `src/lib` does not exist (audit, AR-02).
 
 ## Design
 
@@ -71,7 +69,7 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 | --- | --- | --- |
 | Shell | `GET /health` every 10 s on every page, the login included (`HealthWatcher`, `src/services/health.ts`); `GET /auth/me` once per session (`src/services/auth.ts`) | Public; JWT |
 | Login | `POST /auth/login` (form-urlencoded) | Public |
-| Explorer | `GET /blocks`, `POST /blocks/mine`, `GET /transactions/{tx_hash}` (search) | JWT |
+| Tower | `GET /blocks?skip&limit` (the tower, older pages, a deep link), `GET /blocks/{block_hash}` (the selected block), `GET /transactions?status=PENDING&skip&limit` (waiting), every 10 s (`src/services/ledger.ts`, VLA-20, VLA-33); `POST /blocks/mine` returns with 28c | JWT |
 | Transaction detail | `GET /transactions/{tx_hash}` | JWT |
 | Wallet | `GET /wallets/{address}/balance`; keys are generated in the browser (`src/lib/keys.ts`, VLW-16) | Public |
 | Transact | `POST /transactions`; `GET /wallets/{address}/nonce` from VLW-18 | JWT |
@@ -158,10 +156,10 @@ Target tree. Entries marked with a story do not exist yet.
 ```text
 veriledger-webapp/
 ├── src/
-│   ├── pages/                    # Login, Explorer, TransactionDetail, Wallet, Transaction, Network
+│   ├── pages/                    # Login, Tower, TransactionDetail, Wallet, Transaction, Network, NotFound
 │   ├── architecture/             # tests of the architecture rules
-│   ├── components/               # Layout, RouteGuards; states (VLW-27)
-│   ├── lib/                      # signing.ts, keys.ts, identicon.ts (VLW-15, VLW-16, VLW-31)
+│   ├── components/               # Layout, RouteGuards, the shell's pieces; tower/ (VLW-28)
+│   ├── lib/                      # signing.ts, keys.ts, jwt.ts, format.ts, chain.ts, isometric.ts; identicon.ts (VLW-31)
 │   ├── services/api.ts
 │   ├── store/useAppStore.ts
 │   ├── types/                    # generated from the API's OpenAPI (VLW-19)
