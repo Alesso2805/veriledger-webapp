@@ -109,6 +109,7 @@ Utilities follow from the names: `bg-vl-surface`, `text-vl-muted`, `font-vl-mono
 | A peer is registered (201) | Peers move to their new places on the ring with a `transform` transition (`--vl-dur-slow`); the new one `animate-vl-pop` | Network |
 | A request is refused (401 login, 400 signature or funds, 409 nonce, 400 peer) | `animate-vl-shake` on the form or result card | Login, Sign and send, Network |
 | A signature is produced in the browser | `animate-vl-reveal` on the hex | Sign and send |
+| A transaction's page loads, or polling finds it sealed | The journey bar fills with a `width` transition (900 ms, `--ease-vl-out`); each step reached `animate-vl-pop`; the status chip `animate-vl-fade-in` | Transaction |
 | The kind switches between transfer and notarization | The pill slides with `transform` (300 ms, `--ease-vl-out`); the fields for the new kind `animate-vl-fade-up` | Sign and send |
 | A file is being hashed (`crypto.subtle.digest`) | `animate-vl-pulse` on "Hashing…" (no percentage: the API gives none) | Transaction, Sign and send |
 | First response pending | Skeletons with `animate-vl-pulse` | Every list |
@@ -176,11 +177,20 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 ### Transaction — `/transaction/:hash`
 
 - **Artboard:** "E · Transacción y certificado". Tweaks: `example` (transfer, notarization, pending, not found, loading).
-- **Data:** `GET /transactions/{tx_hash}` with `block_number` and `block_hash` (VLA-20, *new fields*); height from `GET /blocks` `total` to count the blocks on top.
-- **Journey:** Signed → Accepted → Sealed in block #n → Buried under k blocks, from `status`, `block_number` and the height.
-- **Signature line:** verified in the browser with the API's canonical message (VLW-15).
+- **Data:** `GET /transactions/{tx_hash}` with `block_number`, `block_hash` and `nonce` (VLA-20, VLA-16). The height, the top block's number from `GET /blocks`, counts the blocks on top. Both are read again every 10 s, so a waiting transaction is seen when it is sealed.
+- **Times are UTC** on this page (product owner, 2026-10-21), so a certificate says the same in every country. The tower shows the reader's own time.
+- **Journey:** Signed → Accepted → Sealed in block #n → Buried under k blocks, from `status`, `block_number` and the height. It is Buried once one block rests on its block.
+  - A mining reward is never signed by a person. Its first steps read "Created · by the node that mined it" and "Accepted · with its block" (2026-10-21; the artboard has no reward example).
+  - The bar fills once on mount, and each step reached pops. A screen reader hears each step with "done" or "not yet".
+- **Header:** the kind, a title ("10.00 VL from d75a…511a to 3d40…660c", "A document notarized by …", "A document waiting to be sealed", "A mining reward of … to …"), the time, and a chip: "In block #n", "Waiting" or "Failed".
+- **Details:** the full hash; From, To and the signature shortened; the document's hash for a notarization; amount, fee and nonce. "Copy link" copies the page's address.
+- **Signature line:** verified in the browser with the API's canonical message (VLW-15), rebuilt from the stored fields with `toFixed(8)` and the nonce (`src/lib/transaction.ts`).
+  - A signature that does not match says so in the danger colour; the artboard has only the checked state.
+  - A mining reward has no signature: "the block's proof of work seals it".
+  - A row from before VLA-16 has no nonce, so it cannot be checked, and the page says so.
+- **Sealed in:** a card linking to `/?block=n`, with the block's hash and how many blocks are on top.
 - **Certificate** (amount 0 with a payload): the fingerprint in 8 groups and "Check a file": `crypto.subtle.digest('SHA-256', file)` compared with `payload`. The file never leaves the browser.
-- **Not found:** explains that rejected transactions leave no trace.
+- **Not found** (a 404): explains that rejected transactions leave no trace, with "Back to the tower". Any other failure shows a card with the API's `detail` and "Retry now" when `/health` answers; otherwise the shell's banner speaks.
 - **Stories:** VLW-29 (with VLA-20).
 
 ### Sign and send — `/transact`
