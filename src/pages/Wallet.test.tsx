@@ -132,6 +132,7 @@ describe('Wallet activity and look-up', () => {
     amount: 0,
     fee: 0,
     status: 'CONFIRMED',
+    signature: 'ab'.repeat(64),
     timestamp: '2026-10-21T15:00:00Z',
     block_number: 4,
     ...patch,

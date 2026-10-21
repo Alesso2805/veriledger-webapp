@@ -40,6 +40,7 @@ const reward = (n: number): Transaction => ({
   fee: 0,
   status: 'CONFIRMED',
   timestamp: sealed,
+  signature: '',
   tx_hash: `rh${n}`,
   payload: null,
 });
@@ -51,6 +52,7 @@ const transfer: Transaction = {
   fee: 0.1,
   status: 'PENDING',
   timestamp: sealed,
+  signature: 'ab'.repeat(64),
   tx_hash: 'ph1',
   payload: null,
 };

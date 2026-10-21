@@ -19,14 +19,13 @@ describe('checkHealth', () => {
     await checkHealth();
     expect(useHealthStore.getState().demoMode).toBe(true);
 
-    // An API from before VLA-35 does not say, which means no demo.
-    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test' });
+    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test', demo_mode: false });
     await checkHealth();
     expect(useHealthStore.getState().demoMode).toBe(false);
   });
 
   it('marks the API online on the first answer, without a toast', async () => {
-    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test' });
+    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test', demo_mode: false });
 
     await checkHealth();
 
@@ -44,7 +43,7 @@ describe('checkHealth', () => {
 
   it('says "Back online." when the API answers after being offline', async () => {
     useHealthStore.setState({ online: false });
-    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test' });
+    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test', demo_mode: false });
 
     await checkHealth();
 
@@ -54,7 +53,7 @@ describe('checkHealth', () => {
 
   it('stays quiet while the API keeps answering', async () => {
     useHealthStore.setState({ online: true });
-    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test' });
+    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test', demo_mode: false });
 
     await checkHealth();
 

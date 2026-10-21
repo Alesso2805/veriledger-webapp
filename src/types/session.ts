@@ -1,17 +1,16 @@
-export type UserRole = 'admin' | 'trader' | 'viewer';
+import type { components } from './api';
 
-export interface CurrentUser {
-  id: string;
-  // null for a demo account, which has no email or password (API ADR-0006, VLA-35).
-  email: string | null;
-  // The email, or "Guest XXXX" for a demo account.
-  display_name: string;
-  role: UserRole;
-  // When a demo account ends; null for a regular account.
-  expires_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type UserRole = components['schemas']['UserRole'];
+
+// GET /auth/me. A demo account has no email, display_name "Guest XXXX" and an expires_at; a regular account's
+// display_name is its email and its expires_at is null (API ADR-0006, VLA-35).
+export type CurrentUser = components['schemas']['UserResponseDTO'];
+
+// POST /auth/login and POST /auth/demo.
+export type Token = components['schemas']['TokenDTO'];
+
+// GET /health. demo_mode says whether this node starts demo accounts at POST /auth/demo (VLA-35).
+export type Health = components['schemas']['HealthCheckResponse'];
 
 // Why a session ended without a sign-out: its time ran out (VLW-17), or it was a demo account (VLW-34).
 export type SessionEndReason = 'expired' | 'demo-ended';
@@ -20,11 +19,4 @@ export type SessionEndReason = 'expired' | 'demo-ended';
 export interface LoginRedirectState {
   from?: { pathname: string; search?: string };
   reason?: SessionEndReason;
-}
-
-export interface Health {
-  status: string;
-  environment: string;
-  // Whether this node starts demo accounts at POST /auth/demo (VLA-35).
-  demo_mode?: boolean;
 }
