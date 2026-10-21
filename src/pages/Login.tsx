@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'react-router';
 import { LogoMark } from '../components/LogoMark';
 import { useStartDemo } from '../components/useStartDemo';
+import { healthWord } from '../lib/format';
 import { cubeFaces } from '../lib/isometric';
 import { apiHost } from '../services/api';
 import { InvalidCredentialsError, login } from '../services/auth';
@@ -11,7 +12,7 @@ import type { LoginRedirectState } from '../types/session';
 
 type Phase = 'idle' | 'submitting' | 'refused' | 'unreachable';
 
-const HEALTH_DOT = { checking: 'fill-vl-faint', online: 'fill-vl-ok', offline: 'fill-vl-danger' };
+const HEALTH_DOT = { checking: 'fill-vl-faint', online: 'fill-vl-ok', offline: 'fill-vl-danger', 'no database': 'fill-vl-danger' };
 
 const CUBES = [0, 1, 2, 3, 4, 5].map((level) => ({ level, ...cubeFaces(170, 270 - level * 40) }));
 
@@ -24,8 +25,9 @@ export function Login() {
   const reason = (useLocation().state as LoginRedirectState | null)?.reason;
   const setToken = useAppStore((state) => state.setToken);
   const online = useHealthStore((state) => state.online);
+  const databaseDown = useHealthStore((state) => state.databaseDown);
   const demoMode = useHealthStore((state) => state.demoMode);
-  const healthState = online === null ? 'checking' : online ? 'online' : 'offline';
+  const healthState = healthWord(online, databaseDown);
   // A started demo only stores the token too, so the visitor also returns to the page they were on.
   const [demoRefusal, setDemoRefusal] = useState<{ text: string; attempt: number } | null>(null);
   const demo = useStartDemo((text) => setDemoRefusal((last) => ({ text, attempt: (last?.attempt ?? 0) + 1 })));

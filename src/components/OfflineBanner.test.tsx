@@ -9,6 +9,7 @@ vi.mock('./checkHealth', () => ({ checkHealth: vi.fn().mockResolvedValue(undefin
 describe('OfflineBanner', () => {
   beforeEach(() => {
     vi.mocked(checkHealth).mockClear();
+    useHealthStore.setState({ databaseDown: false });
   });
 
   it('stays closed and hidden from assistive technology while the API answers', () => {
@@ -26,8 +27,16 @@ describe('OfflineBanner', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it('says the API answers but its database does not, when /health says so', () => {
+    useHealthStore.setState({ online: false, databaseDown: true });
+    render(<OfflineBanner />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent('127.0.0.1:8000 answers, but its database does not. Retrying every 10 s.');
+    expect(screen.getByRole('alert')).not.toHaveTextContent('Can’t reach');
+  });
+
   it('opens with the API host when /health fails', () => {
-    useHealthStore.setState({ online: false });
+    useHealthStore.setState({ online: false, databaseDown: false });
     const { container } = render(<OfflineBanner />);
 
     expect(screen.getByRole('alert')).toHaveTextContent('Can’t reach 127.0.0.1:8000. Retrying every 10 s.');

@@ -215,7 +215,7 @@ describe('Tower mining', () => {
   }
 
   beforeEach(() => {
-    useHealthStore.setState({ online: true, demoMode: false });
+    useHealthStore.setState({ online: true, databaseDown: false, demoMode: false });
     useToastStore.setState({ toasts: [] });
     useAppStore.setState({
       token: 'abc.def.ghi',
@@ -288,7 +288,7 @@ describe('Tower mining', () => {
 
   it('lets a visitor look, and offers to sign in to mine', async () => {
     useAppStore.setState({ token: null, user: null });
-    useHealthStore.setState({ online: true, demoMode: false });
+    useHealthStore.setState({ online: true, databaseDown: false, demoMode: false });
     serve(chainOf(3), [transfer]);
     await readyToMine('/?block=1');
 
@@ -297,6 +297,15 @@ describe('Tower mining', () => {
     expect(screen.getByRole('link', { name: 'Sign in to mine' })).toHaveAttribute('href', '/login');
     fireEvent.submit(screen.getByLabelText('Reward address').closest('form')!);
     expect(mineBlock).not.toHaveBeenCalled();
+  });
+
+  it('says that mining waits for the API’s database, when only the database is down', async () => {
+    useHealthStore.setState({ online: false, databaseDown: true });
+    serve(chainOf(3));
+    await readyToMine();
+
+    expect(screen.getByText('Mining is unavailable while the API’s database does not answer.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mine block #3' })).toBeDisabled();
   });
 
   it('does not offer mining while the API is unreachable', async () => {

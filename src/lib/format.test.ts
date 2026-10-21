@@ -6,6 +6,7 @@ import {
   formatCount,
   formatSealed,
   formatTimeLeft,
+  healthWord,
   shortHash,
   splitProofOfWork,
   transactionKind,
@@ -90,6 +91,13 @@ describe('times', () => {
   it('writes the clock time for lists', () => {
     expect(formatClock(sealed, 'UTC')).toBe('21:34');
     expect(formatClock('2026-10-21T00:05:00Z', 'America/Lima')).toBe('19:05');
+  });
+
+  it('says how the API is, and never "offline" when only its database is down', () => {
+    expect(healthWord(null, false)).toBe('checking');
+    expect(healthWord(true, false)).toBe('online');
+    expect(healthWord(false, false)).toBe('offline');
+    expect(healthWord(false, true)).toBe('no database');
   });
 
   it('writes what is left of a demo in whole hours, then minutes in its last hour', () => {

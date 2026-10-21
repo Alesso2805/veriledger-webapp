@@ -1,8 +1,9 @@
+import { healthWord } from '../lib/format';
 import { useHealthStore } from '../store/useHealthStore';
 
 export function HealthStatus() {
   const online = useHealthStore((state) => state.online);
-  const state = online === null ? 'checking' : online ? 'online' : 'offline';
+  const databaseDown = useHealthStore((state) => state.databaseDown);
   const dot = online === null ? 'fill-vl-faint' : online ? 'fill-vl-ok' : 'fill-vl-danger';
 
   return (
@@ -11,7 +12,7 @@ export function HealthStatus() {
         <circle cx="4" cy="4" r="4" className={`${dot} transition-colors duration-(--vl-dur-base)`} />
       </svg>
       <span className="hidden sm:inline">api · </span>
-      {state}
+      {healthWord(online, databaseDown)}
     </span>
   );
 }

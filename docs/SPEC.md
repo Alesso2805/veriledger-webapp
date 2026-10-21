@@ -67,7 +67,7 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 
 | Page | Calls | Auth |
 | --- | --- | --- |
-| Shell | `GET /health` every 10 s on every page, the login included (`HealthWatcher`, `src/services/health.ts`); its `demo_mode` shows "Try the demo" (VLA-35); `POST /auth/demo` from "Try the demo"; `GET /auth/me` once per session, with `display_name` for the chip (`src/services/auth.ts`); the search: `GET /blocks?skip&limit=1` for a block number, `GET /blocks/{block_hash}` and `GET /transactions/{tx_hash}` for a full hash (`src/services/ledger.ts`, VLW-19) | Public; JWT |
+| Shell | `GET /health` every 10 s on every page, the login included (`HealthWatcher`, `src/services/health.ts`). It checks the API's database too (VLA-26): its 503 with `"database": "unreachable"` reads "no database", not "offline"; its `demo_mode` shows "Try the demo" (VLA-35); `POST /auth/demo` from "Try the demo"; `GET /auth/me` once per session, with `display_name` for the chip (`src/services/auth.ts`); the search: `GET /blocks?skip&limit=1` for a block number, `GET /blocks/{block_hash}` and `GET /transactions/{tx_hash}` for a full hash (`src/services/ledger.ts`, VLW-19) | Public; JWT |
 | Login | `POST /auth/login` (form-urlencoded); `POST /auth/demo` for "Try the demo" (VLA-35) | Public |
 | Tower | `GET /blocks?skip&limit` (the tower, older pages, a deep link), `GET /blocks/{block_hash}` (the selected block), `GET /transactions?status=PENDING&skip&limit` (waiting), every 10 s (`src/services/ledger.ts`, VLA-20, VLA-33); `POST /blocks/mine`, then `GET /blocks/{block_hash}` for the reward of the toast; `POST /auth/demo` from "Try the demo to mine" | Public; JWT to mine |
 | Transaction | `GET /transactions/{tx_hash}` and `GET /blocks?skip=0&limit=1` (the height), every 10 s; `GET /blocks/{block_hash}` for a certificate's moment (`src/services/ledger.ts`, VLA-20) | Public |
@@ -77,7 +77,7 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 
 Every request goes through `src/services/api.ts`, which adds `Authorization: Bearer <token>`. Errors show the API's `detail`.
 
-The types of every answer are generated from the API's `docs/openapi.json` (VLA-37), copied unchanged into `src/types/openapi.json` at API commit bbae7db. `npm run types:api` regenerates `src/types/api.ts`, and CI fails when it is stale (AR-09). When the API changes an answer, the copy is updated with the commit it comes from, and `tsc` shows every place the code must follow.
+The types of every answer are generated from the API's `docs/openapi.json` (VLA-37), copied unchanged into `src/types/openapi.json` at API commit b205e4e (VLA-26). `npm run types:api` regenerates `src/types/api.ts`, and CI fails when it is stale (AR-09). When the API changes an answer, the copy is updated with the commit it comes from, and `tsc` shows every place the code must follow.
 
 ## Signing contract
 

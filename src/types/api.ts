@@ -399,6 +399,8 @@ export interface components {
         };
         /** HealthCheckResponse */
         HealthCheckResponse: {
+            /** Database */
+            database: string;
             /** Demo Mode */
             demo_mode: boolean;
             /** Environment */
@@ -827,6 +829,15 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthCheckResponse"];
+                };
+            };
+            /** @description The database does not answer */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
