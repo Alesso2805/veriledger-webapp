@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { checkDraft, messageLines, type Draft } from '../../lib/compose';
+import { refusalTitle } from '../../lib/refusal';
 import { buildSignedMessage, signMessage } from '../../lib/signing';
+import { detailOf, statusOf } from '../../services/api';
+import { sendTransaction } from '../../services/ledger';
 import { getBalance, getNextNonce } from '../../services/wallets';
-import type { Wallet } from '../../types/ledger';
+import type { Transaction, Wallet } from '../../types/ledger';
+import { Accepted } from './Accepted';
 import { DocumentHash } from './DocumentHash';
 import { KindSwitch } from './KindSwitch';
 import { SignaturePanel } from './SignaturePanel';
@@ -10,6 +14,13 @@ import { SignedMessage } from './SignedMessage';
 import { SigningAs } from './SigningAs';
 
 const EMPTY: Draft = { kind: 'transfer', to: '', amount: '', fee: '0', payload: null };
+
+interface Refusal {
+  title: string;
+  text: string;
+  // A new key replays the shake for every refusal, even one with the same words.
+  id: number;
+}
 
 const input = (invalid: boolean) =>
   `h-11 w-full rounded-[10px] border bg-vl-bg px-3 font-vl-mono transition-colors duration-(--vl-dur-fast) ${
@@ -24,6 +35,11 @@ export function Composer({ pair }: { pair: Wallet }) {
   const [balance, setBalance] = useState<number | 'unknown' | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [stale, setStale] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [refusal, setRefusal] = useState<Refusal | null>(null);
+  const [sent, setSent] = useState<Transaction | null>(null);
+  // Each "Send another" starts a round, which reads the nonce and the balance again.
+  const [round, setRound] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -38,7 +54,7 @@ export function Composer({ pair }: { pair: Wallet }) {
     return () => {
       active = false;
     };
-  }, [address]);
+  }, [address, round]);
 
   const knownNonce = typeof nonce === 'number' ? nonce : null;
   const checked = checkDraft(draft, address, knownNonce, typeof balance === 'number' ? balance : null);
@@ -50,6 +66,7 @@ export function Composer({ pair }: { pair: Wallet }) {
   // An edit after signing discards the signature: it no longer matches the message.
   const edit = (patch: Partial<Draft>) => {
     setDraft((current) => ({ ...current, ...patch }));
+    setRefusal(null);
     if (signature) {
       setSignature(null);
       setStale(true);
@@ -60,8 +77,44 @@ export function Composer({ pair }: { pair: Wallet }) {
     if (!message) return;
     setSignature(signMessage(message, pair.private_key));
     setStale(false);
+    setRefusal(null);
   };
-  const canSign = message !== null && signature === null;
+
+  const send = async () => {
+    if (!checked.fields || !signature) return;
+    setSending(true);
+    try {
+      setSent(await sendTransaction(checked.fields, signature));
+    } catch (error) {
+      const status = statusOf(error);
+      const detail = detailOf(error, 'The node did not answer');
+      let text = detail;
+      // Another transaction from this address took the nonce first: read the next one and ask to sign again.
+      if (status === 409) {
+        const next = await getNextNonce(address).catch(() => null);
+        if (next !== null) {
+          setNonce(next);
+          text = `${detail}. We read the next one, ${next}, from the node. Sign again.`;
+        }
+      }
+      setRefusal((previous) => ({ title: refusalTitle(status, detail), text, id: (previous?.id ?? 0) + 1 }));
+      setSignature(null);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const again = () => {
+    setDraft((current) => ({ ...current, amount: '', payload: null }));
+    setSignature(null);
+    setStale(false);
+    setSent(null);
+    setNonce(null);
+    setRound((count) => count + 1);
+  };
+
+  const canSign = message !== null && signature === null && !sending;
+  const canSend = signature !== null && !sending;
 
   return (
     <div className="mt-6 flex flex-wrap items-start gap-5">
@@ -92,7 +145,7 @@ export function Composer({ pair }: { pair: Wallet }) {
             </p>
           </div>
         ) : (
-          <DocumentHash key="doc" onHashed={(payload) => edit({ payload })} />
+          <DocumentHash key={`doc-${round}`} onHashed={(payload) => edit({ payload })} />
         )}
         <div className="grid grid-cols-3 gap-2.5">
           <div>
@@ -154,18 +207,44 @@ export function Composer({ pair }: { pair: Wallet }) {
             <span className="block text-vl-accent">Never sent</span> Your private key
           </li>
         </ul>
-        <div className="flex flex-wrap gap-2.5">
-          <button
-            type="button"
-            onClick={sign}
-            disabled={!canSign}
-            className={`h-[46px] rounded-[10px] px-[18px] font-semibold transition-colors duration-(--vl-dur-base) ${
-              canSign ? 'bg-vl-accent text-vl-on-accent' : 'bg-vl-line text-vl-muted'
-            }`}
+
+        {refusal && (
+          <div
+            key={refusal.id}
+            role="alert"
+            className="animate-vl-shake rounded-[14px] border border-vl-danger bg-vl-surface px-4 py-3.5"
           >
-            {signature ? 'Signed' : 'Sign with this key'}
-          </button>
-        </div>
+            <p className="font-semibold text-vl-danger">{refusal.title}</p>
+            <p className="mt-1 text-sm">{refusal.text}</p>
+          </div>
+        )}
+
+        {sent?.tx_hash ? (
+          <Accepted txHash={sent.tx_hash} onAgain={again} />
+        ) : (
+          <div className="flex flex-wrap gap-2.5">
+            <button
+              type="button"
+              onClick={sign}
+              disabled={!canSign}
+              className={`h-[46px] rounded-[10px] px-[18px] font-semibold transition-colors duration-(--vl-dur-base) ${
+                canSign ? 'bg-vl-accent text-vl-on-accent' : 'bg-vl-line text-vl-muted'
+              }`}
+            >
+              {signature ? 'Signed' : 'Sign with this key'}
+            </button>
+            <button
+              type="button"
+              onClick={() => void send()}
+              disabled={!canSend}
+              className={`h-[46px] rounded-[10px] border px-[18px] font-semibold transition-colors duration-(--vl-dur-base) ${
+                canSend ? 'border-vl-text bg-vl-text text-vl-on-accent' : 'border-vl-line bg-transparent text-vl-faint'
+              }`}
+            >
+              {sending ? 'Sending…' : 'Send to the node'}
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );
