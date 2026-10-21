@@ -27,7 +27,7 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 | Transaction | `/transaction/:hash` | The journey (signed, accepted, sealed, buried); the details with the signature verified in the browser; the block that holds it; a notarization's certificate (VLW-29b); times in UTC | Built (VLW-29, design E), replacing the page of VLW-05 |
 | Wallet | `/wallet` | Create a key pair or open a key file; the address, its identity cube and its balance; save the key file and confirm it; forget the key; the address's activity and a look-up of any address (VLW-31b) | Built (VLW-31, design E), replacing the page of VLW-02; the key is created in the browser (VLW-16) and is the one Sign and send uses |
 | Sign and send | `/transact` | Signs with the key held in the tab: open a key file or use the wallet's. Composes a transfer or a notarization (the document is hashed in the browser) and shows the message being signed. Signs it, sends the message and the signature, and shows the node's answer | Built (VLW-30, design E), replacing the page of VLW-03. It signs the API's canonical message (VLW-15) with the sender's next nonce (VLW-18) |
-| Network | `/network` | This node and its peers on a ring map; the peer list; adding a peer (admin); resolving conflicts (admin, VLW-32b) | Built (VLW-32a, design E), replacing the page of VLW-06; resolving comes with 32b |
+| Network | `/network` | This node and its peers on a ring map; the peer list; adding a peer (admin); resolving conflicts (admin) | Built (VLW-32, design E), replacing the page of VLW-06 |
 | Not found | any other path | The 404 tower with "Back to the tower", inside the shell | Built (VLW-33) |
 
 **Out of scope for this plan:** storing private keys (encrypted or not) beyond the session, hardware wallets, a block explorer for other networks, internationalization, a light theme.
@@ -169,8 +169,7 @@ veriledger-webapp/
 │   ├── Router.tsx                # the route table
 │   ├── App.tsx
 │   ├── main.tsx
-│   ├── index.css                 # design E tokens: the CSS block of DESIGN.md (AR-10)
-│   └── legacy.css                # neon classes of the pages not yet replaced; deleted by VLW-32
+│   └── index.css                 # design E tokens: the CSS block of DESIGN.md (AR-10)
 ├── public/favicon.svg
 ├── e2e/                          # Playwright (VLW-23)
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh
