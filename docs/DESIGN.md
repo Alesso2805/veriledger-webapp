@@ -235,7 +235,9 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - "Download .json" saves `{"public_key", "private_key"}` (`keyFileText`) with a Blob download named `veriledger-<first 8>.json`. Then the checkbox confirms the file was stored, and the steps fold away (`grid-template-rows`).
   - The store remembers whether a file of the key exists. A key opened from its file counts as saved, so the page does not ask again after a visit to another page (VLW-31a).
   - "Forget this key in this tab" asks inline, with no browser dialog. Forgetting returns to create or open.
-  - Looking up another address builds its cube as the person types (VLW-31b).
+  - **Activity** (VLW-31b): the 20 newest of `GET /wallets/{address}/transactions` (VLA-34). Each is linked to its page and fades in, 40 ms after the one above. Each row reads "Mining reward", "Notarized a document", "Sent to …" or "Received from …", with what it does to the balance ("+50.10", "−10.10") and "Block #n" or "Waiting". A received transfer is worded so; the artboard has no example of one.
+  - Under the balance, "100.20 received · 10.20 sent · 0.00 waiting" adds up the activity, only when the whole of it is loaded; otherwise "The 20 newest of N" shows under the list. A new address reads "New address: nothing received yet".
+  - **Looking up another address** builds its cube as the person types. A face stays grey until its byte is complete, and the counter reads "n / 64". The border is the accent colour while the address is incomplete, and ok when it is valid. "Show balance" gives the balance, or the 64-character rule with a shake. "Use an example" is not built.
 - **Stories:** VLW-31 (with VLW-16, VLA-34).
 
 ### Network — `/network`

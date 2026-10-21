@@ -15,3 +15,10 @@ export function addressCube(address: string): CubeColors {
   const pick = (i: number) => PALETTE[parseInt(address.slice(i * 2, i * 2 + 2), 16) % 8];
   return { top: pick(0), left: shade(pick(1), 0.55), right: shade(pick(2), 0.75) };
 }
+
+// The cube of an address still being typed: a face is null until its byte is complete, and the page draws it grey.
+export function partialCube(typed: string): { top: string | null; left: string | null; right: string | null } {
+  const byte = (i: number) => /^[0-9a-f]{2}$/.test(typed.slice(i * 2, i * 2 + 2));
+  const cube = addressCube(typed.padEnd(6, '0'));
+  return { top: byte(0) ? cube.top : null, left: byte(1) ? cube.left : null, right: byte(2) ? cube.right : null };
+}

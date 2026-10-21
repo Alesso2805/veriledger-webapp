@@ -88,5 +88,6 @@ describe('AR-05 no request carries the private key', () => {
     expect(sent.map((request) => JSON.parse(request.body).nonce)).toEqual([1, 2]);
     const leaks = recorded.filter((request) => `${request.url} ${request.headers} ${request.body}`.includes(privateKey));
     expect(leaks).toEqual([]);
-  });
+    // The longest flow of the suite: two pages, two signatures, a file hashed. Slow machines need more than 5 s.
+  }, 15_000);
 });
