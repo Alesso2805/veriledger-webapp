@@ -138,12 +138,12 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
     - Enter opens the first result, and Escape closes the dropdown;
   - `/health` status, polled every 10 s;
   - signed in: email and role from `GET /auth/me`, then a "Sign out" pill (added 2026-10-20; the first artboards had no way to sign out). A demo account shows "Guest XXXX · demo · N h left";
-  - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34). "Sign in" came with VLW-34a and returns to the page the visitor was on; "Try the demo" comes with VLW-34b;
+  - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34). "Sign in" came with VLW-34a and returns to the page the visitor was on. "Try the demo" (VLW-34b) shows only when `/health` says `demo_mode`; it reads "Starting…" with `animate-vl-pulse` while `POST /auth/demo` is pending, signs the visitor in where they are, and puts a refusal (a 429) in a toast in the API's words;
   - skip link, which slides in with `transform` on focus; toast region;
   - offline banner under the header: "Can’t reach <API host>. Retrying every 10 s." with "Retry now". When `/health` answers again, it closes and a "Back online." toast appears. The first artboard also promised "the last data we had" and "Data is up to date"; the pages do not keep or refresh data yet, so that text was removed (2026-10-20);
   - 404 page: a tower with a missing cube.
 - **At 360 px** (shown in "E · Estados del shell"):
-  - the status ("online") and "Sign out", or "Sign in", share the logo's row;
+  - the status ("online") and "Sign out", or "Sign in", share the logo's row. Signed out on a node in demo mode, the status, "Sign in" and "Try the demo" do not fit beside the logo and take their own row under it (VLW-34b; the artboard draws 360 px signed in only);
   - the search drops to its own line;
   - the tabs scroll sideways;
   - the user chip is hidden.
@@ -156,7 +156,8 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 - **States:**
   - empty form (never pre-filled), submitting, 401 error with shake;
   - session-expired notice, and a demo-ended notice that says what was recorded is still on the chain;
-  - "Try the demo": creating, then redirect; 429 shown as the API words it;
+  - "Try the demo" (VLW-34b), under "Just looking around?", only when `/health` says `demo_mode`: "Creating a demo account…" with `animate-vl-pulse`, then the same redirect as a sign-in. The artboard's "You are Guest 4F2A · open the tower" link is not built, because the redirect follows at once. A 429 is shown in the API's words with `animate-vl-shake` (canvas version 41 uses the same words);
+  - "Browse the tower without an account →" under the form, to `/` (ADR-0005);
   - redirect to the page the person was on.
 - **Narrow screens:** below 940 px the two columns stack, with the form first and the tower and tagline after it, separated by a top border. Otherwise the form would start below the first screen on a phone. The artboard is drawn at 1440 px only. Added 2026-10-20.
 - **Stories:** VLW-33, VLW-17, VLW-34.
@@ -164,7 +165,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 ### Tower — `/` (and `/?block=<number>` for a deep link)
 
 - **Artboard:** "E · Torre". Tweaks: `role` (admin, trader, viewer, demo, signed out), `state` (ready, loading, empty, error), `incoming` (a block that joined the chain).
-- **Signed out:** the tower, list, detail and waiting list are public (VLA-36, ADR-0005). The mine button reads "Try the demo to mine" and starts a demo account in place (VLW-34b). Until VLA-35 brings the demo, it reads "Sign in to mine" with "Anyone can look. To mine, sign in.", and opens the login, which comes back to the tower (VLW-34a).
+- **Signed out:** the tower, list, detail and waiting list are public (VLA-36, ADR-0005). The mine button reads "Try the demo to mine" and starts a demo account in place (VLW-34b). Its note reads "Anyone can look. To mine, start a demo: one click, no email." and, while the demo starts, the button reads "Starting a demo…". On a node without demo mode it reads "Sign in to mine" with "Anyone can look. To mine, sign in.", and opens the login, which comes back to the tower (VLW-34a).
 - **Data:**
   - blocks: `GET /blocks?skip&limit`. The newest 10 are drawn as the tower; "Load older blocks" pages back; the height is the top block's number (VLA-20).
   - selected block: `GET /blocks/{block_hash}` (VLA-20), with the mining reward first and every transaction linked by `tx_hash`.
