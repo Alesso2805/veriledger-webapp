@@ -21,7 +21,7 @@
 
 | Story | PRs | Result | Verification |
 | --- | --- | --- | --- |
-| VLW-15 | — | — | — |
+| VLW-15 | this PR | `src/lib/signing.ts` holds `buildSignedMessage`, which builds the API's ADR-0004 message, `toAmount`, which gives the 8-decimal spelling without floats, and `signMessage`. The transact page signs through `lib` and sends the signed strings, so it no longer imports `@noble`: AR-02's exception and the `@ts-ignore` are gone. The API's vectors (version 1, copied at 7ce0465) pass in `src/lib/signing.test.ts` (AR-06) | 121 tests, including 4 vectors × message, signature and public key. By hand, against the API at main (7ce0465) on a throwaway database: a wallet generated in the browser, a block mined to it (50); a transfer of 10 with fee 0.1 and a notarization of a SHA-256 were both accepted. The request bodies carried `"10.00000000"`, `"0.10000000"` and `"0.00000000"`, and no private key. After a second block the balances were 90 and 10 |
 | VLW-16 | this PR | `src/lib/keys.ts` generates the Ed25519 pair with `@noble/curves` as raw 32-byte lowercase hex, the format the API verifies, and it is checked against RFC 8032 test 1. The wallet page no longer calls `/wallets/generate` and says the key was never sent and is not stored. AR-05 no longer lists Wallet as a known violation. The test that records every request of the flow moved to VLW-30 (product owner, 2026-10-20) | 69 + 2 tests. In Chrome against a local API, "Generate New Wallet" shows two 64-hex keys and sends no request at all (Resource Timing is empty apart from `/health`) |
 | VLW-30 | — | — | — |
 | VLW-18 | — | — | — |

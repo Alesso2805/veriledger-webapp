@@ -9,11 +9,11 @@ Each rule is one sentence that a test can prove or refute. A rule about "every" 
 | ID | Rule | Origin | How it is verified | Status |
 | --- | --- | --- | --- | --- |
 | AR-01 | Only modules under `src/services` import `axios`. | README › Backend connection (one place to configure the API); SPEC › Architecture | dependency-cruiser rule `AR-01-axios-only-in-services`, over every module under `src`. | Checked |
-| AR-02 | Only modules under `src/lib` import `@noble/*`. | SPEC › Architecture and › Signing contract; ADR-0002 | dependency-cruiser rule `AR-02-noble-only-in-lib`. | Checked, one known violation |
+| AR-02 | Only modules under `src/lib` import `@noble/*`. | SPEC › Architecture and › Signing contract; ADR-0002 | dependency-cruiser rule `AR-02-noble-only-in-lib`. | Checked |
 | AR-03 | Dependencies between folders follow SPEC › Architecture: `pages → components, lib, services, store, types`; `components → lib, services, store, types`; `services → lib, store, types`; `store → types`; `lib → types`; `types →` nothing; and only `src/Router.tsx` imports `src/pages`. Test files are exempt, since a page's test imports its page. | SPEC › Architecture (folder table) | dependency-cruiser: one `AR-03-*` rule per disallowed direction, over every module. | Checked |
 | AR-04 | There are no circular imports. | SPEC › Architecture (dependencies point inward) | dependency-cruiser rule `AR-04-no-circular`. | Checked |
 | AR-05 | No request sent through the API client carries a private key, and no code calls `/wallets/generate`. | README › Application flow ("The Private Key never leaves the browser"); SPEC › Non-functional requirements; ADR-0002 | Vitest `src/architecture/no-server-generated-keys.test.ts` reads every module under `src` and lists those that call `/wallets/generate`. The second check comes with VLW-30, on the design E sign-and-send flow: an axios adapter records every request of generate → transfer → notarize and searches every URL, header and body for the private key. | Partly checked |
-| AR-06 | The signed message and signature reproduce every vector of the API's `docs/signing-vectors.json`. | SPEC › Signing contract; ADR-0002; API ADR-0004 | Vitest `src/lib/signing.test.ts`: iterate the vectors copied to `src/lib/__fixtures__/`; compare the message byte for byte and the signature. | Comes with VLW-15, after the API's VLA-15 writes the vectors |
+| AR-06 | The signed message and signature reproduce every vector of the API's `docs/signing-vectors.json`. | SPEC › Signing contract; ADR-0002; API ADR-0004 | Vitest `src/lib/signing.test.ts`: iterate the vectors copied to `src/lib/__fixtures__/`; compare the message byte for byte and the signature. | Checked (VLW-15); the vectors are veriledger-api's version 1, copied at 7ce0465. The nonce arrives with version 2 (VLA-16, VLW-18) |
 | AR-07 | No module under `src` contains an absolute `http(s)://` URL, other than XML namespaces and form placeholders (example text shown to the user, never requested); the API base URL comes from runtime configuration. | SPEC › Deployment; ADR-0003 | Vitest `src/architecture/no-absolute-urls.test.ts` reads every module under `src` and fails on an `http://` or `https://` literal outside the allowlist (`http://www.w3.org/2000/svg`) and outside `placeholder="…"`. | Checked |
 | AR-08 | Every route except `/login` renders only with a session. | SPEC › Architecture (`ProtectedRoute`) | Vitest `src/architecture/protected-routes.test.tsx` walks the route table that `src/Router.tsx` exports and renders each path without a token, expecting `/login`. The public paths are listed in the test; VLW-34 adds the public reads there and here. | Checked |
 | AR-09 | The types of the API's responses are generated from the API's OpenAPI document, not written by hand. | SPEC › API usage | CI runs `openapi-typescript` against the API's committed `docs/openapi.json` into `src/types/api.ts` and fails on `git diff`; `tsc` then catches every mismatch. | Comes with VLW-19; no `openapi.json` is published yet (VLA-30) |
@@ -21,19 +21,17 @@ Each rule is one sentence that a test can prove or refute. A rule about "every" 
 
 ## Known violations
 
-This is debt that existed when the rules were written. Each entry is named where the rule is checked, next to the story that removes it.
+None. The debt that existed when the rules were written was removed by the stories named for it:
 
 | Rule | Where | Removed by |
 | --- | --- | --- |
-| AR-02 | `src/pages/Transaction.tsx` imports `@noble/curves` | VLW-15 (signing moves to `src/lib`) |
+| AR-02 | `src/pages/Transaction.tsx` imported `@noble/curves` | VLW-15 (signing in `src/lib`) |
+| AR-05 | `src/pages/Wallet.tsx` called `/wallets/generate` | VLW-16 (keys generated in the browser) |
+| AR-07 | `src/services/api.ts` hard-coded `http://127.0.0.1:8000` | VLW-21 (runtime configuration) |
 
-**Where they are listed:**
-- **AR-05 and AR-07:** in the test's `KNOWN_VIOLATIONS`.
-- **AR-02:** in the `pathNot` of its rule in `.dependency-cruiser.cjs`.
-
-**What each check does:**
-- **AR-05 and AR-07:** a new violation fails, and so does a listed violation once it is fixed. The fixing story cannot forget to remove the entry.
-- **AR-02:** a new violation fails. Removing the exception is part of VLW-15's definition of done.
+**If new debt has to be accepted, it is listed where the rule is checked, next to the story that removes it:**
+- **AR-05 and AR-07:** the test's `KNOWN_VIOLATIONS`. A new violation fails, and so does a listed violation once it is fixed.
+- **Import rules (AR-01 to AR-04):** the rule's `pathNot` in `.dependency-cruiser.cjs`.
 
 ## Promises that are not verifiable as written
 
@@ -78,7 +76,7 @@ Alternatives considered:
 | `src/architecture/no-absolute-urls.test.ts` | AR-07 | `npm test` |
 | `src/architecture/protected-routes.test.tsx` | AR-08 | `npm test` |
 | `src/architecture/design-tokens.test.ts` | AR-10 | `npm test` |
-| `src/lib/signing.test.ts` | AR-06 | VLW-15 |
+| `src/lib/signing.test.ts` | AR-06 | `npm test` |
 | The request-recording test | AR-05 (no private key in any request) | VLW-30 |
 | CI step `npm run types:api` + `git diff --exit-code` | AR-09 | VLW-19 |
 
