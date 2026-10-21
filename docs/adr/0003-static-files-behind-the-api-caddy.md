@@ -1,6 +1,6 @@
 # ADR-0003: Static files behind the API's Caddy, with the API URL in a runtime `config.json`
 
-- **Status:** Proposed
+- **Status:** Accepted on 2026-10-20 (product owner)
 - **Date:** 2026-10-20
 - **Related:** veriledger-api ADR-0005; SPEC.md › Deployment; VLW-21, VLW-22, VLW-25; AR-07
 
@@ -14,7 +14,7 @@ The API's ADR-0005 proposes one server with Caddy and one hostname: `/` for the 
 2. **The URL at run time:** the container writes `/config.json` from its environment when it starts, and the app reads it before rendering. One image for any hostname (willay does this, its ADR-0010).
 3. **A relative URL** (`/api`) only. Works behind Caddy, but not in development, where Vite and the API run on different ports.
 
-## Decision (proposed)
+## Decision
 
 Option 2, with option 3 as its production value.
 

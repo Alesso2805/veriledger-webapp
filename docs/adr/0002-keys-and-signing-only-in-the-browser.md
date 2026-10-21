@@ -1,6 +1,6 @@
 # ADR-0002: Keys and signing only in the browser, with the API's canonical message
 
-- **Status:** Proposed
+- **Status:** Accepted on 2026-10-20 (product owner)
 - **Date:** 2026-10-20
 - **Related:** veriledger-api ADR-0003 and ADR-0004; SPEC.md › Signing contract; VLW-15, VLW-16, VLW-18; AR-02, AR-05, AR-06
 
@@ -13,7 +13,7 @@ The README promises that "the browser generates an Ed25519 cryptographic keypair
 1. **Keep server-side generation** and fix only the message. Simple, but the promise of the README stays false and the server sees every private key.
 2. **Generate and sign in the browser,** with the API's canonical message implemented once in `src/lib` and pinned by the API's golden vectors.
 
-## Decision (proposed)
+## Decision
 
 Option 2.
 
