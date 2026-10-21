@@ -29,7 +29,8 @@
 
 ## Sprint decisions
 
-- **VLW-23's admin comes from the environment.** The CI job sets `ADMIN_EMAIL` and `ADMIN_PASSWORD` for its throwaway stack, which the API seeds (VLA-24), and the flows read them as `E2E_ADMIN_*`, so no credential is written in the tests. The API's email check refuses reserved names such as `.test`, so the address is `@veriledger.com`. Until VLA-38 merges, the job builds the API from source at a pinned commit.
+- **VLW-23's admin comes from the environment.** The CI job sets `ADMIN_EMAIL` and `ADMIN_PASSWORD` for its throwaway stack, which the API seeds (VLA-24), and the flows read them as `E2E_ADMIN_*`, so no credential is written in the tests. The API's email check refuses reserved names such as `.test`, so the address is `@veriledger.com`. The job first built the API from source; since VLA-38 it runs the API's published image (`docker-compose.ghcr.yml`) at a pinned commit and `sha-` tag.
+- **The flows read the block number from the API's answer.** Run in parallel on one chain, the demo flow once mined the number the admin's button showed. A real node has other miners too, so each mining step now waits for the toast of the block its own `POST /blocks/mine` sealed, and a transaction only has to be sealed in some block.
 - **No server yet** (product owner, 2026-10-21). VLW-25 is prepared and rehearsed locally, like the API's VLA-27, and the real deployment waits for the product owner. The webapp's image is published to GHCR, public like the API's, so the API's Compose can run it behind Caddy (VLW-25a).
 
 ## Changes to the specification in this sprint

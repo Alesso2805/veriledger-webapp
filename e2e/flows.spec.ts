@@ -24,16 +24,21 @@ async function pointAtApi(page: Page) {
 // Moves through the app's own links, so the key held in the tab's memory survives.
 const tab = (page: Page, name: string) => page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name });
 
-// Waits for this block's own toast: the previous block's may still be on screen.
+// Mines and waits for the toast of the block this click sealed. Its number comes from the API's answer, not
+// from the button: another miner on the same node (here, the other flow) can take the number shown first.
 async function mineTo(page: Page, address: string): Promise<number> {
   await tab(page, 'Tower').click();
   await page.getByLabel('Reward address').fill(address);
-  const button = page.getByRole('button', { name: /^Mine (block #\d+|the genesis block)$/ });
-  const label = (await button.textContent()) ?? '';
-  const next = label.includes('genesis') ? 0 : Number(/#(\d+)/.exec(label)![1]);
-  await button.click();
-  await expect(page.getByText(new RegExp(`^Block #${next} sealed · nonce`))).toBeVisible({ timeout: 60_000 });
-  return next;
+  const [answer] = await Promise.all([
+    page.waitForResponse((response) => response.url().endsWith('/blocks/mine') && response.request().method() === 'POST', {
+      timeout: 60_000,
+    }),
+    page.getByRole('button', { name: /^Mine (block #\d+|the genesis block)$/ }).click(),
+  ]);
+  expect(answer.ok(), 'POST /blocks/mine').toBe(true);
+  const { block_number: sealed } = (await answer.json()) as { block_number: number };
+  await expect(page.getByText(new RegExp(`^Block #${sealed} sealed · nonce`))).toBeVisible();
+  return sealed;
 }
 
 // Signs what the composer holds, sends it, and returns the hash the node accepted it under.
@@ -92,20 +97,20 @@ test('an admin makes a wallet, mines to it, transfers and notarizes, and sees bo
     notarization = await signAndSend(page);
   });
 
-  let sealedIn = 0;
-  await test.step('mine the block that seals both', async () => {
-    sealedIn = await mineTo(page, address);
+  // Whoever mines next seals what waits, so another miner's block may hold them; any block will do.
+  await test.step('mine a block, which seals both', async () => {
+    await mineTo(page, address);
   });
 
   await test.step('the transfer is sealed, and its signature checks out in the browser', async () => {
     await page.goto(`/transaction/${transfer}`);
-    await expect(page.getByText(`In block #${sealedIn}`).first()).toBeVisible();
+    await expect(page.getByText(/^In block #\d+$/).first()).toBeVisible();
     await expect(page.getByText('Signature checked in this browser against the sender’s address')).toBeVisible();
   });
 
   await test.step('the notarization is sealed, with a certificate the same file matches', async () => {
     await page.goto(`/transaction/${notarization}`);
-    await expect(page.getByText(`In block #${sealedIn}`).first()).toBeVisible();
+    await expect(page.getByText(/^In block #\d+$/).first()).toBeVisible();
     await expect(page.getByText('PROOF OF EXISTENCE')).toBeVisible();
     await page.locator('input[type="file"]').setInputFiles(document);
     await expect(page.getByText('Match', { exact: true })).toBeVisible();
