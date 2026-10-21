@@ -15,7 +15,7 @@
 | --- | --- | --- |
 | VLW-24 | Nothing | — |
 | VLW-23 | VLA-22 (the image on GHCR), VLA-23 (Compose: migrate, then the API), VLA-21 (`CORS_ORIGINS`), VLA-24 (seeded users from the environment), VLA-35 (the demo) | VLA-22, VLA-23 and VLA-35 merged; VLA-21 and VLA-24 to come |
-| VLW-25 | VLA-27 (the demo host behind Caddy) | To come |
+| VLW-25 | VLA-27 (the API's Caddy and production Compose, rehearsed locally until there is a server) | To come |
 | VLW-26 | The deployed instance, for the README's screenshots | After VLW-25 |
 
 ## What was delivered
@@ -29,7 +29,7 @@
 
 ## Sprint decisions
 
-—
+- **No server yet** (product owner, 2026-10-21). VLW-25 is prepared and rehearsed locally, like the API's VLA-27, and the real deployment waits for the product owner. The webapp's image is published to GHCR, public like the API's, so the API's Compose can run it behind Caddy (VLW-25a).
 
 ## Changes to the specification in this sprint
 
