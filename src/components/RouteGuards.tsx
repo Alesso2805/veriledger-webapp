@@ -5,25 +5,25 @@ import type { LoginRedirectState } from '../types/session';
 import { useSessionToken } from './useSessionToken';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { token, expired } = useSessionToken();
+  const { token, ended } = useSessionToken();
   const endedReason = useAppStore((state) => state.endedReason);
   const { pathname, search } = useLocation();
   if (!token) {
-    const reason = expired ? 'expired' : (endedReason ?? undefined);
-    const state: LoginRedirectState = { from: { pathname, search }, reason };
+    const state: LoginRedirectState = { from: { pathname, search }, reason: ended ?? endedReason ?? undefined };
     return <Navigate to="/login" replace state={state} />;
   }
   return <>{children}</>;
 }
 
 // A page anyone can read (ADR-0005). A visitor who never signed in stays; a session that ends here still goes to
-// the login with "Your session expired" (VLW-17).
+// the login, which says why (VLW-17, VLW-34).
 export function OpenRoute({ children }: { children: React.ReactNode }) {
-  const { expired } = useSessionToken();
+  const { ended } = useSessionToken();
   const endedReason = useAppStore((state) => state.endedReason);
   const { pathname, search } = useLocation();
-  if (expired || endedReason) {
-    const state: LoginRedirectState = { from: { pathname, search }, reason: 'expired' };
+  const reason = ended ?? endedReason;
+  if (reason) {
+    const state: LoginRedirectState = { from: { pathname, search }, reason };
     return <Navigate to="/login" replace state={state} />;
   }
   return <>{children}</>;

@@ -36,6 +36,15 @@ describe('api client', () => {
     expect(useAppStore.getState()).toMatchObject({ token: null, endedReason: 'expired' });
   });
 
+  it('says the demo ended when the 401 answers a demo account’s token', async () => {
+    const claims = btoa(JSON.stringify({ sub: 'g', role: 'trader', exp: 1, demo: true })).replace(/=+$/, '');
+    useAppStore.setState({ token: `header.${claims}.signature` });
+
+    await expect(api.get('/auth/me', { adapter: answering(401) })).rejects.toThrow('401');
+
+    expect(useAppStore.getState()).toMatchObject({ token: null, endedReason: 'demo-ended' });
+  });
+
   it('leaves a 401 without a session alone, such as a wrong password at sign-in', async () => {
     await expect(api.post('/auth/login', {}, { adapter: answering(401) })).rejects.toThrow('401');
 

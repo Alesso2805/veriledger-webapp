@@ -56,6 +56,12 @@ export function formatCertified(iso: string): string {
   return `${day.format(date)} at ${time.format(date)} UTC`;
 }
 
+// What is left of a demo account: "23 h left", then "45 min left" in its last hour (VLW-34).
+export function formatTimeLeft(ms: number): string {
+  if (ms >= 3_600_000) return `${Math.floor(ms / 3_600_000)} h left`;
+  return `${Math.max(1, Math.ceil(ms / 60_000))} min left`;
+}
+
 export function formatClock(iso: string, timeZone?: string): string {
   return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone }).format(new Date(iso));
 }

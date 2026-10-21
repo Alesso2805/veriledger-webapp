@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { formatTimeLeft } from '../lib/format';
 import { getMe } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
 import { useSessionToken } from './useSessionToken';
@@ -8,6 +9,7 @@ export function UserChip() {
   const { token } = useSessionToken();
   const user = useAppStore((state) => state.user);
   const setUser = useAppStore((state) => state.setUser);
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!token) return;
@@ -22,12 +24,25 @@ export function UserChip() {
     };
   }, [token, setUser]);
 
+  // A demo counts down once a minute, from now: the chip mounts with the page, often before the demo starts.
+  // Each tick also reads the token again, so a demo that runs out while the page is open ends here and the
+  // login says so, without waiting for a request to fail.
+  const expiresAt = user?.expires_at ?? null;
+  useEffect(() => {
+    if (!expiresAt) return;
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(timer);
+  }, [expiresAt]);
+
   if (!user) return null;
 
   return (
-    <span className="hidden h-9 items-center gap-2 rounded-full border border-vl-line px-3 text-[13px] sm:flex">
+    <span className="hidden h-9 animate-vl-fade-in items-center gap-2 rounded-full border border-vl-line px-3 text-[13px] sm:flex">
       <span>{user.display_name}</span>
-      <span className="font-vl-mono text-[11px] text-vl-accent">{user.role}</span>
+      <span className="font-vl-mono text-[11px] text-vl-accent">
+        {expiresAt ? `demo · ${formatTimeLeft(Date.parse(expiresAt) - now)}` : user.role}
+      </span>
     </span>
   );
 }

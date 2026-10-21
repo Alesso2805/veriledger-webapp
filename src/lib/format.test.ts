@@ -5,6 +5,7 @@ import {
   formatClock,
   formatCount,
   formatSealed,
+  formatTimeLeft,
   shortHash,
   splitProofOfWork,
   transactionKind,
@@ -89,5 +90,15 @@ describe('times', () => {
   it('writes the clock time for lists', () => {
     expect(formatClock(sealed, 'UTC')).toBe('21:34');
     expect(formatClock('2026-10-21T00:05:00Z', 'America/Lima')).toBe('19:05');
+  });
+
+  it('writes what is left of a demo in whole hours, then minutes in its last hour', () => {
+    const hour = 3_600_000;
+    expect(formatTimeLeft(24 * hour - 5_000)).toBe('23 h left');
+    expect(formatTimeLeft(hour)).toBe('1 h left');
+    expect(formatTimeLeft(hour - 1)).toBe('60 min left');
+    expect(formatTimeLeft(45 * 60_000)).toBe('45 min left');
+    // Never "0 min left" while the token is still good.
+    expect(formatTimeLeft(10_000)).toBe('1 min left');
   });
 });

@@ -1,4 +1,5 @@
 import axios, { isAxiosError } from 'axios';
+import { endReason } from '../lib/jwt';
 import { useAppStore } from '../store/useAppStore';
 
 // Until /config.json is read (services/config.ts): VITE_API_URL in development, else the same origin's /api.
@@ -18,10 +19,12 @@ api.interceptors.request.use((config) => {
 });
 
 // A 401 on a request that carried the session means the API no longer accepts it: end the session, and the
-// route guards take the person to the login with "Your session expired". The login's own 401 is a wrong password.
+// route guards take the person to the login with "Your session expired", or "Your demo ended" when the token
+// was a demo account's (VLW-34). The login's own 401 is a wrong password.
 api.interceptors.response.use(undefined, (error: unknown) => {
-  if (isAxiosError(error) && error.response?.status === 401 && error.config?.headers?.Authorization) {
-    useAppStore.getState().expire();
+  const authorization: unknown = isAxiosError(error) ? error.config?.headers?.Authorization : undefined;
+  if (isAxiosError(error) && error.response?.status === 401 && typeof authorization === 'string') {
+    useAppStore.getState().expire(endReason(authorization.replace(/^Bearer /, '')));
   }
   return Promise.reject(error);
 });

@@ -117,6 +117,8 @@ Utilities follow from the names: `bg-vl-surface`, `text-vl-muted`, `font-vl-mono
 | First response pending | Skeletons with `animate-vl-pulse` | Every list |
 | A background action finished | Toast `animate-vl-toast-in`, 4 s, dismissible | Shell |
 | `/health` fails or recovers | Banner opens or closes with `grid-template-rows` 0fr ↔ 1fr (`--vl-dur-slow`); "Back online" toast | Shell |
+| `/auth/me` answers, after signing in or starting a demo | The user chip `animate-vl-fade-in` | Shell |
+| `POST /auth/demo` is pending | "Try the demo" and "Creating a demo account…" `animate-vl-pulse`; a refusal on the login `animate-vl-shake` | Shell, Login |
 | A panel opens or closes (key steps, forget-key confirmation) | `grid-template-rows` 0fr ↔ 1fr (`--vl-dur-slow`) | Wallet |
 | Hover on rows and buttons | Background and border, `--vl-dur-fast` | Everywhere |
 
@@ -137,7 +139,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
     - Anything else reads "Type a block number or a full 64-character hash.".
     - Enter opens the first result, and Escape closes the dropdown;
   - `/health` status, polled every 10 s;
-  - signed in: email and role from `GET /auth/me`, then a "Sign out" pill (added 2026-10-20; the first artboards had no way to sign out). A demo account shows "Guest XXXX · demo · N h left";
+  - signed in: email and role from `GET /auth/me`, then a "Sign out" pill (added 2026-10-20; the first artboards had no way to sign out). A demo account shows "Guest XXXX · demo · N h left" (VLW-34b): `display_name`, and the hours left from `expires_at`, then minutes in the last hour. It counts down once a minute, and a demo that runs out while the page is open ends there and opens the login. The chip appears with `animate-vl-fade-in` when `/auth/me` answers;
   - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34). "Sign in" came with VLW-34a and returns to the page the visitor was on. "Try the demo" (VLW-34b) shows only when `/health` says `demo_mode`; it reads "Starting…" with `animate-vl-pulse` while `POST /auth/demo` is pending, signs the visitor in where they are, and puts a refusal (a 429) in a toast in the API's words;
   - skip link, which slides in with `transform` on focus; toast region;
   - offline banner under the header: "Can’t reach <API host>. Retrying every 10 s." with "Retry now". When `/health` answers again, it closes and a "Back online." toast appears. The first artboard also promised "the last data we had" and "Data is up to date"; the pages do not keep or refresh data yet, so that text was removed (2026-10-20);
@@ -155,7 +157,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 - **Data:** `POST /auth/login` (OAuth2 form); `POST /auth/demo` (API ADR-0006, VLA-35); `/health` for the status line.
 - **States:**
   - empty form (never pre-filled), submitting, 401 error with shake;
-  - session-expired notice, and a demo-ended notice that says what was recorded is still on the chain;
+  - session-expired notice, and a demo-ended notice that says what was recorded is still on the chain: "Your demo ended after 24 h. Start a new demo or sign in. What it recorded is still on the chain." The first artboard also said "and its account was deleted"; the API deletes it later, with a cleanup command, so that was removed (VLW-34b, canvas version 42). The demo-ended notice comes from the token's `demo` claim, so it holds after a reload too;
   - "Try the demo" (VLW-34b), under "Just looking around?", only when `/health` says `demo_mode`: "Creating a demo account…" with `animate-vl-pulse`, then the same redirect as a sign-in. The artboard's "You are Guest 4F2A · open the tower" link is not built, because the redirect follows at once. A 429 is shown in the API's words with `animate-vl-shake` (canvas version 41 uses the same words);
   - "Browse the tower without an account →" under the form, to `/` (ADR-0005);
   - redirect to the page the person was on.

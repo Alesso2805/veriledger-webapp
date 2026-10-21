@@ -21,6 +21,13 @@ describe('useAppStore', () => {
     expect(persistedToken()).toBeNull();
   });
 
+  it('remembers that the session that ended was a demo, when its caller says so', () => {
+    useAppStore.getState().setToken('abc.def.ghi');
+    useAppStore.getState().expire('demo-ended');
+
+    expect(useAppStore.getState()).toMatchObject({ token: null, endedReason: 'demo-ended' });
+  });
+
   it('forgets why the last session ended once the person signs in again', () => {
     useAppStore.getState().expire();
     useAppStore.getState().setToken('abc.def.ghi');

@@ -109,6 +109,16 @@ describe('routes', () => {
     expect(screen.getByText(/Your session expired/)).toBeInTheDocument();
   });
 
+  it('says the demo ended when a stored demo token has run out, even after a reload', async () => {
+    const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) - 60, demo: true })).replace(/=+$/, '');
+    useAppStore.setState({ token: `header.${payload}.signature` });
+    const path = visit('/');
+
+    await waitFor(() => expect(path).toHaveTextContent(/^\/login$/));
+    expect(screen.getByText(/Your demo ended after 24 h/)).toBeInTheDocument();
+    expect(screen.getByText(/What it recorded is still on the chain/)).toBeInTheDocument();
+  });
+
   it('takes the person to the login when the API ends the session on an open page', async () => {
     useAppStore.setState({ token: 'abc.def.ghi' });
     const path = visit('/');
