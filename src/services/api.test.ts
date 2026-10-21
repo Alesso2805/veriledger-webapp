@@ -1,7 +1,7 @@
 import { AxiosError, type AxiosAdapter, type AxiosResponse } from 'axios';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useAppStore } from '../store/useAppStore';
-import { api } from './api';
+import { api, detailOf } from './api';
 
 // Answers in-process so the test sees the headers the interceptors produced without touching the network.
 const echo: AxiosAdapter = async (config) => ({
@@ -66,5 +66,25 @@ describe('api client', () => {
     useAppStore.setState({ token: 'second' });
 
     expect(await sentAuthorization()).toBe('Bearer second');
+  });
+});
+
+describe('detailOf', () => {
+  it("gives the API's detail when it sent one as text", async () => {
+    const error = await api.get('/blocks/mine', { adapter: answering(400) }).catch((e: unknown) => e);
+
+    expect(detailOf(error, 'fallback')).toBe('x');
+  });
+
+  it("falls back to the error's message, such as a 422 whose detail is a list", () => {
+    const response = { data: { detail: [{ msg: 'field required' }] }, status: 422 } as AxiosResponse;
+    const error = new AxiosError('Request failed with status code 422', 'ERR_BAD_REQUEST', undefined, null, response);
+
+    expect(detailOf(error, 'fallback')).toBe('Request failed with status code 422');
+    expect(detailOf(new Error('Network Error'), 'fallback')).toBe('Network Error');
+  });
+
+  it('uses the fallback for anything else', () => {
+    expect(detailOf('nope', 'fallback')).toBe('fallback');
   });
 });

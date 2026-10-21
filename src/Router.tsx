@@ -2,7 +2,7 @@ import type { RouteObject } from 'react-router';
 import { Layout } from './components/Layout';
 import { ProtectedRoute, PublicRoute } from './components/RouteGuards';
 import { Login } from './pages/Login';
-import { Explorer } from './pages/Explorer';
+import { Tower } from './pages/Tower';
 import { Wallet } from './pages/Wallet';
 import { Transaction } from './pages/Transaction';
 import { TransactionDetail } from './pages/TransactionDetail';
@@ -27,7 +27,7 @@ export const routes: RouteObject[] = [
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Explorer /> },
+      { index: true, element: <Tower /> },
       { path: 'transaction/:hash', element: <TransactionDetail /> },
       { path: 'wallet', element: <Wallet /> },
       { path: 'transact', element: <Transaction /> },

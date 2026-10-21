@@ -34,3 +34,10 @@ export function apiHost(): string {
 export function statusOf(error: unknown): number | undefined {
   return isAxiosError(error) ? error.response?.status : undefined;
 }
+
+// What to tell the person about a failed request: the API's own detail when it sent one as text.
+export function detailOf(error: unknown, fallback: string): string {
+  const detail: unknown = isAxiosError(error) ? error.response?.data?.detail : undefined;
+  if (typeof detail === 'string') return detail;
+  return error instanceof Error ? error.message : fallback;
+}
