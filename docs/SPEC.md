@@ -172,7 +172,7 @@ veriledger-webapp/
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css                 # design E tokens: the CSS block of DESIGN.md (AR-10)
-├── public/favicon.svg
+├── public/favicon.svg            # the logo on the background colour (VLW-26)
 ├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); flows.spec.ts against the API's stack (VLW-23)
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh
 ├── docs/
@@ -198,7 +198,7 @@ veriledger-webapp/
 ├── tsconfig*.json
 ├── .oxlintrc.json
 ├── CLAUDE.md
-├── CHANGELOG.md                  # VLW-26
+├── CHANGELOG.md                  # what changes, release by release (VLW-26)
 └── README.md
 ```
 

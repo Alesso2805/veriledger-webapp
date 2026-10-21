@@ -132,7 +132,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 
 - **Artboard:** the header of every view, and "E · Estados del shell".
 - **Pieces:**
-  - logo and tabs (Tower, Sign and send, Wallet, Network);
+  - logo and tabs (Tower, Sign and send, Wallet, Network). The page is titled "VeriLedger", and its favicon is the logo's cube on a rounded tile of `--color-vl-bg`, so it reads on light and dark tab strips (VLW-26);
   - search, "Block number or hash" (VLW-19a): the API looks up a block number or a full 64-character hash, never a prefix (product owner, 2026-10-21; the first artboard matched prefixes).
     - A number opens "Block #n", or says "No block #n yet.".
     - A full hash is tried as a block (`GET /blocks/{block_hash}`) and as a transaction (`GET /transactions/{tx_hash}`). Whatever it is shows in the dropdown, such as "Notarization 64b61372… · in block #21".
