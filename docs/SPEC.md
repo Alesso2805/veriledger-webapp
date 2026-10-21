@@ -147,7 +147,8 @@ veriledger-webapp/
 │   ├── Router.tsx                # the route table
 │   ├── App.tsx
 │   ├── main.tsx
-│   └── index.css                 # Tailwind and the theme tokens
+│   ├── index.css                 # design E tokens: the CSS block of DESIGN.md (AR-10)
+│   └── legacy.css                # neon classes of the pages not yet replaced; deleted by VLW-32
 ├── public/favicon.svg
 ├── e2e/                          # Playwright (VLW-23)
 ├── docker/                       # nginx or Caddy config and the config.json writer (VLW-21, VLW-22)
