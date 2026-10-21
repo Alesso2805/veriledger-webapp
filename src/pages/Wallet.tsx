@@ -1,11 +1,11 @@
 import { useState } from 'react';
+import { generateKeyPair } from '../lib/keys';
 import { api } from '../services/api';
 import type { Wallet as WalletType } from '../types/ledger';
 import { KeyRound, ShieldCheck, Copy, Check, Search } from 'lucide-react';
 
 export function Wallet() {
   const [wallet, setWallet] = useState<WalletType | null>(null);
-  const [loading, setLoading] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const [balanceAddress, setBalanceAddress] = useState('');
@@ -26,16 +26,8 @@ export function Wallet() {
     }
   };
 
-  const generateWallet = async () => {
-    setLoading(true);
-    try {
-      const response = await api.post<WalletType>('/wallets/generate');
-      setWallet(response.data);
-    } catch (err) {
-      console.error('Failed to generate wallet', err);
-    } finally {
-      setLoading(false);
-    }
+  const generateWallet = () => {
+    setWallet(generateKeyPair());
   };
 
   const copyToClipboard = (text: string, type: string) => {
@@ -60,10 +52,9 @@ export function Wallet() {
         
         <button
           onClick={generateWallet}
-          disabled={loading}
           className="w-full py-3 bg-gradient-to-r from-[#00f0ff] to-[#3b82f6] text-[#0f111a] font-bold rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.3)] disabled:opacity-50 transition-all hover:opacity-90"
         >
-          {loading ? 'Generating...' : 'Generate New Wallet'}
+          Generate New Wallet
         </button>
 
         {wallet && (
@@ -71,7 +62,7 @@ export function Wallet() {
             <div className="bg-green-900/20 rounded-xl p-4 flex items-start border border-green-500/30">
               <ShieldCheck className="w-5 h-5 text-green-400 mt-0.5 mr-3 shrink-0" />
               <p className="text-sm text-green-300">
-                Wallet generated successfully! <strong>Save your private key.</strong> It is not stored anywhere else.
+                Wallet generated in this browser. <strong>Save your private key:</strong> it was never sent to the server and is not stored anywhere.
               </p>
             </div>
 

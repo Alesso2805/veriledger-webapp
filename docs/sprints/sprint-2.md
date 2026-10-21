@@ -22,7 +22,7 @@
 | Story | PRs | Result | Verification |
 | --- | --- | --- | --- |
 | VLW-15 | — | — | — |
-| VLW-16 | — | — | — |
+| VLW-16 | this PR | `src/lib/keys.ts` generates the Ed25519 pair with `@noble/curves` as raw 32-byte lowercase hex, the format the API verifies, and it is checked against RFC 8032 test 1. The wallet page no longer calls `/wallets/generate` and says the key was never sent and is not stored. AR-05 no longer lists Wallet as a known violation. The test that records every request of the flow moved to VLW-30 (product owner, 2026-10-20) | 69 + 2 tests. In Chrome against a local API, "Generate New Wallet" shows two 64-hex keys and sends no request at all (Resource Timing is empty apart from `/health`) |
 | VLW-30 | — | — | — |
 | VLW-18 | — | — | — |
 | VLW-17 | — | — | — |
