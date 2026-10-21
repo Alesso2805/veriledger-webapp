@@ -2,28 +2,33 @@ import { useCallback, useEffect, useState } from 'react';
 import { AddPeer } from '../components/network/AddPeer';
 import { PeerList } from '../components/network/PeerList';
 import { PeerMap } from '../components/network/PeerMap';
+import { ResolveCard, type ResolvePhase, type ResolveResult } from '../components/network/ResolveCard';
+import { detailOf } from '../services/api';
 import { getBlocks } from '../services/ledger';
-import { getPeers } from '../services/nodes';
+import { getPeers, resolveConflicts } from '../services/nodes';
 import { useAppStore } from '../store/useAppStore';
 import type { Peer } from '../types/network';
 
-// Artboard "E · Red" (VLW-32). Resolving conflicts, with its pulses, comes with VLW-32b.
+const topNumber = () =>
+  getBlocks(0, 1).then(
+    (page) => page.items[0]?.block_number ?? null,
+    () => null,
+  );
+
+// Artboard "E · Red" (VLW-32).
 export function Network() {
   const [peers, setPeers] = useState<Peer[] | 'unknown' | null>(null);
   const [height, setHeight] = useState<number | null>(null);
   const [fresh, setFresh] = useState<string | null>(null);
+  const [phase, setPhase] = useState<ResolvePhase>('idle');
+  const [result, setResult] = useState<ResolveResult | null>(null);
+  const [round, setRound] = useState(0);
   // Until /auth/me answers the form shows; the API refuses anyone but an admin with a 403 anyway.
   const role = useAppStore((state) => state.user?.role ?? null);
   const admin = role === null || role === 'admin';
 
   const load = useCallback(async () => {
-    const [list, top] = await Promise.all([
-      getPeers().catch(() => 'unknown' as const),
-      getBlocks(0, 1).then(
-        (page) => page.items[0]?.block_number ?? null,
-        () => null,
-      ),
-    ]);
+    const [list, top] = await Promise.all([getPeers().catch(() => 'unknown' as const), topNumber()]);
     setPeers(list);
     setHeight(top);
   }, []);
@@ -37,6 +42,26 @@ export function Network() {
     void load();
   };
 
+  // The height before and after says what adopting a chain changed.
+  const resolve = async () => {
+    const before = height;
+    setPhase('resolving');
+    setResult(null);
+    try {
+      const { replaced } = await resolveConflicts();
+      const after = await topNumber();
+      setHeight(after);
+      setResult(replaced ? { kind: 'replaced', before, after } : { kind: 'kept' });
+    } catch (error) {
+      setResult({ kind: 'failed', detail: detailOf(error, 'The node did not answer') });
+    } finally {
+      setRound((count) => count + 1);
+      setPhase('replied');
+    }
+  };
+
+  const list = Array.isArray(peers) ? peers : [];
+
   return (
     <>
       <h1 className="text-[30px] font-bold tracking-[-0.02em]">Network</h1>
@@ -45,8 +70,15 @@ export function Network() {
         check.
       </p>
       <div className="mt-5 flex flex-wrap items-start gap-5">
-        <PeerMap peers={Array.isArray(peers) ? peers : []} height={height} fresh={fresh} />
+        <PeerMap peers={list} height={height} fresh={fresh} phase={phase} round={round} />
         <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-4">
+          <ResolveCard
+            admin={admin}
+            peerCount={list.length}
+            phase={phase}
+            result={result}
+            onResolve={() => void resolve()}
+          />
           <AddPeer admin={admin} onAdded={added} />
           <PeerList peers={peers} fresh={fresh} />
         </aside>
