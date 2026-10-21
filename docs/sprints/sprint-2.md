@@ -1,6 +1,6 @@
-# Sprint 2 — The tower, and signing that works with keys that never leave the browser (VLW-15 to VLW-18, VLW-28, VLW-30)
+# Sprint 2 — The tower, and signing that works with keys that never leave the browser (VLW-15 to VLW-18, VLW-21, VLW-28, VLW-30)
 
-**Status as of 2026-10-20:** planned for November 9 – 22, 2026. 17 points. Its counterpart, the API's Sprint 2, is VLA-16, VLA-17, VLA-19, VLA-20, VLA-33, VLA-34 and VLA-36.
+**Status as of 2026-10-20:** planned for November 9 – 22, 2026. 19 points, with VLW-21 moved in from Sprint 4. Its counterpart, the API's Sprint 2, is VLA-16, VLA-17, VLA-19, VLA-20, VLA-33, VLA-34 and VLA-36.
 
 **Order:** VLW-15 and VLW-16, then VLW-30 on top of them, then VLW-18 once the API's nonce exists, then VLW-17, then VLW-28 when VLA-20 and VLA-33 are merged.
 
@@ -27,10 +27,12 @@
 | VLW-18 | — | — | — |
 | VLW-17 | this PR | A 401 on a request that carried the session ends it (`expire()` in the store), and the guards take the person to the login with "Your session expired" and back to the page afterwards. A stored token whose `exp` has passed is dropped at start; `src/lib/jwt.ts` reads `exp`, and the API still checks the signature. A token with no readable `exp` is left for the API to judge. Only the token is persisted, so the notice does not return on a reload. The empty form came with VLW-33 | 83 tests (12 new: jwt, the store's `expire`, the 401 interceptor, the expired-token and mid-visit redirects). In Chrome against a local API: a stored token with a past `exp` led to the login with the notice and was cleared; a forged token with a future `exp` got a 401 from `/auth/me` and did the same; signing in returned to `/network` |
 | VLW-28 | — | — | — |
+| VLW-21 | this PR | The API base URL comes from `/config.json`. `docker/write-config.sh` writes `{"apiBaseUrl": …}` from `API_BASE_URL` (default `/api`), and `main.tsx` reads the file before rendering. Without the file it falls back to `VITE_API_URL` (`.env.development`, `.env.test`) or the same origin's `/api`. AR-07 has no known violation left, and the production bundle contains no URL. `getHealth` now accepts only the API's `{"status": "ok"}`: a misrouted `/api` gets `index.html` with a 200 and showed "online" | 90 tests. With the production build served on :5173 and a `config.json` from the script, the app fetched `/config.json` first and then called `http://127.0.0.1:8000`; signed in, it showed the explorer with 14 blocks. Without `config.json`, the server answered `index.html` and the app called `127.0.0.1:5173/api/...`, which is the same-origin fallback |
 
 ## Sprint decisions
 
-—
+- **VLW-21 moved in from Sprint 4** (product owner, 2026-10-21). Every remaining Sprint 2 story waits for the API (VLA-15, VLA-16, VLA-20, VLA-33), and the runtime configuration does not.
+- **Found for VLW-28.** Without a working API behind `/api`, the old explorer gets HTML instead of blocks, calls `.reduce` on `undefined`, and the whole app goes blank. Nothing catches a render error. The tower must check the shape of `/blocks`, and a route-level error boundary would keep the shell alive when a page fails.
 
 ## Changes to the specification in this sprint
 
