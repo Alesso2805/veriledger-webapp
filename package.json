@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "preview": "vite preview",
     "types:api": "openapi-typescript src/types/openapi.json -o src/types/api.ts",
-    "test:a11y": "playwright test"
+    "test:a11y": "playwright test --project desktop --project phone",
+    "test:e2e": "playwright test --project flows"
   },
   "dependencies": {
     "@fontsource/instrument-sans": "^5.3.0",

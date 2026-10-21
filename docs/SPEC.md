@@ -124,9 +124,9 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 | Security | No pre-filled credentials; an expired session returns to the login | Component tests (VLW-17) |
 | Security | Content Security Policy and security headers on the served files | `docker/smoke-test.sh` on the built image, in the Image workflow (VLW-22) |
 | Security | No known high or critical vulnerability in dependencies | `npm audit --audit-level=high` in CI (VLW-11) |
-| Correctness | Transactions signed here are accepted by the API | The API's golden vectors in Vitest (AR-06, VLW-15) and an end-to-end transfer (VLW-23) |
+| Correctness | Transactions signed here are accepted by the API | The API's golden vectors in Vitest (AR-06, VLW-15). `npm run test:e2e` (VLW-23) runs in CI against the API's own Compose stack at a pinned commit. A seeded admin signs in, creates a wallet in the browser, mines to it, sends a transfer and a notarization, mines them into a block, and checks the transfer's signature and the certificate with the same file. A visitor also starts a demo and mines with it |
 | Correctness | Response types match the API | Types generated from the API's OpenAPI document, regenerated and diffed in CI (AR-09, VLW-19) |
-| Deployment | One image for any hostname; deep links survive a reload | `docker/smoke-test.sh` on the built image (VLW-21, VLW-22); end-to-end tests (VLW-23) |
+| Deployment | One image for any hostname; deep links survive a reload | `docker/smoke-test.sh` on the built image (VLW-21, VLW-22); the image published to GHCR for the API's Compose (VLW-25a); the end-to-end flows (VLW-23) |
 | Reproducibility | `npm ci && npm run build` from a clean clone | CI (VLW-10, VLW-11) |
 | Accessibility | Every input has a label; visible focus; usable at 360 px with no horizontal scroll; no serious or critical axe-core violation | `npm run test:a11y` (VLW-24): Playwright in Chromium against the built app, with the API answered from fixtures (`e2e/mockApi.ts`), on every page and state at 1280 and 360 px: no serious or critical axe violation, no sideways scroll, and a visible focus on every control the keyboard reaches. axe-core also runs in the component tests for refusals, empty lists and not-found states (`toPassAxe`). Both run in CI |
 | Quality | `tsc` strict, oxlint without warnings, architecture tests and Vitest green | GitHub Actions (VLW-10, VLW-13) |
@@ -173,7 +173,7 @@ veriledger-webapp/
 │   ├── main.tsx
 │   └── index.css                 # design E tokens: the CSS block of DESIGN.md (AR-10)
 ├── public/favicon.svg
-├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); the flows (VLW-23)
+├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); flows.spec.ts against the API's stack (VLW-23)
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh
 ├── docs/
 │   ├── SPEC.md                   # this document
