@@ -26,7 +26,7 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 | Tower | `/` | The newest 10 blocks drawn as a tower; the list with "Load older blocks"; the selected block with its transactions; what waits for the next block. Height, waiting count and last block, refreshed every 10 s. `?block=n` opens a block. Mining to a reward address, for the trader and admin roles | Built (VLW-28), replacing the explorer of VLW-04; block search comes in VLW-19 |
 | Transaction detail | `/transaction/:hash` | Status, hash, parties, value, fee, block; a notarization (amount 0 + payload) is shown as a certificate | Built (VLW-05); links from a block open the wrong key until VLW-19 |
 | Wallet | `/wallet` | Create a key pair, check any address's balance | Built (VLW-02); the pair is created in the browser since VLW-16 |
-| Transact | `/transact` | Transfer or notarize: signs in the browser and sends the signed transaction | Built (VLW-03). It has signed the API's canonical message since VLW-15. The API requires a `nonce` since VLA-16, so it answers 422 until VLW-18 |
+| Transact | `/transact` | Transfer or notarize: signs in the browser and sends the signed transaction | Built (VLW-03). It signs the API's canonical message (VLW-15) with the sender's next nonce (VLW-18); a 409 shows the API's message and the nonce that signing again will use |
 | Network | `/network` | Add a peer URL, list peers, resolve conflicts | Built (VLW-06) |
 | Not found | any other path | The 404 tower with "Back to the tower", inside the shell | Built (VLW-33) |
 
@@ -41,7 +41,7 @@ A single-page app built by Vite into static files (ADR-0001).
 | `src/pages` | One component per route | `components`, `lib`, `services`, `store`, `types` |
 | `src/components` | Shared UI: `Layout`, the route guards (`RouteGuards.tsx`) and the shell's pieces; the tower's pieces in `components/tower/` (drawing, block list, block detail, waiting list, freshness line) | `lib`, `services`, `store`, `types` |
 | `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), the token's expiry (`jwt.ts`), display formats (`format.ts`), merging pages of blocks (`chain.ts`), cube geometry (`isometric.ts`) | `types`, `@noble/*` |
-| `src/services` | The axios instance with the base URL, the token interceptor, the 401 handler that ends an expired session (VLW-17) and `detailOf` for the API's error messages; one module per area (`auth.ts`, `health.ts`, `ledger.ts`, `config.ts`). Each read checks the shape of the answer | `lib`, `store`, `types`, axios |
+| `src/services` | The axios instance with the base URL, the token interceptor, the 401 handler that ends an expired session (VLW-17) and `detailOf` for the API's error messages; one module per area (`auth.ts`, `health.ts`, `ledger.ts`, `wallets.ts`, `config.ts`). Each read checks the shape of the answer | `lib`, `store`, `types`, axios |
 | `src/store` | Zustand stores: the session token, persisted in `localStorage` under `veriledger-storage`; the signed-in user from `GET /auth/me` (`user`, not persisted), whose role pages use for their rules; the toasts (`useToastStore`, each closes after 4 s), shown by `ToastRegion` on every page; whether the API answers (`useHealthStore`), which the header status, the login and the offline banner read | `types` |
 | `src/types` | Types of the API's responses; generated from its OpenAPI document in VLW-19 | Nothing |
 
@@ -72,7 +72,7 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 | Tower | `GET /blocks?skip&limit` (the tower, older pages, a deep link), `GET /blocks/{block_hash}` (the selected block), `GET /transactions?status=PENDING&skip&limit` (waiting), every 10 s (`src/services/ledger.ts`, VLA-20, VLA-33); `POST /blocks/mine`, then `GET /blocks/{block_hash}` for the reward of the toast | JWT |
 | Transaction detail | `GET /transactions/{tx_hash}` | JWT |
 | Wallet | `GET /wallets/{address}/balance`; keys are generated in the browser (`src/lib/keys.ts`, VLW-16) | Public |
-| Transact | `POST /transactions`; `GET /wallets/{address}/nonce` from VLW-18 | JWT |
+| Transact | `GET /wallets/{address}/nonce` before signing, and again after a 409 (`src/services/wallets.ts`, VLA-16); `POST /transactions` | Public; JWT |
 | Network | `GET /nodes`, `POST /nodes/register`, `POST /nodes/resolve` | JWT |
 
 Every request goes through `src/services/api.ts`, which adds `Authorization: Bearer <token>`. Errors show the API's `detail`.
@@ -86,9 +86,12 @@ The webapp adopts the API's ADR-0004 through its own ADR-0002.
   - `src/lib/signing.ts › buildSignedMessage` builds the API's ADR-0004 canonical message: keys sorted by code point, no whitespace, `payload` left out when absent, amounts as 8-decimal strings.
   - `toAmount` turns what a person types ("10", "0.5") into that spelling, without a float.
   - `signMessage` signs the UTF-8 bytes.
-- **The request:** `POST /transactions` carries the same amount strings that were signed.
-- **The vectors:** every vector of `veriledger-api/docs/signing-vectors.json` (version 1, copied into `src/lib/__fixtures__/`) passes byte for byte (AR-06).
-- **The nonce** comes with version 2 of the vectors (VLA-16, VLW-18).
+- **The nonce** (VLW-18):
+  - The page reads the sender's next nonce from `GET /wallets/{address}/nonce` just before signing. The message carries it as an integer, between `fee` and `payload`.
+  - A used or skipped nonce gets a 409 with the API's message ("Nonce N is not the next one for this sender; the next is M"). The page then reads the next nonce and says that signing again will use it.
+  - Re-sending a byte-identical body gets a 200 with the stored transaction, so a retry after a timeout is safe (VLA-16).
+- **The request:** `POST /transactions` carries the same amount strings and nonce that were signed.
+- **The vectors:** every vector of `veriledger-api/docs/signing-vectors.json` passes byte for byte (AR-06). It is version 2, copied unchanged into `src/lib/__fixtures__/` at 47bec5c.
 - **Before VLW-15** the page signed `JSON.stringify` of numbers, and the API rejected every transaction (audit, 2026-10-20).
 - A notarization sends amount 0 to the sender's own address, with the document's hash as `payload`.
 
