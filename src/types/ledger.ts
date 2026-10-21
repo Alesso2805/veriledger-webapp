@@ -12,6 +12,8 @@ export interface Transaction {
   payload?: string | null;
   fee: number;
   block_id?: string | null;
+  // The sender's nonce; a coinbase carries its block number, and rows from before VLA-16 have none.
+  nonce?: number | null;
   // Null while the transaction waits in the mempool (VLA-20).
   block_number?: number | null;
   block_hash?: string | null;

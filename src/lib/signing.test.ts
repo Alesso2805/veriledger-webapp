@@ -3,10 +3,11 @@ import vectors from './__fixtures__/signing-vectors.json';
 import { keyPairFromSecret } from './keys';
 import { AmountError, buildSignedMessage, signMessage, toAmount } from './signing';
 
-// AR-06: the API's golden vectors, copied from veriledger-api docs/signing-vectors.json (7ce0465).
+// AR-06: the API's golden vectors, copied from veriledger-api docs/signing-vectors.json (47bec5c).
 describe('AR-06 signing vectors', () => {
-  it('uses the API version 1 file, with vectors to check', () => {
-    expect(vectors.version).toBe(1);
+  it('uses the API version 2 file, with a nonce in every vector', () => {
+    expect(vectors.version).toBe(2);
+    expect(vectors.vectors.every((vector) => Number.isSafeInteger(vector.fields.nonce))).toBe(true);
     expect(vectors.vectors.length).toBeGreaterThanOrEqual(4);
   });
 
@@ -43,16 +44,20 @@ describe('toAmount', () => {
 });
 
 describe('buildSignedMessage', () => {
-  const fields = { sender_address: 'aa', receiver_address: 'bb', amount: '1.00000000', fee: '0.00000000' };
+  const fields = { sender_address: 'aa', receiver_address: 'bb', amount: '1.00000000', fee: '0.00000000', nonce: 7 };
 
   it('refuses an amount that is not in its canonical spelling', () => {
     expect(() => buildSignedMessage({ ...fields, amount: '1' })).toThrow(AmountError);
     expect(() => buildSignedMessage({ ...fields, fee: '0.1' })).toThrow(AmountError);
   });
 
-  it('places the payload between fee and receiver_address, and leaves it out when absent', () => {
+  it.each([0, -1, 1.5, Number.NaN, 2 ** 53])('refuses the nonce %d', (nonce) => {
+    expect(() => buildSignedMessage({ ...fields, nonce })).toThrow(RangeError);
+  });
+
+  it('writes the nonce as an integer, and places the payload between nonce and receiver_address', () => {
     expect(buildSignedMessage({ ...fields, payload: 'cafe' })).toBe(
-      '{"amount":"1.00000000","fee":"0.00000000","payload":"cafe","receiver_address":"bb","sender_address":"aa"}',
+      '{"amount":"1.00000000","fee":"0.00000000","nonce":7,"payload":"cafe","receiver_address":"bb","sender_address":"aa"}',
     );
     expect(buildSignedMessage(fields)).not.toContain('payload');
   });
