@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import type { Block, Paginated } from '../types/ledger';
-import { Box, Clock, FileDigit, Search, Activity, Database, Server } from 'lucide-react';
+import { Box, Hash, Clock, FileDigit, Search, Activity, Database, Server } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
 export function Explorer() {
