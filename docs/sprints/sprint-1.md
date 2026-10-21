@@ -29,7 +29,12 @@
   - A branch does not need to be up to date before merging, because every push to `main` runs CI again.
 - **Node 22.13 or later** (`engines` `^22.13.0`). jsdom 29 needs it; jsdom 30 would need 22.22.2.
 - **Stacked PRs.** When a lower PR merges, the next PR's base is changed to `main` before the merged branch is deleted. Deleting the branch first closed #3, which had to be reopened.
-- **Found for VLW-27.** Tailwind 4 scans the whole repository, `docs/` included, so the class names in DESIGN.md's examples end up in the built CSS (+1.6 kB). VLW-27 should restrict the scan to `src`: `@import "tailwindcss" source("../src");`, also in DESIGN.md's CSS block.
+- **VLW-27 in three PRs** (product owner, 2026-10-20), because it exceeds ~300 lines: 27a tokens and fonts, 27b the shell, 27c toasts.
+- **Old neon styles move to `src/legacy.css`** (product owner, 2026-10-20). `index.css` holds only design E. The pages that are not replaced yet keep their look inside the new shell.
+  - Each replacing story deletes the classes only its page used.
+  - VLW-32 deletes the file.
+  - Nothing new may use those classes.
+- **Found for VLW-27.** Tailwind 4 scans the whole repository, `docs/` included, so the class names in DESIGN.md's examples end up in the built CSS (+1.6 kB). VLW-27 should restrict the scan to `src`: `@import "tailwindcss" source("../src");`, also in DESIGN.md's CSS block. Done in 27a: the build no longer contains classes that only DESIGN.md uses (`.bg-vl-surface`, `.animate-vl-drop`).
 
 ## Changes to the specification in this sprint
 
