@@ -1,8 +1,15 @@
 import type { Transaction } from '../../types/ledger';
 import { TransactionRow } from './TransactionRow';
 
+interface Props {
+  waiting: Transaction[] | null;
+  total: number | null;
+  // While a block is being mined these transactions are about to leave the list.
+  dimmed: boolean;
+}
+
 // The mempool's newest transactions; the count is the API's total, which can be more than the list shows.
-export function WaitingList({ waiting, total }: { waiting: Transaction[] | null; total: number | null }) {
+export function WaitingList({ waiting, total, dimmed }: Props) {
   return (
     <section aria-labelledby="pool-h" className="rounded-2xl border border-vl-line bg-vl-surface p-4">
       <div className="flex items-baseline justify-between gap-3">
@@ -12,7 +19,7 @@ export function WaitingList({ waiting, total }: { waiting: Transaction[] | null;
         <span className="font-vl-mono text-xs text-vl-accent">{total ?? '—'}</span>
       </div>
       {waiting && waiting.length > 0 && (
-        <ul className="mt-2.5">
+        <ul className={`mt-2.5 transition-opacity duration-(--vl-dur-slow) ${dimmed ? 'opacity-45' : ''}`}>
           {waiting.map((transaction) => (
             <li key={transaction.id} className="border-t border-vl-line-soft">
               <TransactionRow transaction={transaction} showFee />

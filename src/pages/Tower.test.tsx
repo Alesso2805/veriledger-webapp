@@ -1,7 +1,8 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getBlock, getBlocks, getPendingTransactions } from '../services/ledger';
+import { getBlock, getBlocks, getPendingTransactions, mineBlock } from '../services/ledger';
+import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
 import { useToastStore } from '../store/useToastStore';
 import type { Block, Paginated, Transaction } from '../types/ledger';
@@ -11,6 +12,7 @@ vi.mock('../services/ledger', () => ({
   getBlocks: vi.fn(),
   getBlock: vi.fn(),
   getPendingTransactions: vi.fn(),
+  mineBlock: vi.fn(),
 }));
 
 const sealed = '2026-10-21T15:00:00Z';
@@ -90,6 +92,7 @@ describe('Tower', () => {
   beforeEach(() => {
     useHealthStore.setState({ online: true });
     useToastStore.setState({ toasts: [] });
+    useAppStore.setState({ user: null });
   });
 
   afterEach(() => {
@@ -194,5 +197,85 @@ describe('Tower', () => {
 
     expect(await screen.findByText('Not loaded yet · retrying every 10 s')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});
+
+describe('Tower mining', () => {
+  const minerAddress = 'f'.repeat(64);
+  const toasts = () => useToastStore.getState().toasts.map(({ text, kind }) => ({ text, kind }));
+
+  async function readyToMine(path = '/') {
+    renderTower(path);
+    await screen.findByRole('img', { name: /on top/ });
+    fireEvent.change(screen.getByLabelText('Reward address'), { target: { value: ` ${minerAddress} ` } });
+  }
+
+  beforeEach(() => {
+    useHealthStore.setState({ online: true });
+    useToastStore.setState({ toasts: [] });
+    useAppStore.setState({ user: { id: '1', email: 'trader@veriledger.test', role: 'trader', created_at: '', updated_at: '' } });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('mines the next block, then selects it and says its nonce and reward', async () => {
+    serve(chainOf(3), [transfer]);
+    await readyToMine('/?block=1');
+    expect(screen.getByText('1 transaction will go into block #3.')).toBeInTheDocument();
+    let seal: (sealed: Block) => void = () => {};
+    vi.mocked(mineBlock).mockReturnValue(new Promise((resolve) => (seal = resolve)));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mine block #3' }));
+
+    expect(mineBlock).toHaveBeenCalledWith(minerAddress);
+    expect(screen.getByRole('button', { name: 'Mining…' })).toBeDisabled();
+    expect(screen.getByText(/The node answers when it finds a hash/)).toBeInTheDocument();
+
+    serve(chainOf(4));
+    await act(async () => seal(block(3)));
+
+    await waitFor(() => expect(toasts()).toEqual([{ text: 'Block #3 sealed · nonce 1,003 · reward 50.00 VL', kind: 'ok' }]));
+    expect(blockButton(3)).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('search')).toBeEmptyDOMElement();
+    expect(await screen.findByRole('button', { name: 'Mine block #4' })).toBeEnabled();
+  });
+
+  it("shows the API's refusal and lets the person try again", async () => {
+    serve(chainOf(3));
+    vi.mocked(mineBlock).mockRejectedValue(new Error('Invalid miner address'));
+    await readyToMine();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mine block #3' }));
+
+    await waitFor(() => expect(toasts()).toEqual([{ text: 'Invalid miner address', kind: 'err' }]));
+    expect(screen.getByRole('button', { name: 'Mine block #3' })).toBeEnabled();
+  });
+
+  it('tells a viewer that mining needs the trader or admin role', async () => {
+    useAppStore.setState({ user: { id: '2', email: 'viewer@veriledger.test', role: 'viewer', created_at: '', updated_at: '' } });
+    serve(chainOf(3));
+    await readyToMine();
+
+    expect(screen.getByText('Mining needs the trader or admin role.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mine block #3' })).toBeDisabled();
+  });
+
+  it('does not offer mining while the API is unreachable', async () => {
+    useHealthStore.setState({ online: false });
+    serve(chainOf(3));
+    await readyToMine();
+
+    expect(screen.getByText('Mining is unavailable while the API is unreachable.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mine block #3' })).toBeDisabled();
+  });
+
+  it('offers the genesis block on an empty chain', async () => {
+    serve([]);
+    renderTower();
+
+    expect(await screen.findByRole('button', { name: 'Mine the genesis block' })).toBeInTheDocument();
+    expect(screen.getByText('The first block you mine becomes the genesis block.')).toBeInTheDocument();
   });
 });
