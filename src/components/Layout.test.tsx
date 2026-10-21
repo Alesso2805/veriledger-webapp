@@ -82,17 +82,12 @@ describe('Layout (the shell)', () => {
     expect(screen.getByTestId('path')).toHaveTextContent(/^\/login$/);
   });
 
-  it('opens a transaction from the search', async () => {
+  it('has the search for blocks and transactions in its header', async () => {
     renderShell();
     await apiStatus('api · online');
-    const hash = 'a'.repeat(64);
 
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Search a transaction by hash' }), {
-      target: { value: ` ${hash} ` },
-    });
-    fireEvent.submit(screen.getByRole('search'));
-
-    expect(screen.getByTestId('path')).toHaveTextContent(`/transaction/${hash}`);
+    // How it searches is HeaderSearch.test.tsx's concern.
+    expect(screen.getByRole('searchbox', { name: 'Search a block number or a hash' })).toBeInTheDocument();
   });
 
   it('offers a skip link to the main content', async () => {
