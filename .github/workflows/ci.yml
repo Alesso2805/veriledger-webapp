@@ -46,8 +46,8 @@ jobs:
     timeout-minutes: 25
     env:
       # Move both forward together with the API: the checkout holds the Compose file, the tag names the image.
-      API_REF: b205e4e8b09ae2edbfccf76872eb1aadbfc3e492
-      API_IMAGE_TAG: sha-b205e4e
+      API_REF: 154e497a9fe4a34a19a6386af99cac6c2de3611e
+      API_IMAGE_TAG: sha-154e497
       CORS_ORIGINS: http://127.0.0.1:4173
       DEMO_MODE: "true"
       MINING_DIFFICULTY: "2"

@@ -34,6 +34,7 @@
 - **A database outage is not called "offline"** (product owner, 2026-10-21). The API's `/health` became a readiness check (VLA-26). Its 503 with `"database": "unreachable"` reads "no database" in the header and "<host> answers, but its database does not" in the banner, and the types were regenerated from the API at b205e4e. The `e2e` job moved to the same commit.
 - **`e2e` became a required check on `main`** (product owner, 2026-10-21), next to `ci`.
 - **Part of VLW-26 ahead of the order** (product owner, 2026-10-21), while the API prepared VLA-27: the title "VeriLedger", the logo as the favicon, and a first `CHANGELOG.md` under Unreleased. Version 1.0.0 and the README's screenshots still wait for VLW-25.
+- **The API's limits stay on in the end-to-end flows** (VLA-29). A node mines one block at a time, so the mining step waits for `Retry-After` after a 429, or after the 409 race, and tries again, as a person reading the toast would. At the default difficulty the two flows met two such 429s locally, and both runs passed. The flows sign in once, under the five-per-minute limit, so no limit is turned off. The `e2e` job runs the API at 154e497.
 - **No server yet** (product owner, 2026-10-21). VLW-25 is prepared and rehearsed locally, like the API's VLA-27, and the real deployment waits for the product owner. The webapp's image is published to GHCR, public like the API's, so the API's Compose can run it behind Caddy (VLW-25a).
 
 ## Changes to the specification in this sprint
