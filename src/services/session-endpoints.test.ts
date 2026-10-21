@@ -49,6 +49,12 @@ describe('session endpoints', () => {
     expect(get).toHaveBeenCalledWith('/health');
   });
 
+  it('getHealth rejects a 200 that is not the API, such as index.html from the static server', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({ data: '<!doctype html><html></html>' });
+
+    await expect(getHealth()).rejects.toThrow('did not answer');
+  });
+
   it('getHealth rejects when the API does not answer', async () => {
     vi.spyOn(api, 'get').mockRejectedValue(new Error('Network Error'));
 

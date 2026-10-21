@@ -4,9 +4,7 @@ import { describe, expect, it } from 'vitest';
 const ALLOWED_URLS = ['http://www.w3.org/2000/svg'];
 
 // Debt that exists today, each entry removed by the story that fixes it. A fixed entry fails until removed.
-const KNOWN_VIOLATIONS: Record<string, string> = {
-  'src/services/api.ts': 'VLW-21',
-};
+const KNOWN_VIOLATIONS: Record<string, string> = {};
 
 const sources = import.meta.glob<string>(['../**/*.{ts,tsx}', '!../**/*.test.{ts,tsx}'], {
   query: '?raw',

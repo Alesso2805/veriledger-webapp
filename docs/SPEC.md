@@ -92,7 +92,10 @@ The webapp adopts the API's ADR-0004 through its own ADR-0002.
 
 Static files served behind the same Caddy and hostname as the API (API ADR-0005, webapp ADR-0003): `/` serves the app, `/api` the API, so the browser sees one origin.
 
-- One image for any hostname: the container writes `/config.json` (the API base URL) from its environment at start, and the app reads it before rendering (VLW-21). In development, `VITE_API_URL` or the default `http://127.0.0.1:8000`.
+- One image for any hostname (VLW-21):
+  - The container runs `docker/write-config.sh`, which writes `{"apiBaseUrl": "<API_BASE_URL>"}` to `/config.json`. `API_BASE_URL` defaults to `/api`.
+  - `src/main.tsx` reads that file (`src/services/config.ts`) before rendering. Without a usable file, the base URL is `VITE_API_URL`, set in `.env.development` and `.env.test` as `http://127.0.0.1:8000`, or else the same origin's `/api`.
+  - No URL is built into the production bundle (AR-07).
 - Every unknown path answers `index.html`, so `/wallet` and `/transaction/<hash>` survive a reload (VLW-22).
 - Hashed assets are cached for a year; `index.html` and `config.json` are never cached (VLW-22).
 
@@ -155,7 +158,7 @@ veriledger-webapp/
 │   └── legacy.css                # neon classes of the pages not yet replaced; deleted by VLW-32
 ├── public/favicon.svg
 ├── e2e/                          # Playwright (VLW-23)
-├── docker/                       # nginx or Caddy config and the config.json writer (VLW-21, VLW-22)
+├── docker/                       # write-config.sh (VLW-21); the static server config (VLW-22)
 ├── docs/
 │   ├── SPEC.md                   # this document
 │   ├── DESIGN.md                 # design E: tokens, motion, views
@@ -168,6 +171,7 @@ veriledger-webapp/
 ├── .github/workflows/ci.yml
 ├── .dependency-cruiser.cjs       # import rules AR-01 to AR-04
 ├── Dockerfile                    # VLW-22
+├── .env.development, .env.test # VITE_API_URL for the dev server and the tests
 ├── .nvmrc
 ├── index.html
 ├── package.json
