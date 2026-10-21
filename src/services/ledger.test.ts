@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from './api';
-import { getBlock, getBlocks, getPendingTransactions, mineBlock } from './ledger';
+import { getBlock, getBlocks, getPendingTransactions, mineBlock, sendTransaction } from './ledger';
 
 const block = {
   id: 'b1',
@@ -60,6 +60,22 @@ describe('ledger endpoints', () => {
     vi.spyOn(api, 'get').mockResolvedValue({ data: { total: 0 } });
 
     await expect(getPendingTransactions(0, 10)).rejects.toThrow('The API did not answer /transactions');
+  });
+
+  it('sendTransaction posts the signed fields with the signature, and returns what the node recorded', async () => {
+    const fields = { sender_address: 'aa', receiver_address: 'bb', amount: '1.00000000', fee: '0.00000000', nonce: 1 };
+    const recorded = { id: 't1', tx_hash: 'h1', status: 'PENDING' };
+    const post = vi.spyOn(api, 'post').mockResolvedValue({ data: recorded });
+
+    await expect(sendTransaction(fields, 'sig')).resolves.toEqual(recorded);
+    expect(post).toHaveBeenCalledWith('/transactions', { ...fields, signature: 'sig' });
+  });
+
+  it('sendTransaction rejects an answer without a transaction hash', async () => {
+    vi.spyOn(api, 'post').mockResolvedValue({ data: indexHtml });
+    const fields = { sender_address: 'aa', receiver_address: 'bb', amount: '1.00000000', fee: '0.00000000', nonce: 1 };
+
+    await expect(sendTransaction(fields, 'sig')).rejects.toThrow('The API did not answer /transactions');
   });
 
   it('mineBlock sends the reward address and returns the sealed block', async () => {
