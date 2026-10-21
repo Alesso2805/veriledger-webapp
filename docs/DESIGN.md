@@ -256,7 +256,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 - **Map:** this node in the centre with its height, the registered peers evenly on a ring (`src/lib/peers.ts`). Positions and the edges' rotation use `transform`, so adding a peer glides, and the new one pops.
   - A peer's circle reads the first label of its host over the rest ("node-b" over "example.org"). An IP address stays whole, over its port.
   - Without peers, a dashed ring. To a screen reader the map is one image ("This node at height 25, with 2 peers"); the list carries the rest.
-  - On a phone the map scrolls sideways in its box, and the box takes the keyboard focus, with the usual outline, so the arrow keys scroll it too (VLW-24).
+  - On a phone the map scrolls sideways in its box. It opens centred on this node rather than on the map's empty left edge, and the box takes the keyboard focus, with the usual outline, so the arrow keys scroll it too (VLW-24).
 - **Add a peer** (admin, VLW-32a):
   - The form of the address (`http(s)://` and a host) is checked in the browser.
   - Everything else is the API's: a host that does not resolve, a private or local address (VLA-19), a duplicate. Its 400 is shown in its own words, and the form shakes (canvas version 38 uses the same words).
