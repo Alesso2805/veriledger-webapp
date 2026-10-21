@@ -2,7 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import './index.css'
-import './legacy.css'
 import { App } from './App'
 import { loadRuntimeConfig } from './services/config'
 

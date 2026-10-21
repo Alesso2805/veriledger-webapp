@@ -20,6 +20,8 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
 
 `source("../src")` limits Tailwind's class scan to `src`. Without it, Tailwind also scans `docs/` and builds the class names of this document's examples into the app.
 
+`color-scheme: dark` makes the browser draw its own parts, scrollbars and form controls, dark as well. The app has no light theme, so no hex colours are needed for them.
+
 ```css
 @import "tailwindcss" source("../src");
 @import "@fontsource/instrument-sans/400.css";
@@ -67,7 +69,7 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
   --animate-vl-toast-in: vl-toast-in 280ms var(--ease-vl-out) both;
 }
 
-:root { --vl-dur-fast: 160ms; --vl-dur-base: 280ms; --vl-dur-slow: 420ms; --vl-dur-drop: 760ms; }
+:root { color-scheme: dark; --vl-dur-fast: 160ms; --vl-dur-base: 280ms; --vl-dur-slow: 420ms; --vl-dur-drop: 760ms; }
 
 body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family: var(--font-vl-sans); }
 :focus-visible { outline: 2px solid var(--color-vl-accent); outline-offset: 2px; }
@@ -247,7 +249,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 ### Network — `/network`
 
 - **Artboard:** "E · Red". Tweaks: `role`, `resolveResult` (authoritative, replaced, failed), `registerResult` (ok, duplicate, private address), `startEmpty`.
-- **Data:** `GET /nodes`, `POST /nodes/register` (admin; private addresses refused, VLA-19), `POST /nodes/resolve` (admin). The height before and after resolving comes from `GET /blocks` `total`.
+- **Data:** `GET /nodes`, `POST /nodes/register` (admin; private addresses refused, VLA-19), `POST /nodes/resolve` (admin). The height, before and after resolving, is the newest block's number from `GET /blocks?skip=0&limit=1`.
 - **Map:** this node in the centre with its height, the registered peers evenly on a ring (`src/lib/peers.ts`). Positions and the edges' rotation use `transform`, so adding a peer glides, and the new one pops.
   - A peer's circle reads the first label of its host over the rest ("node-b" over "example.org"). An IP address stays whole, over its port.
   - Without peers, a dashed ring. To a screen reader the map is one image ("This node at height 25, with 2 peers"); the list carries the rest.
@@ -256,6 +258,13 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - Everything else is the API's: a host that does not resolve, a private or local address (VLA-19), a duplicate. Its 400 is shown in its own words, and the form shakes (canvas version 38 uses the same words).
   - Typing after a refusal keeps the field and its focus.
   - In development the API's Compose sets `ALLOW_PRIVATE_PEERS`, so `http://127.0.0.1:8001` registers there. Production refuses it.
+- **Resolve conflicts** (admin, VLW-32b):
+  - While `POST /nodes/resolve` is pending the button reads "Asking N peers…". A pulse per peer travels out along its edge (`offset-path`) and loops, and the peers' rings turn the accent colour. Nothing pretends to know which peer answered: the API reports only the outcome.
+  - When it settles, one reply pulse per peer comes back, once, and the card says what happened:
+    - "Our chain is already the longest valid one": no peer had a longer valid chain.
+    - "Adopted a longer valid chain", with the height before and after.
+    - "Could not finish resolving", with the API's words, and the card shakes.
+  - Disabled without peers, and for other roles.
 - **Other roles** see the map and the list, with "Only an admin can add peers or resolve conflicts." Until `/auth/me` answers the form shows, and the API refuses anyone else with a 403.
 - **The list:** every peer reads "registered". If `GET /nodes` fails, the page says the node did not answer instead of showing an empty list.
 - **Stories:** VLW-32 (with VLA-19).
