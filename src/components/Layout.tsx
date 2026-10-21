@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAppStore } from '../store/useAppStore';
 import { HeaderSearch } from './HeaderSearch';
 import { HealthStatus } from './HealthStatus';
+import { LogoMark } from './LogoMark';
 import { UserChip } from './UserChip';
 
 const TABS = [
@@ -38,11 +39,7 @@ export function Layout() {
       <header className="sticky top-0 z-30 border-b border-vl-line bg-vl-bg">
         <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-3 gap-y-2.5 px-3 pt-2.5 sm:gap-x-5 sm:px-6">
           <Link to="/" className="flex items-center gap-2.5">
-            <svg viewBox="0 0 26 26" aria-hidden="true" className="size-[22px] sm:size-[26px]">
-              <path d="M13 2l10 5.5-10 5.5L3 7.5z" className="fill-vl-accent" />
-              <path d="M3 7.5l10 5.5v11L3 18.5z" className="fill-vl-cube-top" />
-              <path d="M23 7.5l-10 5.5v11l10-5.5z" className="fill-vl-cube-left" />
-            </svg>
+            <LogoMark className="size-[22px] sm:size-[26px]" />
             <span className="font-bold sm:text-lg">veriledger</span>
           </Link>
           <HeaderSearch />

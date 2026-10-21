@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
@@ -40,6 +40,15 @@ describe('routes', () => {
   it('opens a protected page for a signed-in user', async () => {
     useAppStore.setState({ token: 'abc.def.ghi' });
     const path = visit('/wallet');
+
+    await waitFor(() => expect(path).toHaveTextContent(/^\/wallet$/));
+  });
+
+  it('returns to the protected page after signing in', async () => {
+    const path = visit('/wallet');
+    await waitFor(() => expect(path).toHaveTextContent(/^\/login$/));
+
+    act(() => useAppStore.setState({ token: 'abc.def.ghi' }));
 
     await waitFor(() => expect(path).toHaveTextContent(/^\/wallet$/));
   });

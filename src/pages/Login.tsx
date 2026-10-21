@@ -1,108 +1,155 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, type FormEvent } from 'react';
+import { useLocation } from 'react-router';
+import { LogoMark } from '../components/LogoMark';
+import { cubeFaces } from '../lib/isometric';
+import { InvalidCredentialsError, login } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
-import { api } from '../services/api';
-import { Lock, Mail, Blocks } from 'lucide-react';
+import type { LoginRedirectState } from '../types/session';
+
+type Phase = 'idle' | 'submitting' | 'refused' | 'unreachable';
+
+const CUBES = [0, 1, 2, 3, 4, 5].map((level) => ({ level, ...cubeFaces(170, 270 - level * 40) }));
+
+const fieldClass = (refused: boolean) =>
+  `h-[46px] w-full rounded-[10px] border bg-vl-surface px-3.5 text-[15px] text-vl-text transition-colors duration-(--vl-dur-fast) ${
+    refused ? 'border-vl-danger' : 'border-vl-line'
+  }`;
 
 export function Login() {
-  const [email, setEmail] = useState('admin@veriledger.com');
-  const [password, setPassword] = useState('adminpassword123');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const { setToken } = useAppStore();
-  const navigate = useNavigate();
+  const reason = (useLocation().state as LoginRedirectState | null)?.reason;
+  const setToken = useAppStore((state) => state.setToken);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [phase, setPhase] = useState<Phase>('idle');
+  const [attempt, setAttempt] = useState(0);
+  const busy = phase === 'submitting';
+  const refused = phase === 'refused';
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  const edit = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    if (phase === 'refused' || phase === 'unreachable') setPhase('idle');
+  };
 
+  // A successful sign-in only stores the token: PublicRoute then returns the person to the page they were on.
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (busy) return;
+    setPhase('submitting');
     try {
-      const formData = new URLSearchParams();
-      formData.append('username', email);
-      formData.append('password', password);
-
-      const response = await api.post('/auth/login', formData, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
-      
-      setToken(response.data.access_token);
-      navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Invalid credentials');
-    } finally {
-      setLoading(false);
+      setToken(await login(email, password));
+    } catch (error) {
+      setPhase(error instanceof InvalidCredentialsError ? 'refused' : 'unreachable');
+      setAttempt((count) => count + 1);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0f111a] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Orbs */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-[#8a2be2] rounded-full blur-[150px] opacity-20 pointer-events-none"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#00f0ff] rounded-full blur-[150px] opacity-20 pointer-events-none"></div>
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">
-        <div className="mx-auto h-20 w-20 bg-[#1e2130] rounded-2xl border border-[#00f0ff]/30 shadow-[0_0_20px_rgba(0,240,255,0.3)] flex items-center justify-center">
-          <Blocks className="h-10 w-10 text-[#00f0ff]" />
+    <div className="flex min-h-screen flex-wrap text-[15px] leading-normal">
+      {/* Below 940 px the two columns stack: the form comes first and this decoration follows (DESIGN.md › Login). */}
+      <section
+        aria-hidden="true"
+        className="order-last flex min-w-0 flex-[1_1_520px] flex-col justify-between gap-8 border-t border-vl-line p-10 min-[940px]:order-none min-[940px]:border-t-0 min-[940px]:border-r"
+      >
+        <span className="flex items-center gap-2.5">
+          <LogoMark className="size-[26px]" />
+          <span className="text-lg font-bold">veriledger</span>
+        </span>
+        <svg viewBox="0 0 340 360" className="w-full max-w-[360px] self-center overflow-visible">
+          <ellipse cx="170" cy="338" rx="120" ry="18" className="fill-vl-shadow" />
+          {CUBES.map((cube) => (
+            <g key={cube.level} className="animate-vl-drop" style={{ animationDelay: `${200 + cube.level * 140}ms` }}>
+              <polygon points={cube.left} className="fill-vl-cube-left" />
+              <polygon points={cube.right} className="fill-vl-cube-right" />
+              <polygon points={cube.top} className={cube.level === 5 ? 'fill-vl-accent' : 'fill-vl-cube-top'} />
+            </g>
+          ))}
+        </svg>
+        <div>
+          <p className="text-[34px] leading-[1.1] font-bold tracking-[-0.03em]">A ledger anyone can check.</p>
+          <ul className="mt-4 flex flex-col gap-1.5 text-vl-muted">
+            <li>Every entry is signed by its author.</li>
+            <li>Every block is sealed by proof of work and rests on the one below.</li>
+            <li>Every node keeps a copy and checks what it receives.</li>
+          </ul>
         </div>
-        <h2 className="mt-6 text-3xl font-extrabold text-white">Sign in to <span className="neon-text">VeriLedger</span></h2>
-        <p className="mt-2 text-sm text-slate-400">Access your secure blockchain node dashboard</p>
-      </div>
+      </section>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="glass-panel py-8 px-4 sm:rounded-2xl sm:px-10">
-          <form className="space-y-6" onSubmit={handleLogin}>
-            {error && (
-              <div className="bg-red-900/30 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+      <main className="flex min-w-0 flex-[1_1_420px] items-center justify-center px-6 py-10">
+        <div className="w-full max-w-[400px] animate-vl-fade-up">
+          {reason === 'expired' && (
+            <div
+              role="status"
+              className="mb-5 flex animate-vl-fade-up items-start gap-2.5 rounded-xl border border-vl-accent bg-vl-surface px-3.5 py-3"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="mt-0.5 shrink-0">
+                <circle cx="9" cy="9" r="7.5" fill="none" strokeWidth="1.5" className="stroke-vl-accent" />
+                <path d="M9 5v4.5l2.5 1.5" fill="none" strokeWidth="1.5" className="stroke-vl-accent" />
+              </svg>
+              <span>Your session expired. Sign in again to continue where you were.</span>
+            </div>
+          )}
+          <h1 className="text-[32px] font-bold tracking-[-0.02em]">Sign in</h1>
+
+          {/* Remounted on each failed attempt so the shake replays (DESIGN.md › The promise, rule 4). */}
+          <form
+            key={attempt}
+            onSubmit={submit}
+            className={`mt-6 flex flex-col gap-4 ${refused ? 'animate-vl-shake' : ''}`}
+          >
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Email address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-slate-500" />
-                </div>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 bg-[#0f111a] border border-[#2d3142] rounded-lg text-white placeholder-slate-500 focus:ring-1 focus:ring-[#00f0ff] focus:border-[#00f0ff] outline-none transition-colors"
-                  placeholder="admin@veriledger.com"
-                />
-              </div>
+              <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                autoComplete="username"
+                value={email}
+                onChange={(event) => edit(setEmail)(event.target.value)}
+                className={fieldClass(refused)}
+              />
             </div>
-
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-500" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 bg-[#0f111a] border border-[#2d3142] rounded-lg text-white placeholder-slate-500 focus:ring-1 focus:ring-[#00f0ff] focus:border-[#00f0ff] outline-none transition-colors"
-                  placeholder="••••••••"
-                />
-              </div>
+              <label htmlFor="password" className="mb-1.5 block text-[13px] font-medium">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => edit(setPassword)(event.target.value)}
+                className={fieldClass(refused)}
+              />
             </div>
-
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-3 px-4 rounded-xl shadow-lg font-bold bg-gradient-to-r from-[#00f0ff] to-[#3b82f6] text-[#0f111a] hover:opacity-90 shadow-[0_0_20px_rgba(0,240,255,0.3)] disabled:opacity-50 disabled:shadow-none transition-all"
-              >
-                {loading ? 'Authenticating...' : 'Sign in to Dashboard'}
-              </button>
+            <div className="min-h-5">
+              {refused && (
+                <p role="alert" className="animate-vl-fade-up text-sm text-vl-danger">
+                  Invalid credentials. Check the email and password and try again.
+                </p>
+              )}
+              {phase === 'unreachable' && (
+                <p role="alert" className="animate-vl-fade-up text-sm text-vl-danger">
+                  The API did not answer. Check that it is running and try again.
+                </p>
+              )}
             </div>
+            <button
+              type="submit"
+              disabled={busy}
+              className={`h-12 rounded-[10px] text-[15px] font-semibold transition-colors duration-(--vl-dur-base) ${
+                busy ? 'bg-vl-line text-vl-muted' : 'bg-vl-accent text-vl-on-accent'
+              }`}
+            >
+              {busy ? 'Signing in…' : 'Sign in'}
+            </button>
           </form>
+
+          <p className="mt-[18px] text-[13px] text-vl-muted">Regular accounts are created by an administrator.</p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

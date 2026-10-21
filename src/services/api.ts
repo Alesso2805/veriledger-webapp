@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { useAppStore } from '../store/useAppStore';
 
 export const api = axios.create({
@@ -15,3 +15,7 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+export function statusOf(error: unknown): number | undefined {
+  return isAxiosError(error) ? error.response?.status : undefined;
+}

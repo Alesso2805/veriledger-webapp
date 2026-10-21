@@ -22,7 +22,7 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 
 | Page | Route | What it does | Status |
 | --- | --- | --- | --- |
-| Login | `/login` | Email and password against `POST /auth/login` (OAuth2 form); stores the token. "Try the demo" starts a 24-hour trader account with one click (API ADR-0006) | Built (VLW-01); the form starts pre-filled with the admin's credentials until VLW-17; the demo in VLW-34 |
+| Login | `/login` | Email and password against `POST /auth/login` (OAuth2 form); stores the token. "Try the demo" starts a 24-hour trader account with one click (API ADR-0006) | Built (VLW-01). VLW-33 adds design E, an empty form, the 401 shake and the return to the page the person was on. The session-expired redirect comes with VLW-17 and the demo with VLW-34 |
 | Explorer → Tower | `/` | Latest blocks (refresh every 10 s), stats, mining with a miner address, search by transaction hash | Built (VLW-04); block search in VLW-19; the tower, waiting list and honest states in VLW-28 |
 | Transaction detail | `/transaction/:hash` | Status, hash, parties, value, fee, block; a notarization (amount 0 + payload) is shown as a certificate | Built (VLW-05); links from a block open the wrong key until VLW-19 |
 | Wallet | `/wallet` | Create a key pair, check any address's balance | Built (VLW-02) with the pair created by the server; in the browser in VLW-16 |
@@ -46,6 +46,8 @@ A single-page app built by Vite into static files (ADR-0001).
 
 `src/Router.tsx` exports the route table as data (`routes`), so that AR-08 can walk it.
 - Every route except `/login` is wrapped in `ProtectedRoute` (`src/components/RouteGuards.tsx`), which redirects to `/login` without a token.
+  - It keeps the page in the router state (`LoginRedirectState`), so `PublicRoute` returns there after signing in.
+  - VLW-17 adds `reason: 'expired'` to that state.
 - `src/App.tsx` renders the table with `useRoutes`, and `src/main.tsx` mounts it inside `BrowserRouter`.
 - The tests of the architecture rules live in `src/architecture/`.
 

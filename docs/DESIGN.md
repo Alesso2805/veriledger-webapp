@@ -45,6 +45,7 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
   --color-vl-cube-top: #3A4150;
   --color-vl-cube-left: #262B35;
   --color-vl-cube-right: #2F3541;
+  --color-vl-shadow: #12151B;
   --font-vl-sans: "Instrument Sans", system-ui, sans-serif;
   --font-vl-mono: "Martian Mono", ui-monospace, monospace;
   --ease-vl-out: cubic-bezier(.2, .7, .2, 1);
@@ -89,7 +90,7 @@ body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family:
 
 Utilities follow from the names: `bg-vl-surface`, `text-vl-muted`, `font-vl-mono`, `ease-vl-out`, `animate-vl-drop`. Transitions use `duration-(--vl-dur-fast)` and friends.
 
-**Contrast on `--color-vl-bg`:** text 15.8:1, muted 7.3:1, accent 10.9:1, danger 7.5:1, ok above 9:1. `--color-vl-faint` (about 4.2:1) is only for disabled controls and decoration.
+**Contrast on `--color-vl-bg`:** text 15.8:1, muted 7.3:1, accent 10.9:1, danger 7.5:1, ok above 9:1. `--color-vl-faint` (about 4.2:1) is only for disabled controls and decoration. `--color-vl-shadow` is decoration only: the ellipse under a tower (added 2026-10-20; the first artboards drew it with a literal colour).
 
 ## Motion map
 
@@ -144,6 +145,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - session-expired notice, and a demo-ended notice that says what was recorded is still on the chain;
   - "Try the demo": creating, then redirect; 429 shown as the API words it;
   - redirect to the page the person was on.
+- **Narrow screens:** below 940 px the two columns stack, with the form first and the tower and tagline after it, separated by a top border. Otherwise the form would start below the first screen on a phone. The artboard is drawn at 1440 px only. Added 2026-10-20.
 - **Stories:** VLW-33, VLW-17, VLW-34.
 
 ### Tower — `/` (and `/?block=<number>` for a deep link)
