@@ -68,7 +68,7 @@ Two-week sprints, the same as the API's. Each sprint closes with a demonstrable 
 
 **Order inside Sprint 3** (product owner, 2026-10-21). First the views whose data is on the API's main: VLW-29 (VLA-20), then VLW-31 (VLA-34). Next, VLW-19, whose generated types need the API's `docs/openapi.json`. Then VLW-34, when VLA-35 is merged (VLA-36 already is), and VLW-32 when VLA-19 is merged.
 
-**Order inside Sprint 4** (proposed on 2026-10-21, for the product owner to confirm):
+**Order inside Sprint 4** (product owner, 2026-10-21):
 
 1. VLW-24 first, since it depends on nothing.
 2. VLW-23 once VLA-21 (`CORS_ORIGINS`) and VLA-24 (seeded users from the environment) are merged. It runs against the API's published image (VLA-22) and its Compose (VLA-23), both already merged.

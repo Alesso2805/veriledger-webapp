@@ -2,7 +2,7 @@
 
 **Status as of 2026-10-21:** planned for December 7 – 20, 2026; it may start early, because Sprint 3 closed on 2026-10-21. 13 points.
 
-**Order** (proposed on 2026-10-21, for the product owner to confirm):
+**Order** (product owner, 2026-10-21):
 
 1. VLW-24.
 2. VLW-23, when VLA-21 and VLA-24 are merged.

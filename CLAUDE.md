@@ -53,7 +53,7 @@ A React single-page app where a visitor (1) signs in, (2) creates an Ed25519 wal
 - If a story changes the architecture, update docs/ARCHITECTURE_RULES.md, its tests and the corresponding ADR in the same PR.
 
 # Next sprint (when I tell you)
-Sprint 4 of docs/BACKLOG.md (Sprint 3 closed on 2026-10-21, see docs/sprints/sprint-3.md). The order, proposed on 2026-10-21; confirm it before the first story:
+Sprint 4 of docs/BACKLOG.md (Sprint 3 closed on 2026-10-21, see docs/sprints/sprint-3.md). The order, agreed on 2026-10-21:
 
 1. VLW-24, keyboard and phone: labels, visible focus, 360 px, axe-core. It depends on nothing.
 2. VLW-23, the end-to-end flows in Playwright, once VLA-21 (`CORS_ORIGINS`) and VLA-24 (seeded users from the environment) are merged. Run it against the API's published image (VLA-22, a `sha-` tag) and its Compose (VLA-23).
