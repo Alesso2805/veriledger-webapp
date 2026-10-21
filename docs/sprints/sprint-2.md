@@ -4,10 +4,10 @@
 
 **Order:** VLW-15 and VLW-16, then VLW-30 on top of them, then VLW-18 once the API's nonce exists, then VLW-17, then VLW-28 when VLA-20 and VLA-33 are merged.
 
-**Pending decisions before it starts**
+**Decisions before it starts**
 
-- **The API's ADR-0004** (the canonical signed message with a nonce) must be accepted, and **VLA-15** must publish `docs/signing-vectors.json`. VLW-15 and AR-06 depend on both.
-- **The webapp's ADR-0002** (keys and signing only in the browser) must be accepted, for VLW-15 and VLW-16.
+- **Settled on 2026-10-20:** the product owner accepted the API's ADR-0002, ADR-0004 and ADR-0005, and the webapp's ADR-0002 and ADR-0003.
+- **Still waiting:** VLA-15 must publish `docs/signing-vectors.json`. VLW-15 and AR-06 depend on it.
 
 **Dependencies on the API**
 

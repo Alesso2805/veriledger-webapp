@@ -55,7 +55,7 @@ A React single-page app where a visitor (1) signs in, (2) creates an Ed25519 wal
 # Next sprint (when I tell you)
 Sprint 2 of docs/BACKLOG.md (Sprint 1 closed on 2026-10-20, see docs/sprints/sprint-1.md). The order:
 
-1. VLW-15, after the API's ADR-0004 is accepted and VLA-15 publishes the signing vectors.
+1. VLW-15, after VLA-15 publishes the signing vectors. The API's ADR-0004 was accepted on 2026-10-20.
 2. VLW-16.
 3. VLW-30, on top of VLW-15 and VLW-16.
 4. VLW-18, once the API's nonce exists (VLA-16).

@@ -25,7 +25,7 @@ On 2026-10-20 `npm ci && npm run build` from a fresh clone failed (`TS6133: 'Has
 - **One backlog per repository, one sprint calendar** with the API (VLA-NN / VLW-NN).
 - **Contracts are the API's.** The signed message (API ADR-0004) and the deployment (API ADR-0005) are decided there; this repository's ADR-0002 and ADR-0003 adopt them.
 - **The audit drives the plan.** Every blocking or important finding of `docs/AUDIT.md` became a story in E1 to E4.
-- **Proposed, not accepted:** ADR-0002 (keys and signing only in the browser) and ADR-0003 (static files behind the API's Caddy) wait for the product owner.
+- **Proposed, not accepted:** ADR-0002 (keys and signing only in the browser) and ADR-0003 (static files behind the API's Caddy) wait for the product owner. Both were accepted on 2026-10-20, at Sprint 1's close.
 - **Design direction E, accepted (ADR-0004).**
   - Five directions were explored in a design canvas: ledger book, instrument, fingerprint, containers, and tower and network. The product owner chose E.
   - Its eight final artboards and `docs/DESIGN.md` are the specification. The same tokens and keyframes go into `src/index.css`.
