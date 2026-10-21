@@ -53,4 +53,13 @@ A React single-page app where a visitor (1) signs in, (2) creates an Ed25519 wal
 - If a story changes the architecture, update docs/ARCHITECTURE_RULES.md, its tests and the corresponding ADR in the same PR.
 
 # Next sprint (when I tell you)
-Sprint 1 of docs/BACKLOG.md, in this order: VLW-11, VLW-12, VLW-10, VLW-13 (after the tool in ARCHITECTURE_RULES.md is confirmed), VLW-27 and VLW-33 (design E's foundation, DESIGN.md), VLW-14 (only on files that survive the redesign). When finished, show me how to verify each story and update docs/sprints/sprint-1.md.
+Sprint 2 of docs/BACKLOG.md (Sprint 1 closed on 2026-10-20, see docs/sprints/sprint-1.md). The order:
+
+1. VLW-15, after the API's ADR-0004 is accepted and VLA-15 publishes the signing vectors.
+2. VLW-16.
+3. VLW-30, on top of VLW-15 and VLW-16.
+4. VLW-18, once the API's nonce exists (VLA-16).
+5. VLW-17.
+6. VLW-28, when VLA-20 and VLA-33 are merged.
+
+When finished, show me how to verify each story and update docs/sprints/sprint-2.md.
