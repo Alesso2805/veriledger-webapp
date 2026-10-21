@@ -38,13 +38,16 @@ A single-page app built by Vite into static files (ADR-0001).
 | Folder | Holds | May import |
 | --- | --- | --- |
 | `src/pages` | One component per route | `components`, `lib`, `services`, `store`, `types` |
-| `src/components` | Shared UI (`Layout` today; loading/empty/error states in VLW-20) | `lib`, `services`, `store`, `types` |
+| `src/components` | Shared UI: `Layout` and the route guards (`RouteGuards.tsx`) today; loading, empty and error states with design E (VLW-27, VLW-28, VLW-33) | `lib`, `services`, `store`, `types` |
 | `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), hex helpers. Planned (VLW-15, VLW-16) | `types`, `@noble/*` |
 | `src/services` | The axios instance with the base URL and the token interceptor; the 401 handler (VLW-17) | `lib`, `store`, `types`, axios |
 | `src/store` | Zustand store: the session token, persisted in `localStorage` under `veriledger-storage` | `types` |
 | `src/types` | Types of the API's responses; generated from its OpenAPI document in VLW-19 | Nothing |
 
-`src/Router.tsx` declares the routes; every route except `/login` is wrapped in `ProtectedRoute`, which redirects to `/login` without a token. `src/main.tsx` mounts the router.
+`src/Router.tsx` exports the route table as data (`routes`), so that AR-08 can walk it.
+- Every route except `/login` is wrapped in `ProtectedRoute` (`src/components/RouteGuards.tsx`), which redirects to `/login` without a token.
+- `src/App.tsx` renders the table with `useRoutes`, and `src/main.tsx` mounts it inside `BrowserRouter`.
+- The tests of the architecture rules live in `src/architecture/`.
 
 **Today** `Transaction.tsx` imports `@noble/curves` and builds the signed message itself, and `src/lib` does not exist (audit, AR-02).
 
@@ -106,7 +109,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 
 ## Engineering rules
 
-**Stack.** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Zustand 5, axios, lucide-react, `@noble/curves` 2; @fontsource Instrument Sans and Martian Mono; oxlint; Vitest, Testing Library and jsdom; Playwright; dependency-cruiser (pending confirmation). Node 22 LTS.
+**Stack.** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Zustand 5, axios, lucide-react, `@noble/curves` 2; @fontsource Instrument Sans and Martian Mono; oxlint; Vitest, Testing Library and jsdom; Playwright; dependency-cruiser. Node 22 LTS, 22.13 or later.
 
 **Architecture rules.** The folder rules of the Architecture section, written as verifiable rules AR-01 to AR-09 in [ARCHITECTURE_RULES.md](ARCHITECTURE_RULES.md), each with the test that checks it (VLW-13).
 
@@ -135,12 +138,14 @@ Target tree. Entries marked with a story do not exist yet.
 veriledger-webapp/
 ├── src/
 │   ├── pages/                    # Login, Explorer, TransactionDetail, Wallet, Transaction, Network
-│   ├── components/               # Layout; states (VLW-20)
+│   ├── architecture/             # tests of the architecture rules
+│   ├── components/               # Layout, RouteGuards; states (VLW-27)
 │   ├── lib/                      # signing.ts, keys.ts, identicon.ts (VLW-15, VLW-16, VLW-31)
 │   ├── services/api.ts
 │   ├── store/useAppStore.ts
 │   ├── types/                    # generated from the API's OpenAPI (VLW-19)
-│   ├── Router.tsx
+│   ├── Router.tsx                # the route table
+│   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css                 # Tailwind and the theme tokens
 ├── public/favicon.svg
@@ -154,10 +159,10 @@ veriledger-webapp/
 │   ├── AUDIT.md
 │   ├── adr/
 │   └── sprints/
-├── .github/workflows/ci.yml      # VLW-10
-├── .dependency-cruiser.cjs       # VLW-13
+├── .github/workflows/ci.yml
+├── .dependency-cruiser.cjs       # import rules AR-01 to AR-04
 ├── Dockerfile                    # VLW-22
-├── .nvmrc                        # VLW-11
+├── .nvmrc
 ├── index.html
 ├── package.json
 ├── package-lock.json

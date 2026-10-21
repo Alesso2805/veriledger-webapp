@@ -25,7 +25,7 @@ A React single-page app where a visitor (1) signs in, (2) creates an Ed25519 wal
 
 # Mandatory stack
 - React 19, TypeScript (strict), Vite, Tailwind CSS 4, React Router 7, Zustand, axios, lucide-react, `@noble/curves` (Ed25519).
-- oxlint for lint; Vitest and Testing Library for unit tests; Playwright for end-to-end tests against the API's Compose stack; dependency-cruiser for the architecture rules (pending confirmation).
+- oxlint for lint; Vitest and Testing Library for unit tests; Playwright for end-to-end tests against the API's Compose stack; dependency-cruiser for the import rules (`npm run lint:arch`).
 - Node 22 LTS, `^22.13.0` in `engines` and `22` in `.nvmrc` (jsdom 29 needs 22.13; Vite 8 needs 22.12).
 
 # Architecture rules (summary; the full list with IDs is docs/ARCHITECTURE_RULES.md)

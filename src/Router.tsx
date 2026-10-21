@@ -1,6 +1,6 @@
-import { Routes, Route, Navigate } from 'react-router';
-import { useAppStore } from './store/useAppStore';
+import type { RouteObject } from 'react-router';
 import { Layout } from './components/Layout';
+import { ProtectedRoute, PublicRoute } from './components/RouteGuards';
 import { Login } from './pages/Login';
 import { Explorer } from './pages/Explorer';
 import { Wallet } from './pages/Wallet';
@@ -8,43 +8,29 @@ import { Transaction } from './pages/Transaction';
 import { TransactionDetail } from './pages/TransactionDetail';
 import { Network } from './pages/Network';
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = useAppStore((state) => state.token);
-  if (!token) return <Navigate to="/login" replace />;
-  return <>{children}</>;
-};
-
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = useAppStore((state) => state.token);
-  if (token) return <Navigate to="/" replace />;
-  return <>{children}</>;
-};
-
-export function AppRouter() {
-  return (
-    <Routes>
-      <Route
-        path="/login"
-        element={
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Explorer />} />
-        <Route path="transaction/:hash" element={<TransactionDetail />} />
-        <Route path="wallet" element={<Wallet />} />
-        <Route path="transact" element={<Transaction />} />
-        <Route path="network" element={<Network />} />
-      </Route>
-    </Routes>
-  );
-}
+// The route table is data so that AR-08 can walk every route (src/architecture/protected-routes.test.tsx).
+export const routes: RouteObject[] = [
+  {
+    path: '/login',
+    element: (
+      <PublicRoute>
+        <Login />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: '/',
+    element: (
+      <ProtectedRoute>
+        <Layout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <Explorer /> },
+      { path: 'transaction/:hash', element: <TransactionDetail /> },
+      { path: 'wallet', element: <Wallet /> },
+      { path: 'transact', element: <Transaction /> },
+      { path: 'network', element: <Network /> },
+    ],
+  },
+];
