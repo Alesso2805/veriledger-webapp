@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAppStore } from '../store/useAppStore';
+import { useKeyStore } from '../store/useKeyStore';
 import { HeaderSearch } from './HeaderSearch';
 import { HealthStatus } from './HealthStatus';
 import { LogoMark } from './LogoMark';
@@ -23,8 +24,10 @@ export function Layout() {
   const navigate = useNavigate();
   const logout = useAppStore((state) => state.logout);
 
+  // Signing out also forgets the key this tab held, so the next person at this browser cannot sign with it.
   const signOut = () => {
     logout();
+    useKeyStore.getState().forget();
     navigate('/login');
   };
 

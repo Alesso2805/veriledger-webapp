@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getMe } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
+import { useKeyStore } from '../store/useKeyStore';
 import { Layout } from './Layout';
 
 vi.mock('../services/auth', () => ({ getMe: vi.fn() }));
@@ -69,13 +70,15 @@ describe('Layout (the shell)', () => {
     expect(useAppStore.getState().user).toEqual(ME);
   });
 
-  it('signs out: clears the session and opens /login', async () => {
+  it('signs out: clears the session, forgets the key this tab held, and opens /login', async () => {
+    useKeyStore.setState({ pair: { public_key: 'ab'.repeat(32), private_key: 'cd'.repeat(32) } });
     renderShell();
     await apiStatus('api · online');
 
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
 
     expect(useAppStore.getState().token).toBeNull();
+    expect(useKeyStore.getState().pair).toBeNull();
     expect(screen.getByTestId('path')).toHaveTextContent(/^\/login$/);
   });
 
