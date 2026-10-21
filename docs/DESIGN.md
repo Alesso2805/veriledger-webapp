@@ -16,10 +16,12 @@ Oct 20, 2026 · Chosen by the product owner on 2026-10-20 ([ADR-0004](adr/0004-d
 
 ## Tokens and motion
 
-This block goes into `src/index.css` as is. The canvas artboard "E · Motion y tokens" shows every token and replays every animation.
+This block goes into `src/index.css` as is. A test (AR-10) fails if the two differ by a single character. The canvas artboard "E · Motion y tokens" shows every token and replays every animation.
+
+`source("../src")` limits Tailwind's class scan to `src`. Without it, Tailwind also scans `docs/` and builds the class names of this document's examples into the app.
 
 ```css
-@import "tailwindcss";
+@import "tailwindcss" source("../src");
 @import "@fontsource/instrument-sans/400.css";
 @import "@fontsource/instrument-sans/500.css";
 @import "@fontsource/instrument-sans/600.css";
