@@ -28,6 +28,13 @@ describe('useAppStore', () => {
     expect(useAppStore.getState().endedReason).toBeNull();
   });
 
+  it('forgets why the last session ended once the login has said so', () => {
+    useAppStore.getState().expire();
+    useAppStore.getState().clearEndedReason();
+
+    expect(useAppStore.getState()).toMatchObject({ token: null, endedReason: null });
+  });
+
   it('persists only the token, not why a session ended', () => {
     useAppStore.getState().expire();
 

@@ -1,10 +1,13 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import type { UserRole } from '../../types/session';
+import { Link, useLocation } from 'react-router';
+import type { LoginRedirectState, UserRole } from '../../types/session';
 
 interface Props {
   // The number the next block will get; null until the chain has loaded.
   next: number | null;
   waiting: number | null;
+  // Anyone can look at the tower; mining needs a session (ADR-0005). VLW-34b offers a demo account instead.
+  signedIn: boolean;
   // null until /auth/me answers; the API has the last word on roles (VLA-19).
   role: UserRole | null;
   offline: boolean;
@@ -12,9 +15,10 @@ interface Props {
   onMine: (minerAddress: string) => void;
 }
 
-export function MineCard({ next, waiting, role, offline, mining, onMine }: Props) {
+export function MineCard({ next, waiting, signedIn, role, offline, mining, onMine }: Props) {
   const [address, setAddress] = useState('');
   const [elapsed, setElapsed] = useState(0);
+  const { pathname, search } = useLocation();
 
   // The API answers only when the block is sealed, so the elapsed time is the only progress there is to show.
   useEffect(() => {
@@ -25,7 +29,7 @@ export function MineCard({ next, waiting, role, offline, mining, onMine }: Props
     return () => clearInterval(timer);
   }, [mining]);
 
-  const allowed = role === null || role === 'admin' || role === 'trader';
+  const allowed = signedIn && (role === null || role === 'admin' || role === 'trader');
   const ready = next !== null && allowed && !offline && !mining && address.trim() !== '';
 
   let note: ReactNode = '';
@@ -37,6 +41,8 @@ export function MineCard({ next, waiting, role, offline, mining, onMine }: Props
         that starts with 0000.
       </>
     );
+  } else if (!signedIn) {
+    note = 'Anyone can look. To mine, sign in.';
   } else if (!allowed) {
     note = 'Mining needs the trader or admin role.';
   } else if (offline) {
@@ -71,15 +77,25 @@ export function MineCard({ next, waiting, role, offline, mining, onMine }: Props
         <span aria-live="polite" className={`flex-[1_1_200px] text-[13px] text-vl-muted ${mining ? 'animate-vl-pulse' : ''}`}>
           {note}
         </span>
-        <button
-          type="submit"
-          disabled={!ready}
-          className={`h-11 rounded-[10px] px-[18px] font-semibold transition-colors duration-(--vl-dur-base) ${
-            ready ? 'bg-vl-accent text-vl-on-accent' : 'bg-vl-line text-vl-muted'
-          }`}
-        >
-          {mining ? 'Mining…' : next === 0 ? 'Mine the genesis block' : `Mine block${next === null ? '' : ` #${next}`}`}
-        </button>
+        {signedIn ? (
+          <button
+            type="submit"
+            disabled={!ready}
+            className={`h-11 rounded-[10px] px-[18px] font-semibold transition-colors duration-(--vl-dur-base) ${
+              ready ? 'bg-vl-accent text-vl-on-accent' : 'bg-vl-line text-vl-muted'
+            }`}
+          >
+            {mining ? 'Mining…' : next === 0 ? 'Mine the genesis block' : `Mine block${next === null ? '' : ` #${next}`}`}
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            state={{ from: { pathname, search } } satisfies LoginRedirectState}
+            className="inline-flex h-11 items-center rounded-[10px] bg-vl-accent px-[18px] font-semibold text-vl-on-accent"
+          >
+            Sign in to mine
+          </Link>
+        )}
       </div>
     </form>
   );

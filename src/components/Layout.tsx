@@ -1,11 +1,13 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAppStore } from '../store/useAppStore';
 import { useKeyStore } from '../store/useKeyStore';
+import type { LoginRedirectState } from '../types/session';
 import { HeaderSearch } from './HeaderSearch';
 import { HealthStatus } from './HealthStatus';
 import { LogoMark } from './LogoMark';
 import { OfflineBanner } from './OfflineBanner';
 import { UserChip } from './UserChip';
+import { useSessionToken } from './useSessionToken';
 
 const TABS = [
   { label: 'Tower', to: '/', end: true },
@@ -14,15 +16,19 @@ const TABS = [
   { label: 'Network', to: '/network', end: false },
 ];
 
+const pillClass =
+  'inline-flex h-9 items-center rounded-full border border-vl-line px-3 text-[13px] font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised';
+
 const tabClass = ({ isActive }: { isActive: boolean }) =>
   `whitespace-nowrap border-b-2 px-3 py-2.5 transition-colors duration-(--vl-dur-fast) ${
     isActive ? 'border-vl-accent font-semibold text-vl-text' : 'border-transparent text-vl-muted hover:text-vl-text'
   }`;
 
 export function Layout() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const logout = useAppStore((state) => state.logout);
+  const { token } = useSessionToken();
 
   // Signing out also forgets the key this tab held, so the next person at this browser cannot sign with it.
   const signOut = () => {
@@ -51,13 +57,16 @@ export function Layout() {
           <div className="order-1 ml-auto flex items-center gap-2.5 sm:order-none sm:gap-3.5">
             <HealthStatus />
             <UserChip />
-            <button
-              type="button"
-              onClick={signOut}
-              className="inline-flex h-9 items-center rounded-full border border-vl-line px-3 text-[13px] font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
-            >
-              Sign out
-            </button>
+            {token ? (
+              <button type="button" onClick={signOut} className={pillClass}>
+                Sign out
+              </button>
+            ) : (
+              // After signing in, the login returns the visitor to this page. "Try the demo" joins it in VLW-34b.
+              <Link to="/login" state={{ from: { pathname, search } } satisfies LoginRedirectState} className={pillClass}>
+                Sign in
+              </Link>
+            )}
           </div>
           <nav aria-label="Main" className="order-3 flex basis-full gap-0.5 overflow-x-auto sm:order-none">
             {TABS.map((tab) => (
