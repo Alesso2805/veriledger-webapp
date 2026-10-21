@@ -28,6 +28,7 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 | Wallet | `/wallet` | Create a key pair, check any address's balance | Built (VLW-02) with the pair created by the server; in the browser in VLW-16 |
 | Transact | `/transact` | Transfer or notarize: signs in the browser and sends the signed transaction | Built (VLW-03); the API rejects its signatures until VLW-15 |
 | Network | `/network` | Add a peer URL, list peers, resolve conflicts | Built (VLW-06) |
+| Not found | any other path | The 404 tower with "Back to the tower", inside the shell | Built (VLW-33) |
 
 **Out of scope for this plan:** storing private keys (encrypted or not) beyond the session, hardware wallets, a block explorer for other networks, internationalization, a light theme.
 
