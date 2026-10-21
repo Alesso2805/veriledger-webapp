@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import type { Block, Paginated } from '../types/ledger';
-import { Box, Hash, Clock, FileDigit, Search, Activity, Database, Server } from 'lucide-react';
+import { Box, Clock, FileDigit, Search, Activity, Database, Server } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
 export function Explorer() {
@@ -53,7 +53,7 @@ export function Explorer() {
       if (response.data) {
         navigate(`/transaction/${searchQuery}`);
       }
-    } catch (err: any) {
+    } catch {
       setSearchError('Transaction not found. (Block search not supported yet).');
     }
   };
