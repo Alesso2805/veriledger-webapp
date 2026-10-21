@@ -99,7 +99,7 @@ The webapp adopts the API's ADR-0004 through its own ADR-0002.
 
 ## Deployment
 
-Static files served behind the same Caddy and hostname as the API (API ADR-0005, webapp ADR-0003): `/` serves the app, `/api` the API, so the browser sees one origin.
+Static files served behind the same Caddy and hostname as the API (API ADR-0005, webapp ADR-0003): `/` serves the app, `/api` the API, so the browser sees one origin. Until there is a server, the deployment is prepared and rehearsed locally, like the API's VLA-27; the real one waits for the product owner (VLW-25, 2026-10-21).
 
 - One image for any hostname (VLW-21):
   - The container runs `docker/write-config.sh`, which writes `{"apiBaseUrl": "<API_BASE_URL>"}` to `/config.json`. `API_BASE_URL` defaults to `/api`.
@@ -108,7 +108,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 - **The image** (VLW-22, `Dockerfile`):
   - Node 22 builds the files, and Caddy serves them as a non-root user on port 8080. Both bases are pinned by digest.
   - At start the container runs `write-config.sh`.
-  - It is built for amd64 and arm64 by the Image workflow.
+  - It is built for amd64 and arm64 by the Image workflow. On every push to `main` the workflow also publishes it, public, as `ghcr.io/alesso2805/veriledger-webapp` with the tags `main` and `sha-<commit>`, and a release tag adds the version (`1.0.0`, `1.0`) (VLW-25). Pull requests build and smoke-test it without publishing.
 - **`docker/Caddyfile`:**
   - Every unknown path answers `index.html`, so `/wallet` and `/transaction/<hash>` survive a reload.
   - `/assets/*` is cached for a year (`immutable`); everything else, `index.html` and `config.json` included, is `no-store`.
