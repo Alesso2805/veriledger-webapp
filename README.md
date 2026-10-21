@@ -26,7 +26,7 @@ VeriLedger is a fully functional, decentralized Blockchain application. Here is 
 ## Setup & Running Locally
 
 ### 1. Requirements
-Install [Node.js](https://nodejs.org/) 22 LTS, 22.12 or later (Vite 8 needs it). The version is pinned in `.nvmrc`, so `nvm use` picks it.
+Install [Node.js](https://nodejs.org/) 22 LTS, 22.13 or later (the test environment, jsdom 29, needs it). The version is pinned in `.nvmrc`, so `nvm use` picks it.
 
 ### 2. Install Dependencies
 Open your terminal in the `veriledger-webapp` directory and run:
