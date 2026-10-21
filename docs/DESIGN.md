@@ -145,6 +145,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - session-expired notice, and a demo-ended notice that says what was recorded is still on the chain;
   - "Try the demo": creating, then redirect; 429 shown as the API words it;
   - redirect to the page the person was on.
+- **Narrow screens:** below 940 px the two columns stack, with the form first and the tower and tagline after it, separated by a top border. Otherwise the form would start below the first screen on a phone. The artboard is drawn at 1440 px only. Added 2026-10-20.
 - **Stories:** VLW-33, VLW-17, VLW-34.
 
 ### Tower — `/` (and `/?block=<number>` for a deep link)

@@ -1,11 +1,37 @@
+import { AxiosError, type AxiosResponse } from 'axios';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from './api';
-import { getMe } from './auth';
+import { getMe, InvalidCredentialsError, login } from './auth';
 import { getHealth } from './health';
 
 describe('session endpoints', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('login posts the OAuth2 form and returns the token', async () => {
+    const post = vi.spyOn(api, 'post').mockResolvedValue({ data: { access_token: 'abc.def.ghi' } });
+
+    await expect(login('a@veriledger.test', 'a password')).resolves.toBe('abc.def.ghi');
+    const [url, body, config] = post.mock.calls[0];
+    expect(url).toBe('/auth/login');
+    expect(String(body)).toBe('username=a%40veriledger.test&password=a+password');
+    expect(config?.headers).toEqual({ 'Content-Type': 'application/x-www-form-urlencoded' });
+  });
+
+  it('login turns a 401 into InvalidCredentialsError', async () => {
+    const unauthorized = new AxiosError('Unauthorized', 'ERR_BAD_REQUEST', undefined, undefined, {
+      status: 401,
+    } as unknown as AxiosResponse);
+    vi.spyOn(api, 'post').mockRejectedValue(unauthorized);
+
+    await expect(login('a@veriledger.test', 'wrong')).rejects.toBeInstanceOf(InvalidCredentialsError);
+  });
+
+  it('login passes other failures on unchanged', async () => {
+    vi.spyOn(api, 'post').mockRejectedValue(new Error('Network Error'));
+
+    await expect(login('a@veriledger.test', 'a password')).rejects.toThrow('Network Error');
   });
 
   it('getMe reads the signed-in user from /auth/me', async () => {
