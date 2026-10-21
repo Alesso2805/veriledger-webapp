@@ -10,7 +10,28 @@ function persistedToken() {
 
 describe('useAppStore', () => {
   beforeEach(() => {
-    useAppStore.setState({ token: null });
+    useAppStore.setState({ token: null, endedReason: null });
+  });
+
+  it('ends an expired session: clears the token and remembers why', () => {
+    useAppStore.getState().setToken('abc.def.ghi');
+    useAppStore.getState().expire();
+
+    expect(useAppStore.getState()).toMatchObject({ token: null, endedReason: 'expired' });
+    expect(persistedToken()).toBeNull();
+  });
+
+  it('forgets why the last session ended once the person signs in again', () => {
+    useAppStore.getState().expire();
+    useAppStore.getState().setToken('abc.def.ghi');
+
+    expect(useAppStore.getState().endedReason).toBeNull();
+  });
+
+  it('persists only the token, not why a session ended', () => {
+    useAppStore.getState().expire();
+
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).state).toEqual({ token: null });
   });
 
   it('starts without a session', () => {
