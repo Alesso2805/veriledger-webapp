@@ -1,6 +1,8 @@
 import type { SignedFields } from '../lib/signing';
 import type { Block, FullBlock, Paginated, Transaction } from '../types/ledger';
-import { api } from './api';
+import { api, statusOf } from './api';
+
+export type Found = { kind: 'block'; number: number; hash: string } | { kind: 'transaction'; transaction: Transaction };
 
 // Every answer is checked before a page draws it: a misrouted /api gets index.html with a 200 from the static
 // server, and the old explorer went blank on it.
@@ -33,6 +35,28 @@ export async function getTransaction(txHash: string): Promise<Transaction> {
     throw new Error('The API did not answer /transactions/{tx_hash}');
   }
   return response.data as Transaction;
+}
+
+// A block hash and a transaction hash look alike, so a hash is looked up as both. Not finding it is an answer;
+// only a failure of another kind, with nothing found, is an error.
+export async function findHash(hash: string): Promise<Found[]> {
+  const [block, transaction] = await Promise.allSettled([getBlock(hash), getTransaction(hash)]);
+  const found: Found[] = [];
+  if (block.status === 'fulfilled') found.push({ kind: 'block', number: block.value.block_number, hash: block.value.block_hash });
+  if (transaction.status === 'fulfilled') found.push({ kind: 'transaction', transaction: transaction.value });
+  const failure = [block, transaction].find(
+    (result): result is PromiseRejectedResult => result.status === 'rejected' && statusOf(result.reason) !== 404,
+  );
+  if (found.length === 0 && failure) throw failure.reason;
+  return found;
+}
+
+// Block n is the one total - 1 - n places from the newest.
+export async function findBlockNumber(number: number): Promise<Found[]> {
+  const top = (await getBlocks(0, 1)).items[0]?.block_number;
+  if (top === undefined || number > top) return [];
+  const block = (await getBlocks(top - number, 1)).items[0];
+  return block?.block_number === number ? [{ kind: 'block', number, hash: block.block_hash }] : [];
 }
 
 // The mempool, newest first; the API takes 1 to 100 per page.
