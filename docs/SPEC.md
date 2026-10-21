@@ -162,6 +162,7 @@ veriledger-webapp/
 │   ├── BACKLOG.md
 │   ├── ARCHITECTURE_RULES.md
 │   ├── AUDIT.md
+│   ├── COMMENTS_REVIEW.md        # what the comment cleanup kept and removed (VLW-14)
 │   ├── adr/
 │   └── sprints/
 ├── .github/workflows/ci.yml
