@@ -24,6 +24,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # AR-09: the API's types are generated from its OpenAPI document, never edited by hand.
+      - name: Types match the API's OpenAPI document (AR-09)
+        run: npm run types:api && git diff --exit-code -- src/types/api.ts
       - run: npm run lint
       - run: npm run lint:arch
       - run: npm test

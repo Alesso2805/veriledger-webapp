@@ -10,13 +10,13 @@ Each rule is one sentence that a test can prove or refute. A rule about "every" 
 | --- | --- | --- | --- | --- |
 | AR-01 | Only modules under `src/services` import `axios`. | README › Backend connection (one place to configure the API); SPEC › Architecture | dependency-cruiser rule `AR-01-axios-only-in-services`, over every module under `src`. | Checked |
 | AR-02 | Only modules under `src/lib` import `@noble/*`. | SPEC › Architecture and › Signing contract; ADR-0002 | dependency-cruiser rule `AR-02-noble-only-in-lib`. | Checked |
-| AR-03 | Dependencies between folders follow SPEC › Architecture: `pages → components, lib, services, store, types`; `components → lib, services, store, types`; `services → lib, store, types`; `store → types`; `lib → types`; `types →` nothing; and only `src/Router.tsx` imports `src/pages`. Test files are exempt, since a page's test imports its page. | SPEC › Architecture (folder table) | dependency-cruiser: one `AR-03-*` rule per disallowed direction, over every module. | Checked |
+| AR-03 | Dependencies between folders follow SPEC › Architecture: `pages → components, lib, services, store, types`; `components → lib, services, store, types`; `services → lib, store, types`; `store → types`; `lib → types`; `types →` nothing outside `types` (its named types are aliases of the generated `api.ts`, AR-09); and only `src/Router.tsx` imports `src/pages`. Test files are exempt, since a page's test imports its page. | SPEC › Architecture (folder table) | dependency-cruiser: one `AR-03-*` rule per disallowed direction, over every module. | Checked |
 | AR-04 | There are no circular imports. | SPEC › Architecture (dependencies point inward) | dependency-cruiser rule `AR-04-no-circular`. | Checked |
 | AR-05 | No request sent through the API client carries a private key, and no code calls `/wallets/generate`. | README › Application flow ("The Private Key never leaves the browser"); SPEC › Non-functional requirements; ADR-0002 | Vitest `src/architecture/no-server-generated-keys.test.ts` reads every module under `src` and lists those that call `/wallets/generate`. Vitest `src/architecture/no-private-key-in-requests.test.tsx` runs the design E flow through the real services: generate on the wallet page, then sign and send a transfer and a notarization. A stand-in adapter records every request, and the test searches every URL, header and body for the private key. A deliberate leak in the body made it fail (VLW-30). | Checked |
 | AR-06 | The signed message and signature reproduce every vector of the API's `docs/signing-vectors.json`. | SPEC › Signing contract; ADR-0002; API ADR-0004 | Vitest `src/lib/signing.test.ts`: iterate the vectors copied to `src/lib/__fixtures__/`; compare the message byte for byte and the signature. | Checked (VLW-15); since VLW-18 the vectors are veriledger-api's version 2, with the nonce, copied at 47bec5c |
 | AR-07 | No module under `src` contains an absolute `http(s)://` URL, other than XML namespaces and form placeholders (example text shown to the user, never requested); the API base URL comes from runtime configuration. | SPEC › Deployment; ADR-0003 | Vitest `src/architecture/no-absolute-urls.test.ts` reads every module under `src` and fails on an `http://` or `https://` URL with a host (not text that only names the scheme) outside the allowlist (`http://www.w3.org/2000/svg`) and outside `placeholder="…"`. | Checked |
 | AR-08 | Every route except the public ones renders only with a session. The public ones are `/login` and the pages whose data the API serves to anyone: `/`, `/transaction/:hash`, `/network` and the 404 (ADR-0005). | SPEC › Architecture (`ProtectedRoute`, `OpenRoute`) | Vitest `src/architecture/protected-routes.test.tsx` walks the route table that `src/Router.tsx` exports and renders each path without a token: a protected path must end at `/login`, a public one must stay. The public paths are listed in the test, so a new route is protected unless it is added there and here. | Checked |
-| AR-09 | The types of the API's responses are generated from the API's OpenAPI document, not written by hand. | SPEC › API usage | CI runs `openapi-typescript` against the API's committed `docs/openapi.json` into `src/types/api.ts` and fails on `git diff`; `tsc` then catches every mismatch. | Comes with VLW-19; no `openapi.json` is published yet (VLA-30) |
+| AR-09 | The types of the API's responses are generated from the API's OpenAPI document, not written by hand. | SPEC › API usage | The API's `docs/openapi.json` is copied unchanged into `src/types/openapi.json`, pinned to an API commit (SPEC › API usage). CI runs `npm run types:api` (`openapi-typescript`) into `src/types/api.ts` and fails on `git diff`; `tsc` then catches every mismatch with the code. `src/types/ledger.ts`, `network.ts` and `session.ts` only name the generated schemas. | Checked (VLW-19, after VLA-37) |
 | AR-10 | `src/index.css` is the CSS block of DESIGN.md › Tokens and motion, character for character. | DESIGN.md › The promise (same tokens in the canvas and the code); ADR-0004 | Vitest `src/architecture/design-tokens.test.ts` reads both files as text and compares them. | Checked |
 
 ## Known violations
@@ -61,7 +61,7 @@ They come from the README. They are not rules until they are made concrete; this
   - Never run `npx depcruise` without it installed: the npm package named `depcruise` is a placeholder published against dependency confusion.
 - **Vitest** handles the behavioral and file-walking rules, AR-05 to AR-08, next to the unit tests.
   - File walks use Vite's `import.meta.glob` with `?raw`, so they need no Node types in the app's `tsconfig`.
-- **openapi-typescript** handles AR-09, with VLW-19.
+- **openapi-typescript** handles AR-09 (VLW-19). It declares TypeScript `^5.x` as a peer, and this project is on TypeScript 6, so `package.json` overrides that peer with the project's own TypeScript instead of installing with `--legacy-peer-deps`; `tsc` and the CI diff would show a generator that stopped working.
 
 Alternatives considered:
 - **eslint-plugin-boundaries.** It needs ESLint next to oxlint, which has no boundary rules of its own.
@@ -79,7 +79,7 @@ Alternatives considered:
 | `src/architecture/design-tokens.test.ts` | AR-10 | `npm test` |
 | `src/lib/signing.test.ts` | AR-06 | `npm test` |
 | The request-recording test | AR-05 (no private key in any request) | VLW-30 |
-| CI step `npm run types:api` + `git diff --exit-code` | AR-09 | VLW-19 |
+| CI step `npm run types:api` + `git diff --exit-code -- src/types/api.ts` | AR-09 | CI, before lint |
 
 **Each check was shown to catch a violation** (2026-10-20). One break at a time was introduced locally, then restored:
 
@@ -95,5 +95,7 @@ Alternatives considered:
 | A route outside `ProtectedRoute` | AR-08 fails for that path |
 | `/wallet` moved under `OpenRoute` | AR-08 fails for `/wallet` |
 | One token changed in `index.css` only, then in DESIGN.md only | AR-10 fails both times |
+| A file in `src/types` imports `src/lib` | AR-03-types-import-nothing fails (2026-10-21) |
+| `src/types/api.ts` edited by hand; then `openapi.json` changed without regenerating | AR-09's diff fails both times (2026-10-21) |
 
 A deliberately broken PR also failed CI; see Sprint 1's notes.
