@@ -18,7 +18,8 @@ interface Props {
 const pulse = 'absolute top-0 left-0 size-3 rounded-full animate-vl-travel';
 
 // Positions and edges move with transform only, so adding a peer glides (DESIGN.md › Motion map). The peer list
-// carries the same information as text, so the map is one image to a screen reader.
+// carries the same information as text, so the map is one image to a screen reader. On a phone the map scrolls
+// sideways inside its box, which takes the focus so the arrow keys can scroll it too (VLW-24).
 export function PeerMap({ peers, height, fresh, phase, round }: Props) {
   const points = ringPoints(peers.length);
   const label = `This node${height === null ? '' : ` at height ${height}`}, with ${peers.length} ${peers.length === 1 ? 'peer' : 'peers'}`;
@@ -26,6 +27,7 @@ export function PeerMap({ peers, height, fresh, phase, round }: Props) {
   return (
     <section
       aria-label="Peer map"
+      tabIndex={0}
       className="min-w-0 flex-[999_1_640px] overflow-x-auto rounded-2xl border border-vl-line bg-vl-surface"
     >
       <div role="img" aria-label={label} className="relative mx-auto" style={{ width: MAP.width, height: MAP.height }}>
