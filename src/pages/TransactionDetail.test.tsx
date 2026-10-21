@@ -116,6 +116,7 @@ describe('TransactionDetail', () => {
     expect(screen.getByText(txHash)).toBeInTheDocument();
     expect(screen.getByText(/Rejected transactions leave no trace/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the tower' })).toHaveAttribute('href', '/');
+    await expect(document.body).toPassAxe();
   });
 
   it('says that a mining reward has no signature to check, and that the miner’s node created it', async () => {
@@ -154,5 +155,6 @@ describe('TransactionDetail', () => {
     fireEvent.change(chooser, { target: { files: [new File(['abd'], 'contract (edited).txt')] } });
     expect(await screen.findByText('No match')).toBeInTheDocument();
     expect(screen.getByText(/contract \(edited\)\.txt differs from the certified document/)).toBeInTheDocument();
+    await expect(document.body).toPassAxe();
   });
 });

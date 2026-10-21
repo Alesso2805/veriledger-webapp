@@ -235,5 +235,6 @@ describe('SignAndSend sending', () => {
     expect(alert).toHaveTextContent('The node refused the signature');
     expect(alert).toHaveTextContent('Invalid transaction signature');
     expect(getNextNonce).toHaveBeenCalledTimes(1);
+    await expect(document.body).toPassAxe();
   });
 });

@@ -1,4 +1,4 @@
-/// <reference types="vitest/config" />
+import { configDefaults } from 'vitest/config'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -10,6 +10,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
+    // e2e/ is Playwright's, which runs in a real browser (npm run test:a11y).
+    exclude: [...configDefaults.exclude, 'e2e/**'],
     // Vitest returns '' for CSS unless it is listed here; AR-10 reads index.css as text.
     css: { include: [/src\/index\.css/] },
   },
