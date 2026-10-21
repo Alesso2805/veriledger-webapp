@@ -200,6 +200,10 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - "What you are signing" lists the message key by key: addresses and payload shortened, the nonce in the accent colour, and the size in UTF-8 bytes. Once complete, the lines are exactly the signed message (tested).
   - Choosing the other kind starts without a document.
   - The background is `--color-vl-inset`.
+- **Sending** (VLW-30c): "Send to the node" posts the signed fields and the signature (`src/services/ledger.ts`).
+  - "Accepted by the node" shows the `tx_hash` and links to its page. "Send another" keeps the kind, the address and the fee, and reads the nonce and the balance again.
+  - A refusal shows a card that shakes. Its title comes from the API's text: "The node refused the signature", "Not enough funds", "This nonce was already used", "The node did not answer", otherwise "The node refused the transaction". The API's own words follow it.
+  - After a 409 the page reads the next nonce, says so, and asks to sign again; the signature is discarded.
 - **Behaviour:**
   - the canonical message is rebuilt on every keystroke (`src/lib/signing.ts`, VLW-15);
   - editing after signing discards the signature;

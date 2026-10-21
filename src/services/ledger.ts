@@ -1,3 +1,4 @@
+import type { SignedFields } from '../lib/signing';
 import type { Block, FullBlock, Paginated, Transaction } from '../types/ledger';
 import { api } from './api';
 
@@ -29,6 +30,16 @@ export async function getBlock(blockHash: string): Promise<FullBlock> {
 export async function getPendingTransactions(skip: number, limit: number): Promise<Paginated<Transaction>> {
   const response = await api.get('/transactions', { params: { status: 'PENDING', skip, limit } });
   return asPage<Transaction>(response.data, '/transactions');
+}
+
+// The fields exactly as they were signed, and the signature; never the key (AR-05). A byte-identical retry gets
+// a 200 with the stored transaction, so sending again after a timeout cannot record it twice (VLA-16).
+export async function sendTransaction(fields: SignedFields, signature: string): Promise<Transaction> {
+  const response = await api.post('/transactions', { ...fields, signature });
+  if (typeof (response.data as Transaction | undefined)?.tx_hash !== 'string') {
+    throw new Error('The API did not answer /transactions');
+  }
+  return response.data as Transaction;
 }
 
 // The API answers once the proof of work is done, so there is no progress to show; the nonce is the response's.

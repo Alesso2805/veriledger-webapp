@@ -4,7 +4,7 @@ import { ProtectedRoute, PublicRoute } from './components/RouteGuards';
 import { Login } from './pages/Login';
 import { Tower } from './pages/Tower';
 import { Wallet } from './pages/Wallet';
-import { Transaction } from './pages/Transaction';
+import { SignAndSend } from './pages/SignAndSend';
 import { TransactionDetail } from './pages/TransactionDetail';
 import { Network } from './pages/Network';
 import { NotFound } from './pages/NotFound';
@@ -30,7 +30,7 @@ export const routes: RouteObject[] = [
       { index: true, element: <Tower /> },
       { path: 'transaction/:hash', element: <TransactionDetail /> },
       { path: 'wallet', element: <Wallet /> },
-      { path: 'transact', element: <Transaction /> },
+      { path: 'transact', element: <SignAndSend /> },
       { path: 'network', element: <Network /> },
       { path: '*', element: <NotFound /> },
     ],
