@@ -92,7 +92,7 @@ export async function mockApi(target: Page, role?: Role) {
     const path = url.pathname.replace(/^\/api/, '');
     const skip = Number(url.searchParams.get('skip') ?? 0);
     const limit = Number(url.searchParams.get('limit') ?? 10);
-    if (path === '/health') return answer(route, { status: 'ok', environment: 'test', demo_mode: true });
+    if (path === '/health') return answer(route, { status: 'ok', environment: 'test', demo_mode: true, database: 'ok' });
     if (path === '/auth/me') return role ? answer(route, user(role)) : answer(route, { detail: 'Not authenticated' }, 401);
     if (path === '/blocks') return answer(route, page(blocks, skip, limit));
     const blockMatch = /^\/blocks\/([0-9a-f]{64})$/.exec(path);

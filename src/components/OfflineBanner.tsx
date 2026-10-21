@@ -4,6 +4,7 @@ import { checkHealth } from './checkHealth';
 
 export function OfflineBanner() {
   const offline = useHealthStore((state) => state.online === false);
+  const databaseDown = useHealthStore((state) => state.databaseDown);
 
   // Opens and closes through grid-template-rows (DESIGN.md › Motion map), so the content stays mounted.
   return (
@@ -17,7 +18,10 @@ export function OfflineBanner() {
           role="alert"
           className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2.5 border-t border-vl-danger bg-vl-danger-soft px-4 py-2.5 text-sm"
         >
-          <span>Can’t reach {apiHost()}. Retrying every 10 s.</span>
+          <span>
+            {databaseDown ? `${apiHost()} answers, but its database does not.` : `Can’t reach ${apiHost()}.`} Retrying every
+            10 s.
+          </span>
           <button
             type="button"
             onClick={() => void checkHealth()}

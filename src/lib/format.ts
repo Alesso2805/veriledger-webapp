@@ -56,6 +56,14 @@ export function formatCertified(iso: string): string {
   return `${day.format(date)} at ${time.format(date)} UTC`;
 }
 
+// What the header and the login say about the API. "no database" when it answers but its database does not
+// (VLA-26), so the screen never claims the API is unreachable when it is not.
+export function healthWord(online: boolean | null, databaseDown: boolean): 'checking' | 'online' | 'offline' | 'no database' {
+  if (online === null) return 'checking';
+  if (online) return 'online';
+  return databaseDown ? 'no database' : 'offline';
+}
+
 // What is left of a demo account: "23 h left", then "45 min left" in its last hour (VLW-34).
 export function formatTimeLeft(ms: number): string {
   if (ms >= 3_600_000) return `${Math.floor(ms / 3_600_000)} h left`;

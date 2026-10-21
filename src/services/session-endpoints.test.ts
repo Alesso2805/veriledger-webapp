@@ -2,7 +2,7 @@ import { AxiosError, type AxiosResponse } from 'axios';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from './api';
 import { getMe, InvalidCredentialsError, login, startDemo } from './auth';
-import { getHealth } from './health';
+import { DatabaseDownError, getHealth } from './health';
 
 describe('session endpoints', () => {
   afterEach(() => {
@@ -72,6 +72,19 @@ describe('session endpoints', () => {
     vi.spyOn(api, 'get').mockResolvedValue({ data: '<!doctype html><html></html>' });
 
     await expect(getHealth()).rejects.toThrow('did not answer');
+  });
+
+  it('getHealth tells a database the API cannot reach from an API it cannot reach (VLA-26)', async () => {
+    const unavailable = (data: unknown) =>
+      new AxiosError('Service Unavailable', 'ERR_BAD_RESPONSE', undefined, undefined, { status: 503, data } as unknown as AxiosResponse);
+    vi.spyOn(api, 'get').mockRejectedValueOnce(
+      unavailable({ status: 'unavailable', environment: 'test', demo_mode: false, database: 'unreachable' }),
+    );
+    await expect(getHealth()).rejects.toBeInstanceOf(DatabaseDownError);
+
+    // A 503 from something in front of the API is not the API speaking about its database.
+    vi.spyOn(api, 'get').mockRejectedValueOnce(unavailable('<html>Service Unavailable</html>'));
+    await expect(getHealth()).rejects.not.toBeInstanceOf(DatabaseDownError);
   });
 
   it('getHealth rejects when the API does not answer', async () => {

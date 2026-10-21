@@ -48,6 +48,7 @@ export function Tower() {
   const [mining, setMining] = useState(false);
   const [params, setParams] = useSearchParams();
   const online = useHealthStore((state) => state.online);
+  const databaseDown = useHealthStore((state) => state.databaseDown);
   const signedIn = useAppStore((state) => state.token !== null);
   const demoMode = useHealthStore((state) => state.demoMode);
   const role = useAppStore((state) => state.user?.role ?? null);
@@ -265,6 +266,7 @@ export function Tower() {
             onTryDemo={() => void demo.start()}
             role={role}
             offline={online === false}
+            databaseDown={databaseDown}
             mining={mining}
             onMine={(minerAddress) => void mine(minerAddress)}
           />

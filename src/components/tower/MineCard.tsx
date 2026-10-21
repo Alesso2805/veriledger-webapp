@@ -15,11 +15,25 @@ interface Props {
   // null until /auth/me answers; the API has the last word on roles (VLA-19).
   role: UserRole | null;
   offline: boolean;
+  // Offline because the API's database does not answer, while the API does (VLA-26).
+  databaseDown: boolean;
   mining: boolean;
   onMine: (minerAddress: string) => void;
 }
 
-export function MineCard({ next, waiting, signedIn, demoMode, startingDemo, onTryDemo, role, offline, mining, onMine }: Props) {
+export function MineCard({
+  next,
+  waiting,
+  signedIn,
+  demoMode,
+  startingDemo,
+  onTryDemo,
+  role,
+  offline,
+  databaseDown,
+  mining,
+  onMine,
+}: Props) {
   const [address, setAddress] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const { pathname, search } = useLocation();
@@ -50,7 +64,9 @@ export function MineCard({ next, waiting, signedIn, demoMode, startingDemo, onTr
   } else if (!allowed) {
     note = 'Mining needs the trader or admin role.';
   } else if (offline) {
-    note = 'Mining is unavailable while the API is unreachable.';
+    note = databaseDown
+      ? 'Mining is unavailable while the API’s database does not answer.'
+      : 'Mining is unavailable while the API is unreachable.';
   } else if (next === 0) {
     note = 'The first block you mine becomes the genesis block.';
   } else if (next !== null && waiting === 0) {
