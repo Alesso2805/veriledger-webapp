@@ -20,6 +20,8 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
 
 `source("../src")` limits Tailwind's class scan to `src`. Without it, Tailwind also scans `docs/` and builds the class names of this document's examples into the app.
 
+`color-scheme: dark` makes the browser draw its own parts, scrollbars and form controls, dark as well. The app has no light theme, so no hex colours are needed for them.
+
 ```css
 @import "tailwindcss" source("../src");
 @import "@fontsource/instrument-sans/400.css";
@@ -67,7 +69,7 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
   --animate-vl-toast-in: vl-toast-in 280ms var(--ease-vl-out) both;
 }
 
-:root { --vl-dur-fast: 160ms; --vl-dur-base: 280ms; --vl-dur-slow: 420ms; --vl-dur-drop: 760ms; }
+:root { color-scheme: dark; --vl-dur-fast: 160ms; --vl-dur-base: 280ms; --vl-dur-slow: 420ms; --vl-dur-drop: 760ms; }
 
 body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family: var(--font-vl-sans); }
 :focus-visible { outline: 2px solid var(--color-vl-accent); outline-offset: 2px; }
