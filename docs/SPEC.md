@@ -84,8 +84,14 @@ Every request goes through `src/services/api.ts`, which adds `Authorization: Bea
 The webapp adopts the API's ADR-0004 through its own ADR-0002.
 
 - **Keys** are Ed25519 raw keys in lowercase hex; the public key is the address. From VLW-16 they are generated in the browser with `@noble/curves` and never sent anywhere.
-- **As built**, the app signs `JSON.stringify` of `{amount, fee, receiver_address, sender_address[, payload]}` with sorted keys. The API verifies Python's `json.dumps` of the same keys, which has spaces and writes `10.0` for `10`, so it rejects every transaction (audit, 2026-10-20).
-- **Target** (VLW-15, VLW-18): `buildSignedMessage` in `src/lib/signing.ts` produces the canonical message of the API's ADR-0004, sorted keys, no whitespace, amounts as 8-decimal strings and a `nonce`, and passes every vector of `veriledger-api/docs/signing-vectors.json`, copied into `src/lib/__fixtures__/`.
+- **The message** (VLW-15):
+  - `src/lib/signing.ts › buildSignedMessage` builds the API's ADR-0004 canonical message: keys sorted by code point, no whitespace, `payload` left out when absent, amounts as 8-decimal strings.
+  - `toAmount` turns what a person types ("10", "0.5") into that spelling, without a float.
+  - `signMessage` signs the UTF-8 bytes.
+- **The request:** `POST /transactions` carries the same amount strings that were signed.
+- **The vectors:** every vector of `veriledger-api/docs/signing-vectors.json` (version 1, copied into `src/lib/__fixtures__/`) passes byte for byte (AR-06).
+- **The nonce** comes with version 2 of the vectors (VLA-16, VLW-18).
+- **Before VLW-15** the page signed `JSON.stringify` of numbers, and the API rejected every transaction (audit, 2026-10-20).
 - A notarization sends amount 0 to the sender's own address, with the document's hash as `payload`.
 
 ## Deployment
