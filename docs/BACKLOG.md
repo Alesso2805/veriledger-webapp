@@ -59,14 +59,21 @@ Two-week sprints, the same as the API's. Each sprint closes with a demonstrable 
 | 0 | Jul 29 – Oct 25, 2026 | Baseline as built, documented and audited | VLW-01 to 07 | 16 | — |
 | 1 | Oct 26 – Nov 8 | Builds from a clean clone, with tests and CI, inside design E's shell and sign-in. Done on 2026-10-20 (#2 to #15) | VLW-10 to 14, 27, 33 | 14 | — |
 | 2 | Nov 9 – 22 | The tower, and signing that works with keys that never leave the browser. Done on 2026-10-21 (#18 to #29) | VLW-15 to 18, 21, 22, 28, 30 | 22 | VLA-15, VLA-16, VLA-20, VLA-33 |
-| 3 | Nov 23 – Dec 6 | Every other view in design E, open to visitors, and the production image | VLW-19, 29, 31, 32, 34 | 14 | VLA-19, VLA-34, VLA-35, VLA-36 |
-| 4 | Dec 7 – 20 | End-to-end and accessibility checks, deployed with the API, released as 1.0.0 | VLW-23, 24, 25, 26 | 13 | VLA-27 |
+| 3 | Nov 23 – Dec 6 | Every other view in design E, open to visitors, and the production image. Done on 2026-10-21 (#31 to #41) | VLW-19, 29, 31, 32, 34 | 14 | VLA-19, VLA-34, VLA-35, VLA-36, VLA-37 |
+| 4 | Dec 7 – 20 | End-to-end and accessibility checks, deployed with the API, released as 1.0.0 | VLW-23, 24, 25, 26 | 13 | VLA-21, VLA-22, VLA-23, VLA-24, VLA-27 |
 
 **Order inside Sprint 1.** VLW-11 first (nothing else is green without it), then VLW-12, VLW-10, VLW-13, VLW-27, VLW-33, and VLW-14 last on the files that survive.
 
 **Order inside Sprint 2.** VLW-15 and VLW-16 first (the signing library and local keys), then VLW-30 on top of them, VLW-18 once the API's nonce exists, VLW-17, and VLW-28 when VLA-20 and VLA-33 are merged.
 
 **Order inside Sprint 3** (product owner, 2026-10-21). First the views whose data is on the API's main: VLW-29 (VLA-20), then VLW-31 (VLA-34). Next, VLW-19, whose generated types need the API's `docs/openapi.json`. Then VLW-34, when VLA-35 is merged (VLA-36 already is), and VLW-32 when VLA-19 is merged.
+
+**Order inside Sprint 4** (product owner, 2026-10-21):
+
+1. VLW-24 first, since it depends on nothing.
+2. VLW-23 once VLA-21 (`CORS_ORIGINS`) and VLA-24 (seeded users from the environment) are merged. It runs against the API's published image (VLA-22) and its Compose (VLA-23), both already merged.
+3. VLW-25 with VLA-27.
+4. VLW-26 last, because its screenshots come from the deployed instance.
 
 **Buffer.** Sprints 2 and 3 carry 17 points each. If a sprint does not close, move out the "Should" stories (VLW-14, VLW-19, VLW-24, VLW-26, VLW-32) before cutting quality on a "Must". A view whose API data is late waits; it is never built on invented data (DESIGN.md).
 
