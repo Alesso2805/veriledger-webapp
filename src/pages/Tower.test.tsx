@@ -92,7 +92,7 @@ describe('Tower', () => {
   beforeEach(() => {
     useHealthStore.setState({ online: true });
     useToastStore.setState({ toasts: [] });
-    useAppStore.setState({ user: null });
+    useAppStore.setState({ token: 'abc.def.ghi', user: null });
   });
 
   afterEach(() => {
@@ -213,7 +213,10 @@ describe('Tower mining', () => {
   beforeEach(() => {
     useHealthStore.setState({ online: true });
     useToastStore.setState({ toasts: [] });
-    useAppStore.setState({ user: { id: '1', email: 'trader@veriledger.test', role: 'trader', created_at: '', updated_at: '' } });
+    useAppStore.setState({
+      token: 'abc.def.ghi',
+      user: { id: '1', email: 'trader@veriledger.test', role: 'trader', created_at: '', updated_at: '' },
+    });
   });
 
   afterEach(() => {
@@ -260,6 +263,18 @@ describe('Tower mining', () => {
 
     expect(screen.getByText('Mining needs the trader or admin role.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mine block #3' })).toBeDisabled();
+  });
+
+  it('lets a visitor look, and offers to sign in to mine', async () => {
+    useAppStore.setState({ token: null, user: null });
+    serve(chainOf(3), [transfer]);
+    await readyToMine('/?block=1');
+
+    expect(screen.getByText('Anyone can look. To mine, sign in.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Mine block #3' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sign in to mine' })).toHaveAttribute('href', '/login');
+    fireEvent.submit(screen.getByLabelText('Reward address').closest('form')!);
+    expect(mineBlock).not.toHaveBeenCalled();
   });
 
   it('does not offer mining while the API is unreachable', async () => {

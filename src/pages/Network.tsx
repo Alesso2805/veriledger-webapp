@@ -23,9 +23,11 @@ export function Network() {
   const [phase, setPhase] = useState<ResolvePhase>('idle');
   const [result, setResult] = useState<ResolveResult | null>(null);
   const [round, setRound] = useState(0);
-  // Until /auth/me answers the form shows; the API refuses anyone but an admin with a 403 anyway.
+  // A visitor only looks (ADR-0005). Signed in, the form shows until /auth/me answers; the API refuses anyone but an
+  // admin with a 403 anyway.
+  const signedIn = useAppStore((state) => state.token !== null);
   const role = useAppStore((state) => state.user?.role ?? null);
-  const admin = role === null || role === 'admin';
+  const admin = signedIn && (role === null || role === 'admin');
 
   const load = useCallback(async () => {
     const [list, top] = await Promise.all([getPeers().catch(() => 'unknown' as const), topNumber()]);

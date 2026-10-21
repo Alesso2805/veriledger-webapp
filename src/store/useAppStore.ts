@@ -12,6 +12,7 @@ interface AppState {
   setUser: (user: CurrentUser | null) => void;
   logout: () => void;
   expire: () => void;
+  clearEndedReason: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -24,6 +25,7 @@ export const useAppStore = create<AppState>()(
       setUser: (user) => set({ user }),
       logout: () => set({ token: null, endedReason: null, user: null }),
       expire: () => set({ token: null, endedReason: 'expired', user: null }),
+      clearEndedReason: () => set({ endedReason: null }),
     }),
     {
       name: 'veriledger-storage',

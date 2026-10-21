@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { getMe } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
+import { useSessionToken } from './useSessionToken';
 
 export function UserChip() {
-  const token = useAppStore((state) => state.token);
+  // Never an expired token: its 401 could arrive after the login and end the session a second time.
+  const { token } = useSessionToken();
   const user = useAppStore((state) => state.user);
   const setUser = useAppStore((state) => state.setUser);
 

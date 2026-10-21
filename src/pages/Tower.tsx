@@ -47,6 +47,7 @@ export function Tower() {
   const [mining, setMining] = useState(false);
   const [params, setParams] = useSearchParams();
   const online = useHealthStore((state) => state.online);
+  const signedIn = useAppStore((state) => state.token !== null);
   const role = useAppStore((state) => state.user?.role ?? null);
   const show = useToastStore((state) => state.show);
   // The latest chain for callbacks that run between renders, such as the poll that compares tops.
@@ -255,6 +256,7 @@ export function Tower() {
           <MineCard
             next={nextNumber}
             waiting={chain?.waitingTotal ?? null}
+            signedIn={signedIn}
             role={role}
             offline={online === false}
             mining={mining}

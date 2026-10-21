@@ -5,6 +5,7 @@ import { getMe } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
 import { useKeyStore } from '../store/useKeyStore';
+import type { LoginRedirectState } from '../types/session';
 import { Layout } from './Layout';
 
 vi.mock('../services/auth', () => ({ getMe: vi.fn() }));
@@ -17,11 +18,16 @@ function CurrentPath() {
   return <p data-testid="path">{useLocation().pathname}</p>;
 }
 
+function LoginProbe() {
+  const from = (useLocation().state as LoginRedirectState | null)?.from;
+  return <p>login page, back to {from ? `${from.pathname}${from.search ?? ''}` : 'nowhere'}</p>;
+}
+
 function renderShell(path = '/wallet') {
   render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path="/login" element={<p>login page</p>} />
+        <Route path="/login" element={<LoginProbe />} />
         <Route element={<Layout />}>
           <Route path="/" element={<p>tower page</p>} />
           <Route path="/wallet" element={<p>wallet page</p>} />
@@ -80,6 +86,19 @@ describe('Layout (the shell)', () => {
     expect(useAppStore.getState().token).toBeNull();
     expect(useKeyStore.getState().pair).toBeNull();
     expect(screen.getByTestId('path')).toHaveTextContent(/^\/login$/);
+  });
+
+  it('offers a visitor "Sign in", which comes back to the same page', async () => {
+    useAppStore.setState({ token: null, user: null });
+    vi.mocked(getMe).mockClear();
+    renderShell('/transaction/abc?from=search');
+    await apiStatus('api · online');
+
+    expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument();
+    expect(getMe).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('link', { name: 'Sign in' }));
+
+    expect(screen.getByText('login page, back to /transaction/abc?from=search')).toBeInTheDocument();
   });
 
   it('has the search for blocks and transactions in its header', async () => {

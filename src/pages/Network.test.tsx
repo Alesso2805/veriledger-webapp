@@ -15,7 +15,7 @@ const admin = { id: '1', email: 'admin@veriledger.test', role: 'admin' as const,
 
 describe('Network', () => {
   beforeEach(() => {
-    useAppStore.setState({ user: admin });
+    useAppStore.setState({ token: 'abc.def.ghi', user: admin });
     vi.mocked(getPeers).mockResolvedValue([peer('https://node-b.example.org'), peer('http://127.0.0.1:8001')]);
     vi.mocked(getBlocks).mockResolvedValue({ items: [{ block_number: 5 } as Block], total: 6, page: 1, size: 1 } as Paginated<Block>);
   });
@@ -144,6 +144,16 @@ describe('Network', () => {
     render(<Network />);
 
     expect(await screen.findByText(/Only an admin can add peers or resolve conflicts/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Peer address')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Resolve conflicts' })).toBeDisabled();
+  });
+
+  it('lets a visitor look at the peers, and nothing more', async () => {
+    useAppStore.setState({ token: null, user: null });
+    render(<Network />);
+
+    expect(await screen.findByRole('heading', { name: 'Registered peers · 2' })).toBeInTheDocument();
+    expect(screen.getByText(/Only an admin can add peers or resolve conflicts/)).toBeInTheDocument();
     expect(screen.queryByLabelText('Peer address')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Resolve conflicts' })).toBeDisabled();
   });
