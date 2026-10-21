@@ -23,12 +23,12 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 | Page | Route | What it does | Status |
 | --- | --- | --- | --- |
 | Login | `/login` | Email and password against `POST /auth/login` (OAuth2 form); stores the token. "Try the demo" starts a 24-hour trader account with one click (API ADR-0006) | Built (VLW-01). VLW-33 adds design E, an empty form, the 401 shake and the return to the page the person was on. VLW-17 adds the session-expired redirect. The demo comes with VLW-34 |
-| Tower | `/` | The newest 10 blocks drawn as a tower; the list with "Load older blocks"; the selected block with its transactions; what waits for the next block. Height, waiting count and last block, refreshed every 10 s. `?block=n` opens a block. Mining to a reward address, for the trader and admin roles | Built (VLW-28), replacing the explorer of VLW-04; block search comes in VLW-19 |
-| Transaction | `/transaction/:hash` | The journey (signed, accepted, sealed, buried); the details with the signature verified in the browser; the block that holds it; a notarization's certificate (VLW-29b); times in UTC | Built (VLW-29, design E), replacing the page of VLW-05 |
+| Tower | `/` | The newest 10 blocks drawn as a tower; the list with "Load older blocks"; the selected block with its transactions; what waits for the next block. Height, waiting count and last block, refreshed every 10 s. `?block=n` opens a block. Mining to a reward address, for the trader and admin roles. Open without a session; a visitor sees "Sign in to mine" | Built (VLW-28), replacing the explorer of VLW-04; open to visitors since VLW-34a |
+| Transaction | `/transaction/:hash` | The journey (signed, accepted, sealed, buried); the details with the signature verified in the browser; the block that holds it; a notarization's certificate (VLW-29b); times in UTC. Open without a session | Built (VLW-29, design E), replacing the page of VLW-05; open to visitors since VLW-34a |
 | Wallet | `/wallet` | Create a key pair or open a key file; the address, its identity cube and its balance; save the key file and confirm it; forget the key; the address's activity and a look-up of any address (VLW-31b) | Built (VLW-31, design E), replacing the page of VLW-02; the key is created in the browser (VLW-16) and is the one Sign and send uses |
 | Sign and send | `/transact` | Signs with the key held in the tab: open a key file or use the wallet's. Composes a transfer or a notarization (the document is hashed in the browser) and shows the message being signed. Signs it, sends the message and the signature, and shows the node's answer | Built (VLW-30, design E), replacing the page of VLW-03. It signs the API's canonical message (VLW-15) with the sender's next nonce (VLW-18) |
-| Network | `/network` | This node and its peers on a ring map; the peer list; adding a peer (admin); resolving conflicts (admin) | Built (VLW-32, design E), replacing the page of VLW-06 |
-| Not found | any other path | The 404 tower with "Back to the tower", inside the shell | Built (VLW-33) |
+| Network | `/network` | This node and its peers on a ring map; the peer list; adding a peer (admin); resolving conflicts (admin). Open without a session, read-only | Built (VLW-32, design E), replacing the page of VLW-06; open to visitors since VLW-34a |
+| Not found | any other path | The 404 tower with "Back to the tower", inside the shell. Open without a session | Built (VLW-33); open to visitors since VLW-34a |
 
 **Out of scope for this plan:** storing private keys (encrypted or not) beyond the session, hardware wallets, a block explorer for other networks, internationalization, a light theme.
 
@@ -46,9 +46,9 @@ A single-page app built by Vite into static files (ADR-0001).
 | `src/types` | Types of the API's responses; generated from its OpenAPI document in VLW-19 | Nothing |
 
 `src/Router.tsx` exports the route table as data (`routes`), so that AR-08 can walk it.
-- Every route except `/login` is wrapped in `ProtectedRoute` (`src/components/RouteGuards.tsx`), which redirects to `/login` without a token.
-  - It keeps the page in the router state (`LoginRedirectState`), so `PublicRoute` returns there after signing in.
-  - A 401 on a request that carried the session, or a stored token whose `exp` has passed (`src/lib/jwt.ts`), ends the session. The guards then send the person to the login with `reason: 'expired'` (VLW-17).
+- The pages whose data the API serves to anyone (`/`, `/transaction/:hash`, `/network` and the 404) are wrapped in `OpenRoute`; `/wallet` and `/transact` in `ProtectedRoute` (`src/components/RouteGuards.tsx`), which redirects to `/login` without a token (ADR-0005).
+  - Without a session the header's "Sign in", the tower's "Sign in to mine" and `ProtectedRoute` keep the page in the router state (`LoginRedirectState`), so `PublicRoute` returns there after signing in.
+  - A 401 on a request that carried the session, or a stored token whose `exp` has passed (`src/lib/jwt.ts`), ends the session. Both guards then send the person to the login with `reason: 'expired'` (VLW-17). The login takes the reason from its router state and the store forgets it, so a visitor can go back to an open page.
 - `src/App.tsx` renders the table with `useRoutes`, and `src/main.tsx` mounts it inside `BrowserRouter`.
 - The tests of the architecture rules live in `src/architecture/`.
 
@@ -69,8 +69,8 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 | --- | --- | --- |
 | Shell | `GET /health` every 10 s on every page, the login included (`HealthWatcher`, `src/services/health.ts`); `GET /auth/me` once per session (`src/services/auth.ts`); the search: `GET /blocks?skip&limit=1` for a block number, `GET /blocks/{block_hash}` and `GET /transactions/{tx_hash}` for a full hash (`src/services/ledger.ts`, VLW-19) | Public; JWT |
 | Login | `POST /auth/login` (form-urlencoded) | Public |
-| Tower | `GET /blocks?skip&limit` (the tower, older pages, a deep link), `GET /blocks/{block_hash}` (the selected block), `GET /transactions?status=PENDING&skip&limit` (waiting), every 10 s (`src/services/ledger.ts`, VLA-20, VLA-33); `POST /blocks/mine`, then `GET /blocks/{block_hash}` for the reward of the toast | JWT |
-| Transaction | `GET /transactions/{tx_hash}` and `GET /blocks?skip=0&limit=1` (the height), every 10 s; `GET /blocks/{block_hash}` for a certificate's moment (`src/services/ledger.ts`, VLA-20) | JWT |
+| Tower | `GET /blocks?skip&limit` (the tower, older pages, a deep link), `GET /blocks/{block_hash}` (the selected block), `GET /transactions?status=PENDING&skip&limit` (waiting), every 10 s (`src/services/ledger.ts`, VLA-20, VLA-33); `POST /blocks/mine`, then `GET /blocks/{block_hash}` for the reward of the toast | Public; JWT to mine |
+| Transaction | `GET /transactions/{tx_hash}` and `GET /blocks?skip=0&limit=1` (the height), every 10 s; `GET /blocks/{block_hash}` for a certificate's moment (`src/services/ledger.ts`, VLA-20) | Public |
 | Wallet | `GET /wallets/{address}/balance` and `GET /wallets/{address}/transactions?skip=0&limit=20` (VLA-34), for the key's address and any address looked up (`src/services/wallets.ts`); keys are generated in the browser (`src/lib/keys.ts`, VLW-16), and the key file is written in it (`src/lib/keyFile.ts`) | Public |
 | Sign and send | `GET /wallets/{address}/nonce` and `GET /wallets/{address}/balance` when a key is opened, after a 409 (the nonce) and for "Send another" (`src/services/wallets.ts`, VLA-16); `POST /transactions` (`src/services/ledger.ts`) | Public; JWT |
 | Network | `GET /nodes` and `GET /blocks?skip=0&limit=1` (the height); `POST /nodes/register` and `POST /nodes/resolve`, admin only (`src/services/nodes.ts`, VLA-19) | Public; JWT |
