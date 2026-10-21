@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-// AR-05, the part that can be checked today: no code asks the server to generate a key pair.
-// The other part, recording every request of the generate → sign → send flow, comes with VLW-30.
+// AR-05, first half: no code asks the server to generate a key pair. The second half, that no request of the
+// generate → sign → send flow carries the private key, is no-private-key-in-requests.test.tsx.
 const KNOWN_VIOLATIONS: Record<string, string> = {};
 
 const sources = import.meta.glob<string>(['../**/*.{ts,tsx}', '!../**/*.test.{ts,tsx}'], {
