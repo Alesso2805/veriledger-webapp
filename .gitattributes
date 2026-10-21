@@ -1,0 +1,4 @@
+# The container's files run on Linux: keep LF even in a Windows checkout, or the shell scripts fail at start.
+*.sh text eol=lf
+Dockerfile text eol=lf
+docker/* text eol=lf

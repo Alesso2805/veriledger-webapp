@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Every asset becomes a file: data: URIs would need font-src/img-src data: in the Content Security Policy.
+  build: { assetsInlineLimit: 0 },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
