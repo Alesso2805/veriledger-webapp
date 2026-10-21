@@ -129,7 +129,11 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 - **Artboard:** the header of every view, and "E · Estados del shell".
 - **Pieces:**
   - logo and tabs (Tower, Sign and send, Wallet, Network);
-  - search: block number or hash → dropdown of matches (VLW-19). Until then it finds transactions by hash and reads "Transaction hash";
+  - search, "Block number or hash" (VLW-19a): the API looks up a block number or a full 64-character hash, never a prefix (product owner, 2026-10-21; the first artboard matched prefixes).
+    - A number opens "Block #n", or says "No block #n yet.".
+    - A full hash is tried as a block (`GET /blocks/{block_hash}`) and as a transaction (`GET /transactions/{tx_hash}`). Whatever it is shows in the dropdown, such as "Notarization 64b61372… · in block #21".
+    - Anything else reads "Type a block number or a full 64-character hash.".
+    - Enter opens the first result, and Escape closes the dropdown;
   - `/health` status, polled every 10 s;
   - signed in: email and role from `GET /auth/me`, then a "Sign out" pill (added 2026-10-20; the first artboards had no way to sign out). A demo account shows "Guest XXXX · demo · N h left";
   - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34);
