@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   formatAmount,
+  formatCertified,
   formatClock,
   formatCount,
   formatSealed,
@@ -79,6 +80,10 @@ describe('times', () => {
   it('writes a seal as date and time in the given zone', () => {
     expect(formatSealed(sealed, 'UTC')).toBe('20 Oct 2026 · 21:34:47');
     expect(formatSealed(sealed, 'America/Lima')).toBe('20 Oct 2026 · 16:34:47');
+  });
+
+  it('writes the moment a certificate states, in UTC whatever the reader’s zone', () => {
+    expect(formatCertified(sealed)).toBe('20 October 2026 at 21:34:47 UTC');
   });
 
   it('writes the clock time for lists', () => {
