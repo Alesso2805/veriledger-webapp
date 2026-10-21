@@ -26,19 +26,27 @@ const tab = (page: Page, name: string) => page.getByRole('navigation', { name: '
 
 // Mines and waits for the toast of the block this click sealed. Its number comes from the API's answer, not
 // from the button: another miner on the same node (here, the other flow) can take the number shown first.
+// That miner can also be busy, since a node mines one block at a time (429, VLA-29), or have just sealed the same
+// height (409, VLA-17). The toast says so, and, as a person would, the flow waits for Retry-After and tries again.
 async function mineTo(page: Page, address: string): Promise<number> {
   await tab(page, 'Tower').click();
   await page.getByLabel('Reward address').fill(address);
-  const [answer] = await Promise.all([
-    page.waitForResponse((response) => response.url().endsWith('/blocks/mine') && response.request().method() === 'POST', {
-      timeout: 60_000,
-    }),
-    page.getByRole('button', { name: /^Mine (block #\d+|the genesis block)$/ }).click(),
-  ]);
-  expect(answer.ok(), 'POST /blocks/mine').toBe(true);
-  const { block_number: sealed } = (await answer.json()) as { block_number: number };
-  await expect(page.getByText(new RegExp(`^Block #${sealed} sealed · nonce`))).toBeVisible();
-  return sealed;
+  for (let attempt = 1; ; attempt++) {
+    const [answer] = await Promise.all([
+      page.waitForResponse((response) => response.url().endsWith('/blocks/mine') && response.request().method() === 'POST', {
+        timeout: 60_000,
+      }),
+      page.getByRole('button', { name: /^Mine (block #\d+|the genesis block)$/ }).click(),
+    ]);
+    if (answer.ok()) {
+      const { block_number: sealed } = (await answer.json()) as { block_number: number };
+      await expect(page.getByText(new RegExp(`^Block #${sealed} sealed · nonce`))).toBeVisible();
+      return sealed;
+    }
+    expect([409, 429], `POST /blocks/mine answered ${answer.status()}`).toContain(answer.status());
+    expect(attempt, 'mining attempts').toBeLessThan(10);
+    await page.waitForTimeout(Number(answer.headers()['retry-after'] ?? 1) * 1000);
+  }
 }
 
 // Signs what the composer holds, sends it, and returns the hash the node accepted it under.
