@@ -49,6 +49,7 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
   --color-vl-cube-right-on: #3A3F4B;
   --color-vl-shadow: #12151B;
   --color-vl-danger-soft: #2A1714;
+  --color-vl-inset: #090A0D;
   --font-vl-sans: "Instrument Sans", system-ui, sans-serif;
   --font-vl-mono: "Martian Mono", ui-monospace, monospace;
   --ease-vl-out: cubic-bezier(.2, .7, .2, 1);
@@ -93,7 +94,7 @@ body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family:
 
 Utilities follow from the names: `bg-vl-surface`, `text-vl-muted`, `font-vl-mono`, `ease-vl-out`, `animate-vl-drop`. Transitions use `duration-(--vl-dur-fast)` and friends.
 
-**Contrast on `--color-vl-bg`:** text 15.8:1, muted 7.3:1, accent 10.9:1, danger 7.5:1, ok above 9:1. `--color-vl-faint` (about 4.2:1) is only for disabled controls and decoration. `--color-vl-shadow` is decoration only: the ellipse under a tower. `--color-vl-danger-soft` is the background of the offline banner, under text in `--color-vl-text`. Both were added on 2026-10-20; the first artboards drew them with literal colours. `--color-vl-cube-left-on` and `--color-vl-cube-right-on` are the sides of the selected cube in the tower, whose top turns `--color-vl-accent`. They are decoration, added on 2026-10-21 for the same reason (VLW-28).
+**Contrast on `--color-vl-bg`:** text 15.8:1, muted 7.3:1, accent 10.9:1, danger 7.5:1, ok above 9:1. `--color-vl-faint` (about 4.2:1) is only for disabled controls and decoration. `--color-vl-shadow` is decoration only: the ellipse under a tower. `--color-vl-danger-soft` is the background of the offline banner, under text in `--color-vl-text`. Both were added on 2026-10-20; the first artboards drew them with literal colours. `--color-vl-cube-left-on` and `--color-vl-cube-right-on` are the sides of the selected cube in the tower, whose top turns `--color-vl-accent`. They are decoration, added on 2026-10-21 for the same reason (VLW-28). `--color-vl-inset` is the background of the message being signed, darker than the page, under text in `--color-vl-text` (16.4:1); it was added on 2026-10-21 for the same reason (VLW-30).
 
 ## Motion map
 
@@ -108,6 +109,7 @@ Utilities follow from the names: `bg-vl-surface`, `text-vl-muted`, `font-vl-mono
 | A peer is registered (201) | Peers move to their new places on the ring with a `transform` transition (`--vl-dur-slow`); the new one `animate-vl-pop` | Network |
 | A request is refused (401 login, 400 signature or funds, 409 nonce, 400 peer) | `animate-vl-shake` on the form or result card | Login, Sign and send, Network |
 | A signature is produced in the browser | `animate-vl-reveal` on the hex | Sign and send |
+| The kind switches between transfer and notarization | The pill slides with `transform` (300 ms, `--ease-vl-out`); the fields for the new kind `animate-vl-fade-up` | Sign and send |
 | A file is being hashed (`crypto.subtle.digest`) | `animate-vl-pulse` on "Hashing…" (no percentage: the API gives none) | Transaction, Sign and send |
 | First response pending | Skeletons with `animate-vl-pulse` | Every list |
 | A background action finished | Toast `animate-vl-toast-in`, 4 s, dismissible | Shell |
@@ -190,6 +192,14 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - "Open a key file" reads the JSON the wallet saves, `{"public_key", "private_key"}` (VLW-31 writes the same format). The public key is derived again from the private one, and a file whose halves do not match is refused with the reason.
   - A reload forgets the key, and signing out clears it.
   - "Signing as" shows the identity cube, the address (8 characters on each side) and the balance.
+- **Composing** (VLW-30b, `src/lib/compose.ts`):
+  - The nonce is read from the node when the key is opened.
+  - The checks match the API's. The address must be 64 hex characters, and the amount above 0 with at most 8 decimals. The fee is 0 or more. A notarization needs its document's hash.
+  - The amount turns red when amount and fee exceed the balance. That is a hint; the API has the last word.
+  - Red borders appear only once a field has text, so an empty form is not an error.
+  - "What you are signing" lists the message key by key: addresses and payload shortened, the nonce in the accent colour, and the size in UTF-8 bytes. Once complete, the lines are exactly the signed message (tested).
+  - Choosing the other kind starts without a document.
+  - The background is `--color-vl-inset`.
 - **Behaviour:**
   - the canonical message is rebuilt on every keystroke (`src/lib/signing.ts`, VLW-15);
   - editing after signing discards the signature;

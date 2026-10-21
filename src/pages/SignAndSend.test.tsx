@@ -2,7 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import vectors from '../lib/__fixtures__/signing-vectors.json';
-import { getBalance } from '../services/wallets';
+import { buildSignedMessage, signMessage } from '../lib/signing';
+import { getBalance, getNextNonce } from '../services/wallets';
 import { useKeyStore } from '../store/useKeyStore';
 import { SignAndSend } from './SignAndSend';
 
@@ -29,6 +30,7 @@ describe('SignAndSend', () => {
   beforeEach(() => {
     useKeyStore.setState({ pair: null });
     vi.mocked(getBalance).mockResolvedValue(50.1);
+    vi.mocked(getNextNonce).mockResolvedValue(1);
   });
 
   afterEach(() => {
@@ -69,5 +71,83 @@ describe('SignAndSend', () => {
 
     expect(screen.queryByRole('heading', { name: 'No key in this tab' })).not.toBeInTheDocument();
     expect(await screen.findByText('50.10 VL')).toBeInTheDocument();
+  });
+});
+
+describe('SignAndSend composing and signing', () => {
+  // The API's own "transfer" vector: 10 to its receiver, no fee, nonce 1.
+  const transfer = vectors.vectors.find((vector) => vector.name === 'transfer')!;
+
+  beforeEach(() => {
+    useKeyStore.setState({ pair: { public_key: transfer.public_key, private_key: transfer.private_key } });
+    vi.mocked(getBalance).mockResolvedValue(50);
+    vi.mocked(getNextNonce).mockResolvedValue(1);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  async function startTransfer() {
+    renderPage();
+    await screen.findByDisplayValue('1');
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: transfer.fields.receiver_address } });
+    fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '10' } });
+  }
+
+  it('shows the message as it will be signed, with the nonce from the node, and signs it as the API expects', async () => {
+    await startTransfer();
+
+    expect(getNextNonce).toHaveBeenCalledWith(transfer.public_key);
+    expect(screen.getByText(`${new TextEncoder().encode(transfer.message).length} bytes · keys sorted · no spaces`)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Sign with this key' }));
+
+    expect(screen.getByText(transfer.signature)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Signed' })).toBeDisabled();
+  });
+
+  it('discards the signature when the message changes after signing', async () => {
+    await startTransfer();
+    fireEvent.click(screen.getByRole('button', { name: 'Sign with this key' }));
+
+    fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '11' } });
+
+    expect(screen.queryByText(transfer.signature)).not.toBeInTheDocument();
+    expect(screen.getByText('You changed the message, so the old signature no longer matches. Sign again.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign with this key' })).toBeEnabled();
+  });
+
+  it('says what is wrong with the address, and does not sign', async () => {
+    renderPage();
+    await screen.findByDisplayValue('1');
+
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: 'abc' } });
+
+    expect(screen.getByLabelText('To')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText('An address has 64 characters from 0–9 and a–f.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign with this key' })).toBeDisabled();
+  });
+
+  it('hashes the chosen document here and signs its fingerprint as the payload', async () => {
+    const abc = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
+    renderPage();
+    await screen.findByDisplayValue('1');
+    fireEvent.click(screen.getByRole('button', { name: 'Notarize a document' }));
+
+    fireEvent.change(screen.getByLabelText(/Choose the document/), {
+      target: { files: [new File(['abc'], 'contract.txt', { type: 'text/plain' })] },
+    });
+
+    expect(await screen.findByText('contract.txt · SHA-256 ba7816bf…f20015ad')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Sign with this key' }));
+    const message = buildSignedMessage({
+      sender_address: transfer.public_key,
+      receiver_address: transfer.public_key,
+      amount: '0.00000000',
+      fee: '0.00000000',
+      nonce: 1,
+      payload: abc,
+    });
+    expect(screen.getByText(signMessage(message, transfer.private_key))).toBeInTheDocument();
   });
 });
