@@ -45,6 +45,8 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
   --color-vl-cube-top: #3A4150;
   --color-vl-cube-left: #262B35;
   --color-vl-cube-right: #2F3541;
+  --color-vl-cube-left-on: #4A4F5C;
+  --color-vl-cube-right-on: #3A3F4B;
   --color-vl-shadow: #12151B;
   --color-vl-danger-soft: #2A1714;
   --font-vl-sans: "Instrument Sans", system-ui, sans-serif;
@@ -91,7 +93,7 @@ body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family:
 
 Utilities follow from the names: `bg-vl-surface`, `text-vl-muted`, `font-vl-mono`, `ease-vl-out`, `animate-vl-drop`. Transitions use `duration-(--vl-dur-fast)` and friends.
 
-**Contrast on `--color-vl-bg`:** text 15.8:1, muted 7.3:1, accent 10.9:1, danger 7.5:1, ok above 9:1. `--color-vl-faint` (about 4.2:1) is only for disabled controls and decoration. `--color-vl-shadow` is decoration only: the ellipse under a tower. `--color-vl-danger-soft` is the background of the offline banner, under text in `--color-vl-text`. Both were added on 2026-10-20; the first artboards drew them with literal colours.
+**Contrast on `--color-vl-bg`:** text 15.8:1, muted 7.3:1, accent 10.9:1, danger 7.5:1, ok above 9:1. `--color-vl-faint` (about 4.2:1) is only for disabled controls and decoration. `--color-vl-shadow` is decoration only: the ellipse under a tower. `--color-vl-danger-soft` is the background of the offline banner, under text in `--color-vl-text`. Both were added on 2026-10-20; the first artboards drew them with literal colours. `--color-vl-cube-left-on` and `--color-vl-cube-right-on` are the sides of the selected cube in the tower, whose top turns `--color-vl-accent`. They are decoration, added on 2026-10-21 for the same reason (VLW-28).
 
 ## Motion map
 
@@ -152,15 +154,21 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 
 ### Tower — `/` (and `/?block=<number>` for a deep link)
 
-- **Artboard:** "E · Torre". Tweaks: `role` (admin, trader, viewer, demo, signed out), `state` (ready, loading, empty, error), `incoming` (a block from another node).
+- **Artboard:** "E · Torre". Tweaks: `role` (admin, trader, viewer, demo, signed out), `state` (ready, loading, empty, error), `incoming` (a block that joined the chain).
 - **Signed out:** the tower, list, detail and waiting list are public (VLA-36). The mine button reads "Try the demo to mine" and starts a demo account in place (VLW-34).
 - **Data:**
-  - blocks: `GET /blocks?skip&limit`, newest 10 drawn as the tower; "Load older blocks" pages back; `total` gives the height (VLA-20);
-  - selected block: `GET /blocks/full` or `GET /blocks/{block_hash}` (VLA-20), transactions linked by `tx_hash`;
-  - waiting: `GET /transactions?status=PENDING` (*new*, VLA-33);
+  - blocks: `GET /blocks?skip&limit`. The newest 10 are drawn as the tower; "Load older blocks" pages back; the height is the top block's number (VLA-20).
+  - selected block: `GET /blocks/{block_hash}` (VLA-20), with the mining reward first and every transaction linked by `tx_hash`.
+  - waiting: `GET /transactions?status=PENDING` (VLA-33). It shows the newest 10; the count is the API's `total`.
   - mining: `POST /blocks/mine`; the button needs the trader or admin role (VLA-19); the nonce shown is the response's.
-- **Polling:** every 10 s; "Updated N s ago" counts in the browser.
-- **States:** loading skeleton tower, empty (the next block is the genesis block), API unreachable (last data kept, retry), viewer role (mining disabled with the reason).
+- **Selection:** without `?block=n` it follows the top of the chain. Picking a block writes `?block=n` and keeps it selected while new blocks arrive. A link to a block below the loaded pages reads that one block.
+- **Polling:** every 10 s; "Updated N s ago" counts in the browser and is not a live region, so a screen reader does not read it every second. A block found by polling drops onto the tower and shows the toast "Block #n joined the chain." It does not say "from another node": another user of the same node may have mined it (product owner, 2026-10-21).
+- **States:**
+  - loading: skeleton tower;
+  - empty: the next block is the genesis block;
+  - API unreachable: the shell's offline banner says so, and the tower keeps the last data. Its freshness line reads "Last update N s ago · retrying".
+  - The tower's own error card is only for failures the banner does not explain, such as a 500 from `/blocks`. It shows the API's `detail` and "Retry now" (product owner, 2026-10-21).
+  - viewer role: mining is disabled, with the reason.
 - **Stories:** VLW-28 (with VLA-20, VLA-33).
 
 ### Transaction — `/transaction/:hash`
