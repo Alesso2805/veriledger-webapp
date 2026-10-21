@@ -26,7 +26,7 @@ export function UserChip() {
 
   return (
     <span className="hidden h-9 items-center gap-2 rounded-full border border-vl-line px-3 text-[13px] sm:flex">
-      <span>{user.email}</span>
+      <span>{user.display_name}</span>
       <span className="font-vl-mono text-[11px] text-vl-accent">{user.role}</span>
     </span>
   );

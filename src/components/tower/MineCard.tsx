@@ -6,8 +6,12 @@ interface Props {
   // The number the next block will get; null until the chain has loaded.
   next: number | null;
   waiting: number | null;
-  // Anyone can look at the tower; mining needs a session (ADR-0005). VLW-34b offers a demo account instead.
+  // Anyone can look at the tower; mining needs a session (ADR-0005). A node in demo mode offers a demo account
+  // in place, which signs the visitor in without leaving the tower (VLW-34); otherwise the login.
   signedIn: boolean;
+  demoMode: boolean;
+  startingDemo: boolean;
+  onTryDemo: () => void;
   // null until /auth/me answers; the API has the last word on roles (VLA-19).
   role: UserRole | null;
   offline: boolean;
@@ -15,7 +19,7 @@ interface Props {
   onMine: (minerAddress: string) => void;
 }
 
-export function MineCard({ next, waiting, signedIn, role, offline, mining, onMine }: Props) {
+export function MineCard({ next, waiting, signedIn, demoMode, startingDemo, onTryDemo, role, offline, mining, onMine }: Props) {
   const [address, setAddress] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const { pathname, search } = useLocation();
@@ -42,7 +46,7 @@ export function MineCard({ next, waiting, signedIn, role, offline, mining, onMin
       </>
     );
   } else if (!signedIn) {
-    note = 'Anyone can look. To mine, sign in.';
+    note = demoMode ? 'Anyone can look. To mine, start a demo: one click, no email.' : 'Anyone can look. To mine, sign in.';
   } else if (!allowed) {
     note = 'Mining needs the trader or admin role.';
   } else if (offline) {
@@ -86,6 +90,15 @@ export function MineCard({ next, waiting, signedIn, role, offline, mining, onMin
             }`}
           >
             {mining ? 'Mining…' : next === 0 ? 'Mine the genesis block' : `Mine block${next === null ? '' : ` #${next}`}`}
+          </button>
+        ) : demoMode ? (
+          <button
+            type="button"
+            onClick={onTryDemo}
+            disabled={startingDemo}
+            className="h-11 rounded-[10px] bg-vl-accent px-[18px] font-semibold text-vl-on-accent"
+          >
+            {startingDemo ? 'Starting a demo…' : 'Try the demo to mine'}
           </button>
         ) : (
           <Link

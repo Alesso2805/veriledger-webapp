@@ -1,8 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PublicRoute } from '../components/RouteGuards';
-import { InvalidCredentialsError, login } from '../services/auth';
+import { InvalidCredentialsError, login, startDemo } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
 import type { LoginRedirectState } from '../types/session';
@@ -11,7 +11,11 @@ import { Login } from './Login';
 vi.mock('../services/auth', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../services/auth')>()),
   login: vi.fn(),
+  startDemo: vi.fn(),
 }));
+
+// The API's 429 detail, as detailOf passes it on (its own tests cover reading it from the response).
+const tooMany = () => new Error('Too many demo accounts from your network in the last hour; try again later');
 
 function renderLogin(state?: LoginRedirectState) {
   render(
@@ -41,7 +45,43 @@ function signIn() {
 describe('Login', () => {
   beforeEach(() => {
     useAppStore.setState({ token: null });
+    useHealthStore.setState({ demoMode: false });
     vi.mocked(login).mockReset();
+    vi.mocked(startDemo).mockReset();
+  });
+
+  it('starts a demo with one click and returns to the page the visitor was on', async () => {
+    useHealthStore.setState({ demoMode: true });
+    let created: (token: string) => void = () => {};
+    vi.mocked(startDemo).mockReturnValue(new Promise((resolve) => (created = resolve)));
+    renderLogin({ from: { pathname: '/wallet' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Try the demo · no account needed' }));
+
+    expect(screen.getByRole('button', { name: 'Creating a demo account…' })).toBeDisabled();
+    await act(async () => created('demo.jwt.token'));
+    expect(await screen.findByText('wallet page')).toBeInTheDocument();
+    expect(useAppStore.getState().token).toBe('demo.jwt.token');
+  });
+
+  it("shows the API's words when it refuses a demo, and shakes them", async () => {
+    useHealthStore.setState({ demoMode: true });
+    vi.mocked(startDemo).mockRejectedValue(tooMany());
+    renderLogin();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Try the demo · no account needed' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Too many demo accounts from your network in the last hour; try again later');
+    expect(alert).toHaveClass('animate-vl-shake');
+    expect(useAppStore.getState().token).toBeNull();
+  });
+
+  it('offers no demo on a node without demo mode, but still the tower', () => {
+    renderLogin();
+
+    expect(screen.queryByRole('heading', { name: 'Just looking around?' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Browse the tower without an account →' })).toHaveAttribute('href', '/');
   });
 
   it('starts with an empty form, never pre-filled', () => {
