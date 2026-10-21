@@ -33,6 +33,7 @@
 - **The flows read the block number from the API's answer.** Run in parallel on one chain, the demo flow once mined the number the admin's button showed. A real node has other miners too, so each mining step now waits for the toast of the block its own `POST /blocks/mine` sealed, and a transaction only has to be sealed in some block.
 - **A database outage is not called "offline"** (product owner, 2026-10-21). The API's `/health` became a readiness check (VLA-26). Its 503 with `"database": "unreachable"` reads "no database" in the header and "<host> answers, but its database does not" in the banner, and the types were regenerated from the API at b205e4e. The `e2e` job moved to the same commit.
 - **`e2e` became a required check on `main`** (product owner, 2026-10-21), next to `ci`.
+- **Part of VLW-26 ahead of the order** (product owner, 2026-10-21), while the API prepared VLA-27: the title "VeriLedger", the logo as the favicon, and a first `CHANGELOG.md` under Unreleased. Version 1.0.0 and the README's screenshots still wait for VLW-25.
 - **No server yet** (product owner, 2026-10-21). VLW-25 is prepared and rehearsed locally, like the API's VLA-27, and the real deployment waits for the product owner. The webapp's image is published to GHCR, public like the API's, so the API's Compose can run it behind Caddy (VLW-25a).
 
 ## Changes to the specification in this sprint
