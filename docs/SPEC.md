@@ -25,7 +25,7 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 | Login | `/login` | Email and password against `POST /auth/login` (OAuth2 form); stores the token. "Try the demo" starts a 24-hour trader account with one click (API ADR-0006) | Built (VLW-01). VLW-33 adds design E, an empty form, the 401 shake and the return to the page the person was on. The session-expired redirect comes with VLW-17 and the demo with VLW-34 |
 | Explorer → Tower | `/` | Latest blocks (refresh every 10 s), stats, mining with a miner address, search by transaction hash | Built (VLW-04); block search in VLW-19; the tower, waiting list and honest states in VLW-28 |
 | Transaction detail | `/transaction/:hash` | Status, hash, parties, value, fee, block; a notarization (amount 0 + payload) is shown as a certificate | Built (VLW-05); links from a block open the wrong key until VLW-19 |
-| Wallet | `/wallet` | Create a key pair, check any address's balance | Built (VLW-02) with the pair created by the server; in the browser in VLW-16 |
+| Wallet | `/wallet` | Create a key pair, check any address's balance | Built (VLW-02); the pair is created in the browser since VLW-16 |
 | Transact | `/transact` | Transfer or notarize: signs in the browser and sends the signed transaction | Built (VLW-03); the API rejects its signatures until VLW-15 |
 | Network | `/network` | Add a peer URL, list peers, resolve conflicts | Built (VLW-06) |
 | Not found | any other path | The 404 tower with "Back to the tower", inside the shell | Built (VLW-33) |
@@ -73,7 +73,7 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 | Login | `POST /auth/login` (form-urlencoded) | Public |
 | Explorer | `GET /blocks`, `POST /blocks/mine`, `GET /transactions/{tx_hash}` (search) | JWT |
 | Transaction detail | `GET /transactions/{tx_hash}` | JWT |
-| Wallet | `POST /wallets/generate` (removed in VLW-16), `GET /wallets/{address}/balance` | Public |
+| Wallet | `GET /wallets/{address}/balance`; keys are generated in the browser (`src/lib/keys.ts`, VLW-16) | Public |
 | Transact | `POST /transactions`; `GET /wallets/{address}/nonce` from VLW-18 | JWT |
 | Network | `GET /nodes`, `POST /nodes/register`, `POST /nodes/resolve` | JWT |
 
