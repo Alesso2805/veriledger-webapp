@@ -25,7 +25,7 @@
 | VLW-16 | this PR | `src/lib/keys.ts` generates the Ed25519 pair with `@noble/curves` as raw 32-byte lowercase hex, the format the API verifies, and it is checked against RFC 8032 test 1. The wallet page no longer calls `/wallets/generate` and says the key was never sent and is not stored. AR-05 no longer lists Wallet as a known violation. The test that records every request of the flow moved to VLW-30 (product owner, 2026-10-20) | 69 + 2 tests. In Chrome against a local API, "Generate New Wallet" shows two 64-hex keys and sends no request at all (Resource Timing is empty apart from `/health`) |
 | VLW-30 | — | — | — |
 | VLW-18 | — | — | — |
-| VLW-17 | — | — | — |
+| VLW-17 | this PR | A 401 on a request that carried the session ends it (`expire()` in the store), and the guards take the person to the login with "Your session expired" and back to the page afterwards. A stored token whose `exp` has passed is dropped at start; `src/lib/jwt.ts` reads `exp`, and the API still checks the signature. A token with no readable `exp` is left for the API to judge. Only the token is persisted, so the notice does not return on a reload. The empty form came with VLW-33 | 83 tests (12 new: jwt, the store's `expire`, the 401 interceptor, the expired-token and mid-visit redirects). In Chrome against a local API: a stored token with a past `exp` led to the login with the notice and was cleared; a forged token with a future `exp` got a 401 from `/auth/me` and did the same; signing in returned to `/network` |
 | VLW-28 | — | — | — |
 
 ## Sprint decisions
