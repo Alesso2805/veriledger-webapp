@@ -2,11 +2,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getMe } from '../services/auth';
-import { getHealth } from '../services/health';
 import { useAppStore } from '../store/useAppStore';
+import { useHealthStore } from '../store/useHealthStore';
 import { Layout } from './Layout';
 
-vi.mock('../services/health', () => ({ getHealth: vi.fn() }));
 vi.mock('../services/auth', () => ({ getMe: vi.fn() }));
 
 const ME = { id: '1', email: 'trader@veriledger.test', role: 'trader' as const, created_at: '', updated_at: '' };
@@ -36,7 +35,7 @@ function renderShell(path = '/wallet') {
 describe('Layout (the shell)', () => {
   beforeEach(() => {
     useAppStore.setState({ token: 'abc.def.ghi' });
-    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test' });
+    useHealthStore.setState({ online: true });
     vi.mocked(getMe).mockResolvedValue(ME);
   });
 
@@ -55,7 +54,7 @@ describe('Layout (the shell)', () => {
   });
 
   it('shows the API as offline when /health fails', async () => {
-    vi.mocked(getHealth).mockRejectedValue(new Error('Network Error'));
+    useHealthStore.setState({ online: false });
     renderShell();
 
     await apiStatus('api · offline');

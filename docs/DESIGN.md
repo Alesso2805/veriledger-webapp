@@ -46,6 +46,7 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
   --color-vl-cube-left: #262B35;
   --color-vl-cube-right: #2F3541;
   --color-vl-shadow: #12151B;
+  --color-vl-danger-soft: #2A1714;
   --font-vl-sans: "Instrument Sans", system-ui, sans-serif;
   --font-vl-mono: "Martian Mono", ui-monospace, monospace;
   --ease-vl-out: cubic-bezier(.2, .7, .2, 1);
@@ -90,7 +91,7 @@ body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family:
 
 Utilities follow from the names: `bg-vl-surface`, `text-vl-muted`, `font-vl-mono`, `ease-vl-out`, `animate-vl-drop`. Transitions use `duration-(--vl-dur-fast)` and friends.
 
-**Contrast on `--color-vl-bg`:** text 15.8:1, muted 7.3:1, accent 10.9:1, danger 7.5:1, ok above 9:1. `--color-vl-faint` (about 4.2:1) is only for disabled controls and decoration. `--color-vl-shadow` is decoration only: the ellipse under a tower (added 2026-10-20; the first artboards drew it with a literal colour).
+**Contrast on `--color-vl-bg`:** text 15.8:1, muted 7.3:1, accent 10.9:1, danger 7.5:1, ok above 9:1. `--color-vl-faint` (about 4.2:1) is only for disabled controls and decoration. `--color-vl-shadow` is decoration only: the ellipse under a tower. `--color-vl-danger-soft` is the background of the offline banner, under text in `--color-vl-text`. Both were added on 2026-10-20; the first artboards drew them with literal colours.
 
 ## Motion map
 
@@ -127,7 +128,8 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - `/health` status, polled every 10 s;
   - signed in: email and role from `GET /auth/me`, then a "Sign out" pill (added 2026-10-20; the first artboards had no way to sign out). A demo account shows "Guest XXXX · demo · N h left";
   - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34);
-  - skip link, which slides in with `transform` on focus; toast region; offline banner;
+  - skip link, which slides in with `transform` on focus; toast region;
+  - offline banner under the header: "Can’t reach <API host>. Retrying every 10 s." with "Retry now". When `/health` answers again, it closes and a "Back online." toast appears. The first artboard also promised "the last data we had" and "Data is up to date"; the pages do not keep or refresh data yet, so that text was removed (2026-10-20);
   - 404 page: a tower with a missing cube.
 - **At 360 px** (shown in "E · Estados del shell"):
   - the status ("online") and "Sign out" share the logo's row;

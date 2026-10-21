@@ -3,6 +3,7 @@ import { useAppStore } from '../store/useAppStore';
 import { HeaderSearch } from './HeaderSearch';
 import { HealthStatus } from './HealthStatus';
 import { LogoMark } from './LogoMark';
+import { OfflineBanner } from './OfflineBanner';
 import { UserChip } from './UserChip';
 
 const TABS = [
@@ -63,6 +64,7 @@ export function Layout() {
             ))}
           </nav>
         </div>
+        <OfflineBanner />
       </header>
       <main
         id="main"

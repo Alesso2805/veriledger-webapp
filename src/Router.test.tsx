@@ -5,7 +5,8 @@ import { App } from './App';
 import { useAppStore } from './store/useAppStore';
 
 // The pages fetch on mount; these tests only follow redirects, so requests stay pending instead of leaving.
-vi.mock('./services/api', () => ({
+vi.mock('./services/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./services/api')>()),
   api: {
     get: () => new Promise(() => {}),
     post: () => new Promise(() => {}),
