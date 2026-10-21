@@ -66,4 +66,4 @@ npm run preview
 ```
 
 ## Backend Connection
-By default, the dashboard expects the VeriLedger API (backend) to be running at `http://127.0.0.1:8000`. You can configure this globally in `src/services/api.ts` if your backend is hosted elsewhere.
+In development the dashboard calls the API at `VITE_API_URL`, which `.env.development` sets to `http://127.0.0.1:8000`; put a different value in `.env.development.local` if your API runs elsewhere. A deployed container reads the API's address from `/config.json`, which `docker/write-config.sh` writes from `API_BASE_URL` (default `/api`) when the container starts.

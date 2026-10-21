@@ -1,8 +1,9 @@
 import axios, { isAxiosError } from 'axios';
 import { useAppStore } from '../store/useAppStore';
 
+// Until /config.json is read (services/config.ts): VITE_API_URL in development, else the same origin's /api.
 export const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000',
+  baseURL: import.meta.env.VITE_API_URL ?? '/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -27,7 +28,7 @@ api.interceptors.response.use(undefined, (error: unknown) => {
 
 // The API's host as people know it, for messages such as the offline banner.
 export function apiHost(): string {
-  return new URL(api.defaults.baseURL ?? window.location.origin).host;
+  return new URL(api.defaults.baseURL ?? '/api', window.location.origin).host;
 }
 
 export function statusOf(error: unknown): number | undefined {
