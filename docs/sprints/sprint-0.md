@@ -1,6 +1,6 @@
 # Sprint 0 — Baseline as built, documented and audited (VLW-01 to VLW-07)
 
-**Status as of 2026-10-20:** VLW-01 to VLW-06 were built on July 29, 2026, before there was a backlog; they are recorded here retroactively so that each one has acceptance criteria the audit can check. VLW-07 (this documentation) is in review. The sprint closes on October 25, together with the API's Sprint 0.
+**Status as of 2026-10-20:** VLW-01 to VLW-06 were built on July 29, 2026, before there was a backlog; they are recorded here retroactively so that each one has acceptance criteria the audit can check. VLW-07 (this documentation) was merged through #6. The sprint closes on October 25, together with the API's Sprint 0.
 
 ## Where the code stands
 
@@ -16,7 +16,7 @@
 | VLW-04 | `d96901f`, `1b3acb3`, `a382ef4` | Explorer with stats, mining and search | No test. Checked in Chrome: mining works; a transaction inside a block opens "Not Found" |
 | VLW-05 | `a382ef4` | Transaction detail and notarization certificate | No test. Not reachable from a block's link |
 | VLW-06 | `d96901f`, `a382ef4` | Peers and resolve | No test. Checked in Chrome: every peer is shown "ACTIVE", including internal addresses |
-| VLW-07 | — | CLAUDE.md, SPEC, BACKLOG, three ADRs, ARCHITECTURE_RULES, AUDIT, these notes | In review |
+| VLW-07 | [#6](https://github.com/Alesso2805/veriledger-webapp/pull/6) | CLAUDE.md, SPEC, BACKLOG, four ADRs, ARCHITECTURE_RULES, DESIGN, AUDIT, these notes | Merged through #6 with CI green |
 
 On 2026-10-20 `npm ci && npm run build` from a fresh clone failed (`TS6133: 'Hash' is declared but its value is never read` in `Explorer.tsx`).
 
