@@ -1,4 +1,15 @@
+import type { Paginated, Transaction } from '../types/ledger';
 import { api } from './api';
+
+// What the address sent or received, newest first (VLA-34); public, like the balance. The API takes 1 to 100.
+export async function getWalletTransactions(address: string, skip: number, limit: number): Promise<Paginated<Transaction>> {
+  const response = await api.get(`/wallets/${encodeURIComponent(address)}/transactions`, { params: { skip, limit } });
+  const page = response.data as Paginated<Transaction> | undefined;
+  if (!Array.isArray(page?.items) || typeof page.total !== 'number') {
+    throw new Error('The API did not answer /wallets/{address}/transactions');
+  }
+  return page;
+}
 
 // The address's balance as the API counts it. Public, like the nonce.
 export async function getBalance(address: string): Promise<number> {
