@@ -26,7 +26,7 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 | Tower | `/` | The newest 10 blocks drawn as a tower; the list with "Load older blocks"; the selected block with its transactions; what waits for the next block. Height, waiting count and last block, refreshed every 10 s. `?block=n` opens a block. Mining to a reward address, for the trader and admin roles | Built (VLW-28), replacing the explorer of VLW-04; block search comes in VLW-19 |
 | Transaction detail | `/transaction/:hash` | Status, hash, parties, value, fee, block; a notarization (amount 0 + payload) is shown as a certificate | Built (VLW-05); links from a block open the wrong key until VLW-19 |
 | Wallet | `/wallet` | Create a key pair, check any address's balance | Built (VLW-02); the pair is created in the browser since VLW-16, and held in the tab's memory for Sign and send since VLW-30 |
-| Transact | `/transact` | Transfer or notarize: signs in the browser and sends the signed transaction | Built (VLW-03). It signs the API's canonical message (VLW-15) with the sender's next nonce (VLW-18); a 409 shows the API's message and the nonce that signing again will use |
+| Sign and send | `/transact` | Signs with the key held in the tab: open a key file or use the wallet's. Composes a transfer or a notarization (the document is hashed in the browser) and shows the message being signed. Signs it, sends the message and the signature, and shows the node's answer | Built (VLW-30, design E), replacing the page of VLW-03. It signs the API's canonical message (VLW-15) with the sender's next nonce (VLW-18) |
 | Network | `/network` | Add a peer URL, list peers, resolve conflicts | Built (VLW-06) |
 | Not found | any other path | The 404 tower with "Back to the tower", inside the shell | Built (VLW-33) |
 
@@ -72,7 +72,7 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 | Tower | `GET /blocks?skip&limit` (the tower, older pages, a deep link), `GET /blocks/{block_hash}` (the selected block), `GET /transactions?status=PENDING&skip&limit` (waiting), every 10 s (`src/services/ledger.ts`, VLA-20, VLA-33); `POST /blocks/mine`, then `GET /blocks/{block_hash}` for the reward of the toast | JWT |
 | Transaction detail | `GET /transactions/{tx_hash}` | JWT |
 | Wallet | `GET /wallets/{address}/balance`; keys are generated in the browser (`src/lib/keys.ts`, VLW-16) | Public |
-| Transact | `GET /wallets/{address}/nonce` before signing, and again after a 409 (`src/services/wallets.ts`, VLA-16); `POST /transactions` | Public; JWT |
+| Sign and send | `GET /wallets/{address}/nonce` and `GET /wallets/{address}/balance` when a key is opened, after a 409 (the nonce) and for "Send another" (`src/services/wallets.ts`, VLA-16); `POST /transactions` (`src/services/ledger.ts`) | Public; JWT |
 | Network | `GET /nodes`, `POST /nodes/register`, `POST /nodes/resolve` | JWT |
 
 Every request goes through `src/services/api.ts`, which adds `Authorization: Bearer <token>`. Errors show the API's `detail`.
@@ -87,7 +87,7 @@ The webapp adopts the API's ADR-0004 through its own ADR-0002.
   - `toAmount` turns what a person types ("10", "0.5") into that spelling, without a float.
   - `signMessage` signs the UTF-8 bytes.
 - **The nonce** (VLW-18):
-  - The page reads the sender's next nonce from `GET /wallets/{address}/nonce` just before signing. The message carries it as an integer, between `fee` and `payload`.
+  - The page reads the sender's next nonce from `GET /wallets/{address}/nonce` when the key is opened and shows it. The message carries it as an integer, between `fee` and `payload`.
   - A used or skipped nonce gets a 409 with the API's message ("Nonce N is not the next one for this sender; the next is M"). The page then reads the next nonce and says that signing again will use it.
   - Re-sending a byte-identical body gets a 200 with the stored transaction, so a retry after a timeout is safe (VLA-16).
 - **The request:** `POST /transactions` carries the same amount strings and nonce that were signed.
@@ -118,7 +118,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 
 | Category | Requirement | How it is verified |
 | --- | --- | --- |
-| Security | The private key never leaves the browser | A test that records every request of the generate → transfer → notarize flow and finds no private key (AR-05, VLW-16) |
+| Security | The private key never leaves the browser | A test that records every request of the generate → transfer → notarize flow and finds no private key (AR-05, `src/architecture/no-private-key-in-requests.test.tsx`, VLW-30) |
 | Security | No pre-filled credentials; an expired session returns to the login | Component tests (VLW-17) |
 | Security | Content Security Policy and security headers on the served files | `docker/smoke-test.sh` on the built image, in the Image workflow (VLW-22) |
 | Security | No known high or critical vulnerability in dependencies | `npm audit --audit-level=high` in CI (VLW-11) |
@@ -159,7 +159,7 @@ Target tree. Entries marked with a story do not exist yet.
 ```text
 veriledger-webapp/
 ├── src/
-│   ├── pages/                    # Login, Tower, TransactionDetail, Wallet, Transaction, Network, NotFound
+│   ├── pages/                    # Login, Tower, TransactionDetail, Wallet, SignAndSend, Network, NotFound
 │   ├── architecture/             # tests of the architecture rules
 │   ├── components/               # Layout, RouteGuards, the shell's pieces; tower/ (VLW-28)
 │   ├── lib/                      # signing.ts, keys.ts, jwt.ts, format.ts, chain.ts, isometric.ts; identicon.ts (VLW-31)
