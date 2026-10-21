@@ -12,7 +12,7 @@ Each rule is one sentence that a test can prove or refute. A rule about "every" 
 | AR-02 | Only modules under `src/lib` import `@noble/*`. | SPEC › Architecture and › Signing contract; ADR-0002 | dependency-cruiser rule `AR-02-noble-only-in-lib`. | Checked, one known violation |
 | AR-03 | Dependencies between folders follow SPEC › Architecture: `pages → components, lib, services, store, types`; `components → lib, services, store, types`; `services → lib, store, types`; `store → types`; `lib → types`; `types →` nothing; and only `src/Router.tsx` imports `src/pages`. Test files are exempt, since a page's test imports its page. | SPEC › Architecture (folder table) | dependency-cruiser: one `AR-03-*` rule per disallowed direction, over every module. | Checked |
 | AR-04 | There are no circular imports. | SPEC › Architecture (dependencies point inward) | dependency-cruiser rule `AR-04-no-circular`. | Checked |
-| AR-05 | No request sent through the API client carries a private key, and no code calls `/wallets/generate`. | README › Application flow ("The Private Key never leaves the browser"); SPEC › Non-functional requirements; ADR-0002 | Vitest `src/architecture/no-server-generated-keys.test.ts` reads every module under `src` and lists those that call `/wallets/generate`. The second check comes with VLW-16, once the flow lives in `src/lib`: an axios adapter records every request of generate → transfer → notarize and searches every URL, header and body for the private key. | Partly checked, one known violation |
+| AR-05 | No request sent through the API client carries a private key, and no code calls `/wallets/generate`. | README › Application flow ("The Private Key never leaves the browser"); SPEC › Non-functional requirements; ADR-0002 | Vitest `src/architecture/no-server-generated-keys.test.ts` reads every module under `src` and lists those that call `/wallets/generate`. The second check comes with VLW-30, on the design E sign-and-send flow: an axios adapter records every request of generate → transfer → notarize and searches every URL, header and body for the private key. | Partly checked |
 | AR-06 | The signed message and signature reproduce every vector of the API's `docs/signing-vectors.json`. | SPEC › Signing contract; ADR-0002; API ADR-0004 | Vitest `src/lib/signing.test.ts`: iterate the vectors copied to `src/lib/__fixtures__/`; compare the message byte for byte and the signature. | Comes with VLW-15, after the API's VLA-15 writes the vectors |
 | AR-07 | No module under `src` contains an absolute `http(s)://` URL, other than XML namespaces and form placeholders (example text shown to the user, never requested); the API base URL comes from runtime configuration. | SPEC › Deployment; ADR-0003 | Vitest `src/architecture/no-absolute-urls.test.ts` reads every module under `src` and fails on an `http://` or `https://` literal outside the allowlist (`http://www.w3.org/2000/svg`) and outside `placeholder="…"`. | Checked, one known violation |
 | AR-08 | Every route except `/login` renders only with a session. | SPEC › Architecture (`ProtectedRoute`) | Vitest `src/architecture/protected-routes.test.tsx` walks the route table that `src/Router.tsx` exports and renders each path without a token, expecting `/login`. The public paths are listed in the test; VLW-34 adds the public reads there and here. | Checked |
@@ -26,7 +26,6 @@ This is debt that existed when the rules were written. Each entry is named where
 | Rule | Where | Removed by |
 | --- | --- | --- |
 | AR-02 | `src/pages/Transaction.tsx` imports `@noble/curves` | VLW-15 (signing moves to `src/lib`) |
-| AR-05 | `src/pages/Wallet.tsx` calls `/wallets/generate` | VLW-16 (keys generated in the browser) |
 | AR-07 | `src/services/api.ts` hard-codes `http://127.0.0.1:8000` | VLW-21 (runtime configuration) |
 
 **Where they are listed:**
@@ -81,7 +80,7 @@ Alternatives considered:
 | `src/architecture/protected-routes.test.tsx` | AR-08 | `npm test` |
 | `src/architecture/design-tokens.test.ts` | AR-10 | `npm test` |
 | `src/lib/signing.test.ts` | AR-06 | VLW-15 |
-| The request-recording test | AR-05 (no private key in any request) | VLW-16 |
+| The request-recording test | AR-05 (no private key in any request) | VLW-30 |
 | CI step `npm run types:api` + `git diff --exit-code` | AR-09 | VLW-19 |
 
 **Each check was shown to catch a violation** (2026-10-20). One break at a time was introduced locally, then restored:
