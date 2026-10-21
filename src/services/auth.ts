@@ -1,11 +1,11 @@
-import type { CurrentUser } from '../types/session';
+import type { CurrentUser, Token } from '../types/session';
 import { api, statusOf } from './api';
 
 export class InvalidCredentialsError extends Error {}
 
 export async function login(email: string, password: string): Promise<string> {
   try {
-    const response = await api.post<{ access_token: string }>(
+    const response = await api.post<Token>(
       '/auth/login',
       new URLSearchParams({ username: email, password }),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },

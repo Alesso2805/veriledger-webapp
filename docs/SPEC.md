@@ -43,7 +43,7 @@ A single-page app built by Vite into static files (ADR-0001).
 | `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), the token's expiry and demo claim (`jwt.ts`), display formats (`format.ts`), merging pages of blocks (`chain.ts`), cube geometry (`isometric.ts`), an address's cube colours (`identicon.ts`), reading a key file (`keyFile.ts`), checking what is about to be signed (`compose.ts`), a document's SHA-256 (`digest.ts`), what a stored transaction says about itself: signature, journey, title (`transaction.ts`), an address's activity in words and sums (`activity.ts`), what a search can look up (`search.ts`), the peer map's ring and names (`peers.ts`) | `types`, `@noble/*` |
 | `src/services` | The axios instance with the base URL, the token interceptor, the 401 handler that ends an expired session (VLW-17) and `detailOf` for the API's error messages; one module per area (`auth.ts`, `health.ts`, `ledger.ts`, `wallets.ts`, `nodes.ts`, `config.ts`). Each read checks the shape of the answer | `lib`, `store`, `types`, axios |
 | `src/store` | Zustand stores: the session token, persisted in `localStorage` under `veriledger-storage`; the signed-in user from `GET /auth/me` (`user`, not persisted), whose role pages use for their rules; the toasts (`useToastStore`, each closes after 4 s), shown by `ToastRegion` on every page; whether the API answers and whether it starts demo accounts (`useHealthStore`), which the header status, the login, the offline banner and the "Try the demo" buttons read; whether a demo account is being started (`startingDemo`), which those buttons share; the key pair this tab signs with (`useKeyStore`), only in memory: a reload forgets it and signing out clears it (ADR-0002, VLW-30). It also remembers whether a key file of it exists (VLW-31) | `types` |
-| `src/types` | Types of the API's responses; generated from its OpenAPI document in VLW-19 | Nothing |
+| `src/types` | The API's responses: `api.ts`, generated from its OpenAPI document (`openapi.json`, AR-09), and the names the code uses for them (`ledger.ts`, `network.ts`, `session.ts`); the webapp's own types beside them (`LoginRedirectState`, `SessionEndReason`, the browser's key pair) | Nothing outside `types` |
 
 `src/Router.tsx` exports the route table as data (`routes`), so that AR-08 can walk it.
 - The pages whose data the API serves to anyone (`/`, `/transaction/:hash`, `/network` and the 404) are wrapped in `OpenRoute`; `/wallet` and `/transact` in `ProtectedRoute` (`src/components/RouteGuards.tsx`), which redirects to `/login` without a token (ADR-0005).
@@ -76,6 +76,8 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 | Network | `GET /nodes` and `GET /blocks?skip=0&limit=1` (the height); `POST /nodes/register` and `POST /nodes/resolve`, admin only (`src/services/nodes.ts`, VLA-19) | Public; JWT |
 
 Every request goes through `src/services/api.ts`, which adds `Authorization: Bearer <token>`. Errors show the API's `detail`.
+
+The types of every answer are generated from the API's `docs/openapi.json` (VLA-37), copied unchanged into `src/types/openapi.json` at API commit bbae7db. `npm run types:api` regenerates `src/types/api.ts`, and CI fails when it is stale (AR-09). When the API changes an answer, the copy is updated with the commit it comes from, and `tsc` shows every place the code must follow.
 
 ## Signing contract
 
@@ -123,7 +125,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 | Security | Content Security Policy and security headers on the served files | `docker/smoke-test.sh` on the built image, in the Image workflow (VLW-22) |
 | Security | No known high or critical vulnerability in dependencies | `npm audit --audit-level=high` in CI (VLW-11) |
 | Correctness | Transactions signed here are accepted by the API | The API's golden vectors in Vitest (AR-06, VLW-15) and an end-to-end transfer (VLW-23) |
-| Correctness | Response types match the API | Types generated from the API's OpenAPI document (AR-09, VLW-19) |
+| Correctness | Response types match the API | Types generated from the API's OpenAPI document, regenerated and diffed in CI (AR-09, VLW-19) |
 | Deployment | One image for any hostname; deep links survive a reload | `docker/smoke-test.sh` on the built image (VLW-21, VLW-22); end-to-end tests (VLW-23) |
 | Reproducibility | `npm ci && npm run build` from a clean clone | CI (VLW-10, VLW-11) |
 | Accessibility | Every input has a label; visible focus; usable at 360 px with no horizontal scroll; no serious or critical axe-core violation | axe-core in the component tests and Playwright at 360 px (VLW-24) |
@@ -131,7 +133,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 
 ## Engineering rules
 
-**Stack.** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Zustand 5, axios, lucide-react, `@noble/curves` 2; @fontsource Instrument Sans and Martian Mono; oxlint; Vitest, Testing Library and jsdom; Playwright; dependency-cruiser. Node 22 LTS, 22.13 or later.
+**Stack.** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Zustand 5, axios, lucide-react, `@noble/curves` 2; @fontsource Instrument Sans and Martian Mono; oxlint; Vitest, Testing Library and jsdom; Playwright; dependency-cruiser; openapi-typescript. Node 22 LTS, 22.13 or later.
 
 **Architecture rules.** The folder rules of the Architecture section, written as verifiable rules AR-01 to AR-09 in [ARCHITECTURE_RULES.md](ARCHITECTURE_RULES.md), each with the test that checks it (VLW-13).
 
@@ -165,7 +167,7 @@ veriledger-webapp/
 │   ├── lib/                      # signing.ts, keys.ts, jwt.ts, format.ts, chain.ts, isometric.ts; identicon.ts (VLW-31)
 │   ├── services/api.ts
 │   ├── store/useAppStore.ts
-│   ├── types/                    # generated from the API's OpenAPI (VLW-19)
+│   ├── types/                    # openapi.json, api.ts generated from it (AR-09), and their names
 │   ├── Router.tsx                # the route table
 │   ├── App.tsx
 │   ├── main.tsx

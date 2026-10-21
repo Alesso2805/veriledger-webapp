@@ -12,6 +12,7 @@ const tx = (patch: Partial<Transaction>): Transaction => ({
   amount: 0,
   fee: 0,
   status: 'CONFIRMED',
+  signature: 'ab'.repeat(64),
   timestamp: '2026-10-21T15:00:00Z',
   tx_hash: 'h',
   block_number: 10,

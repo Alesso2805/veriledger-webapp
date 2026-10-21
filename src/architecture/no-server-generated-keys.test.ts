@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 // generate → sign → send flow carries the private key, is no-private-key-in-requests.test.tsx.
 const KNOWN_VIOLATIONS: Record<string, string> = {};
 
-const sources = import.meta.glob<string>(['../**/*.{ts,tsx}', '!../**/*.test.{ts,tsx}'], {
+// The generated types/api.ts describes every endpoint, /wallets/generate included (AR-09); describing is not calling.
+const sources = import.meta.glob<string>(['../**/*.{ts,tsx}', '!../**/*.test.{ts,tsx}', '!../types/api.ts'], {
   query: '?raw',
   import: 'default',
   eager: true,

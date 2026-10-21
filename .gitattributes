@@ -2,3 +2,7 @@
 *.sh text eol=lf
 Dockerfile text eol=lf
 docker/* text eol=lf
+
+# The API's OpenAPI document and the types generated from it: the same bytes on every OS, so AR-09's diff stays quiet.
+src/types/openapi.json text eol=lf
+src/types/api.ts text eol=lf
