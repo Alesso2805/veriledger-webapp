@@ -66,6 +66,8 @@ Two-week sprints, the same as the API's. Each sprint closes with a demonstrable 
 
 **Order inside Sprint 2.** VLW-15 and VLW-16 first (the signing library and local keys), then VLW-30 on top of them, VLW-18 once the API's nonce exists, VLW-17, and VLW-28 when VLA-20 and VLA-33 are merged.
 
+**Order inside Sprint 3** (product owner, 2026-10-21). First the views whose data is on the API's main: VLW-29 (VLA-20), then VLW-31 (VLA-34). Next, VLW-19, whose generated types need the API's `docs/openapi.json`. Then VLW-34, when VLA-35 is merged (VLA-36 already is), and VLW-32 when VLA-19 is merged.
+
 **Buffer.** Sprints 2 and 3 carry 17 points each. If a sprint does not close, move out the "Should" stories (VLW-14, VLW-19, VLW-24, VLW-26, VLW-32) before cutting quality on a "Must". A view whose API data is late waits; it is never built on invented data (DESIGN.md).
 
 **Design.** A view is done when it matches its artboard in the canvas (DESIGN.md) at 1280 and 360 px, with the same tokens and the same animations. A difference is fixed in the code or, if the design was wrong, in the artboard and DESIGN.md in the same PR.
