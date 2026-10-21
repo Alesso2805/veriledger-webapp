@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addressCube } from './identicon';
+import { addressCube, partialCube } from './identicon';
 
 describe('addressCube', () => {
   it('colours the faces from the first three bytes, with the sides shaded', () => {
@@ -9,6 +9,15 @@ describe('addressCube', () => {
       left: '#857e3b',
       right: '#8975bf',
     });
+  });
+
+  it('colours the faces of an address being typed as its bytes arrive', () => {
+    const address = '4655ec4f0d2b7e91c5a3f86e2d40b1c97a5e3f28d61b0c4e9f7a28d5c3e1a19d';
+
+    expect(partialCube('')).toEqual({ top: null, left: null, right: null });
+    expect(partialCube('465')).toEqual({ top: '#6FD3D8', left: null, right: null });
+    expect(partialCube('4655ec')).toEqual(addressCube(address));
+    expect(partialCube('zz55')).toEqual({ top: null, left: '#857e3b', right: null });
   });
 
   it('gives the same address the same cube, and another address another cube', () => {

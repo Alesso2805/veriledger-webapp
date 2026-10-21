@@ -1,10 +1,24 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from './api';
-import { getBalance, getNextNonce } from './wallets';
+import { getBalance, getNextNonce, getWalletTransactions } from './wallets';
 
 describe('wallet endpoints', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("getWalletTransactions reads one page of the address's activity", async () => {
+    const page = { items: [], total: 0, page: 1, size: 20 };
+    const get = vi.spyOn(api, 'get').mockResolvedValue({ data: page });
+
+    await expect(getWalletTransactions('ab', 0, 20)).resolves.toEqual(page);
+    expect(get).toHaveBeenCalledWith('/wallets/ab/transactions', { params: { skip: 0, limit: 20 } });
+  });
+
+  it('getWalletTransactions rejects an answer that is not a page, such as index.html', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({ data: '<!doctype html><html></html>' });
+
+    await expect(getWalletTransactions('ab', 0, 20)).rejects.toThrow('The API did not answer /wallets/{address}/transactions');
   });
 
   it("getBalance reads the address's balance", async () => {

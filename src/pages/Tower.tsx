@@ -6,6 +6,7 @@ import { Freshness } from '../components/tower/Freshness';
 import { MineCard } from '../components/tower/MineCard';
 import { TowerDrawing } from '../components/tower/TowerDrawing';
 import { WaitingList } from '../components/tower/WaitingList';
+import { useStartDemo } from '../components/useStartDemo';
 import { mergeBlocks } from '../lib/chain';
 import { formatAmount, formatClock, formatCount } from '../lib/format';
 import { detailOf } from '../services/api';
@@ -47,8 +48,11 @@ export function Tower() {
   const [mining, setMining] = useState(false);
   const [params, setParams] = useSearchParams();
   const online = useHealthStore((state) => state.online);
+  const signedIn = useAppStore((state) => state.token !== null);
+  const demoMode = useHealthStore((state) => state.demoMode);
   const role = useAppStore((state) => state.user?.role ?? null);
   const show = useToastStore((state) => state.show);
+  const demo = useStartDemo((text) => show(text, 'err'));
   // The latest chain for callbacks that run between renders, such as the poll that compares tops.
   const chainRef = useRef<Chain | null>(null);
   const inFlight = useRef(false);
@@ -255,6 +259,10 @@ export function Tower() {
           <MineCard
             next={nextNumber}
             waiting={chain?.waitingTotal ?? null}
+            signedIn={signedIn}
+            demoMode={demoMode}
+            startingDemo={demo.starting}
+            onTryDemo={() => void demo.start()}
             role={role}
             offline={online === false}
             mining={mining}

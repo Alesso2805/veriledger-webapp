@@ -1,49 +1,25 @@
-export type TransactionStatus = 'PENDING' | 'CONFIRMED' | 'FAILED';
+import type { components } from './api';
 
-export interface Transaction {
-  id: string;
-  sender_address: string;
-  receiver_address: string;
-  amount: number;
-  status: TransactionStatus;
-  timestamp: string;
-  signature?: string;
-  tx_hash?: string | null;
-  payload?: string | null;
-  fee: number;
-  block_id?: string | null;
-  // The sender's nonce; a coinbase carries its block number, and rows from before VLA-16 have none.
-  nonce?: number | null;
-  // Null while the transaction waits in the mempool (VLA-20).
-  block_number?: number | null;
-  block_hash?: string | null;
-}
+// The API's answers, generated from its OpenAPI document (AR-09, src/types/api.ts). Only the names are ours.
+type Schemas = components['schemas'];
 
-export interface Block {
-  id: string;
-  block_number: number;
-  previous_hash: string;
-  timestamp: string;
-  nonce: number;
-  block_hash: string;
-  transaction_ids: string[];
-  // The hashes that transaction links use, in the order of transaction_ids (VLA-20).
-  transaction_hashes: string[];
-}
+export type TransactionStatus = Schemas['TransactionStatus'];
+
+// The sender's nonce; a coinbase carries its block number, and rows from before VLA-16 have none.
+// block_number and block_hash are null while the transaction waits in the mempool (VLA-20).
+export type Transaction = Schemas['TransactionResponseDTO'];
+
+// transaction_hashes are the hashes that transaction links use, in the order of transaction_ids (VLA-20).
+export type Block = Schemas['BlockResponseDTO'];
 
 // GET /blocks/{block_hash}: the block with its transactions instead of their ids.
-export interface FullBlock extends Omit<Block, 'transaction_ids' | 'transaction_hashes'> {
-  transactions: Transaction[];
-}
+export type FullBlock = Schemas['FullBlockResponseDTO'];
 
+// Every page of the API has the same fields around its items; the generated types name one per item type.
+export type Paginated<T> = Omit<Schemas['PaginatedBlockResponseDTO'], 'items'> & { items: T[] };
+
+// A key pair made in the browser (VLW-16); not an API answer, so it is written here.
 export interface Wallet {
   public_key: string;
   private_key: string;
-}
-
-export interface Paginated<T> {
-  items: T[];
-  total: number;
-  page: number;
-  size: number;
 }

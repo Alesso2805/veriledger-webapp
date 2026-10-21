@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { expiresAt, isExpired } from './jwt';
+import { endReason, expiresAt, isDemo, isExpired } from './jwt';
 
 const base64url = (value: object) =>
   btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -19,6 +19,18 @@ describe('jwt', () => {
 
   it('keeps a token whose exp is still ahead', () => {
     expect(isExpired(tokenWith({ exp: NOW / 1000 + 60 }), NOW)).toBe(false);
+  });
+
+  it('tells a demo account by its "demo" claim, and says its end is the demo ending', () => {
+    const demo = tokenWith({ sub: 'a', role: 'trader', exp: NOW / 1000, demo: true });
+    expect(isDemo(demo)).toBe(true);
+    expect(endReason(demo)).toBe('demo-ended');
+
+    // A regular account's token has no "demo" claim at all; anything but true is not a demo.
+    for (const token of [tokenWith({ sub: 'a', exp: NOW / 1000 }), tokenWith({ demo: 'true' }), 'not-a-jwt']) {
+      expect(isDemo(token)).toBe(false);
+      expect(endReason(token)).toBe('expired');
+    }
   });
 
   it('keeps a token without a readable exp, for the API to judge', () => {

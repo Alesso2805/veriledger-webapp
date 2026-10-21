@@ -20,6 +20,8 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
 
 `source("../src")` limits Tailwind's class scan to `src`. Without it, Tailwind also scans `docs/` and builds the class names of this document's examples into the app.
 
+`color-scheme: dark` makes the browser draw its own parts, scrollbars and form controls, dark as well. The app has no light theme, so no hex colours are needed for them.
+
 ```css
 @import "tailwindcss" source("../src");
 @import "@fontsource/instrument-sans/400.css";
@@ -67,7 +69,7 @@ This block goes into `src/index.css` as is. A test (AR-10) fails if the two diff
   --animate-vl-toast-in: vl-toast-in 280ms var(--ease-vl-out) both;
 }
 
-:root { --vl-dur-fast: 160ms; --vl-dur-base: 280ms; --vl-dur-slow: 420ms; --vl-dur-drop: 760ms; }
+:root { color-scheme: dark; --vl-dur-fast: 160ms; --vl-dur-base: 280ms; --vl-dur-slow: 420ms; --vl-dur-drop: 760ms; }
 
 body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family: var(--font-vl-sans); }
 :focus-visible { outline: 2px solid var(--color-vl-accent); outline-offset: 2px; }
@@ -109,11 +111,14 @@ Utilities follow from the names: `bg-vl-surface`, `text-vl-muted`, `font-vl-mono
 | A peer is registered (201) | Peers move to their new places on the ring with a `transform` transition (`--vl-dur-slow`); the new one `animate-vl-pop` | Network |
 | A request is refused (401 login, 400 signature or funds, 409 nonce, 400 peer) | `animate-vl-shake` on the form or result card | Login, Sign and send, Network |
 | A signature is produced in the browser | `animate-vl-reveal` on the hex | Sign and send |
+| A transaction's page loads, or polling finds it sealed | The journey bar fills with a `width` transition (900 ms, `--ease-vl-out`); each step reached `animate-vl-pop`; the status chip `animate-vl-fade-in` | Transaction |
 | The kind switches between transfer and notarization | The pill slides with `transform` (300 ms, `--ease-vl-out`); the fields for the new kind `animate-vl-fade-up` | Sign and send |
 | A file is being hashed (`crypto.subtle.digest`) | `animate-vl-pulse` on "Hashing…" (no percentage: the API gives none) | Transaction, Sign and send |
 | First response pending | Skeletons with `animate-vl-pulse` | Every list |
 | A background action finished | Toast `animate-vl-toast-in`, 4 s, dismissible | Shell |
 | `/health` fails or recovers | Banner opens or closes with `grid-template-rows` 0fr ↔ 1fr (`--vl-dur-slow`); "Back online" toast | Shell |
+| `/auth/me` answers, after signing in or starting a demo | The user chip `animate-vl-fade-in` | Shell |
+| `POST /auth/demo` is pending | "Try the demo" and "Creating a demo account…" `animate-vl-pulse`; a refusal on the login `animate-vl-shake` | Shell, Login |
 | A panel opens or closes (key steps, forget-key confirmation) | `grid-template-rows` 0fr ↔ 1fr (`--vl-dur-slow`) | Wallet |
 | Hover on rows and buttons | Background and border, `--vl-dur-fast` | Everywhere |
 
@@ -128,15 +133,19 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 - **Artboard:** the header of every view, and "E · Estados del shell".
 - **Pieces:**
   - logo and tabs (Tower, Sign and send, Wallet, Network);
-  - search: block number or hash → dropdown of matches (VLW-19). Until then it finds transactions by hash and reads "Transaction hash";
+  - search, "Block number or hash" (VLW-19a): the API looks up a block number or a full 64-character hash, never a prefix (product owner, 2026-10-21; the first artboard matched prefixes).
+    - A number opens "Block #n", or says "No block #n yet.".
+    - A full hash is tried as a block (`GET /blocks/{block_hash}`) and as a transaction (`GET /transactions/{tx_hash}`). Whatever it is shows in the dropdown, such as "Notarization 64b61372… · in block #21".
+    - Anything else reads "Type a block number or a full 64-character hash.".
+    - Enter opens the first result, and Escape closes the dropdown;
   - `/health` status, polled every 10 s;
-  - signed in: email and role from `GET /auth/me`, then a "Sign out" pill (added 2026-10-20; the first artboards had no way to sign out). A demo account shows "Guest XXXX · demo · N h left";
-  - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34);
+  - signed in: email and role from `GET /auth/me`, then a "Sign out" pill (added 2026-10-20; the first artboards had no way to sign out). A demo account shows "Guest XXXX · demo · N h left" (VLW-34b): `display_name`, and the hours left from `expires_at`, then minutes in the last hour. It counts down once a minute, and a demo that runs out while the page is open ends there and opens the login. The chip appears with `animate-vl-fade-in` when `/auth/me` answers;
+  - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34). "Sign in" came with VLW-34a and returns to the page the visitor was on. "Try the demo" (VLW-34b) shows only when `/health` says `demo_mode`; it reads "Starting…" with `animate-vl-pulse` while `POST /auth/demo` is pending, signs the visitor in where they are, and puts a refusal (a 429) in a toast in the API's words;
   - skip link, which slides in with `transform` on focus; toast region;
   - offline banner under the header: "Can’t reach <API host>. Retrying every 10 s." with "Retry now". When `/health` answers again, it closes and a "Back online." toast appears. The first artboard also promised "the last data we had" and "Data is up to date"; the pages do not keep or refresh data yet, so that text was removed (2026-10-20);
   - 404 page: a tower with a missing cube.
 - **At 360 px** (shown in "E · Estados del shell"):
-  - the status ("online") and "Sign out" share the logo's row;
+  - the status ("online") and "Sign out", or "Sign in", share the logo's row. Signed out on a node in demo mode, the status, "Sign in" and "Try the demo" do not fit beside the logo and take their own row under it (VLW-34b; the artboard draws 360 px signed in only);
   - the search drops to its own line;
   - the tabs scroll sideways;
   - the user chip is hidden.
@@ -148,8 +157,9 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 - **Data:** `POST /auth/login` (OAuth2 form); `POST /auth/demo` (API ADR-0006, VLA-35); `/health` for the status line.
 - **States:**
   - empty form (never pre-filled), submitting, 401 error with shake;
-  - session-expired notice, and a demo-ended notice that says what was recorded is still on the chain;
-  - "Try the demo": creating, then redirect; 429 shown as the API words it;
+  - session-expired notice, and a demo-ended notice that says what was recorded is still on the chain: "Your demo ended after 24 h. Start a new demo or sign in. What it recorded is still on the chain." The first artboard also said "and its account was deleted"; the API deletes it later, with a cleanup command, so that was removed (VLW-34b, canvas version 42). The demo-ended notice comes from the token's `demo` claim, so it holds after a reload too;
+  - "Try the demo" (VLW-34b), under "Just looking around?", only when `/health` says `demo_mode`: "Creating a demo account…" with `animate-vl-pulse`, then the same redirect as a sign-in. The artboard's "You are Guest 4F2A · open the tower" link is not built, because the redirect follows at once. A 429 is shown in the API's words with `animate-vl-shake` (canvas version 41 uses the same words);
+  - "Browse the tower without an account →" under the form, to `/` (ADR-0005);
   - redirect to the page the person was on.
 - **Narrow screens:** below 940 px the two columns stack, with the form first and the tower and tagline after it, separated by a top border. Otherwise the form would start below the first screen on a phone. The artboard is drawn at 1440 px only. Added 2026-10-20.
 - **Stories:** VLW-33, VLW-17, VLW-34.
@@ -157,7 +167,7 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 ### Tower — `/` (and `/?block=<number>` for a deep link)
 
 - **Artboard:** "E · Torre". Tweaks: `role` (admin, trader, viewer, demo, signed out), `state` (ready, loading, empty, error), `incoming` (a block that joined the chain).
-- **Signed out:** the tower, list, detail and waiting list are public (VLA-36). The mine button reads "Try the demo to mine" and starts a demo account in place (VLW-34).
+- **Signed out:** the tower, list, detail and waiting list are public (VLA-36, ADR-0005). The mine button reads "Try the demo to mine" and starts a demo account in place (VLW-34b). Its note reads "Anyone can look. To mine, start a demo: one click, no email." and, while the demo starts, the button reads "Starting a demo…". On a node without demo mode it reads "Sign in to mine" with "Anyone can look. To mine, sign in.", and opens the login, which comes back to the tower (VLW-34a).
 - **Data:**
   - blocks: `GET /blocks?skip&limit`. The newest 10 are drawn as the tower; "Load older blocks" pages back; the height is the top block's number (VLA-20).
   - selected block: `GET /blocks/{block_hash}` (VLA-20), with the mining reward first and every transaction linked by `tx_hash`.
@@ -176,11 +186,24 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 ### Transaction — `/transaction/:hash`
 
 - **Artboard:** "E · Transacción y certificado". Tweaks: `example` (transfer, notarization, pending, not found, loading).
-- **Data:** `GET /transactions/{tx_hash}` with `block_number` and `block_hash` (VLA-20, *new fields*); height from `GET /blocks` `total` to count the blocks on top.
-- **Journey:** Signed → Accepted → Sealed in block #n → Buried under k blocks, from `status`, `block_number` and the height.
-- **Signature line:** verified in the browser with the API's canonical message (VLW-15).
-- **Certificate** (amount 0 with a payload): the fingerprint in 8 groups and "Check a file": `crypto.subtle.digest('SHA-256', file)` compared with `payload`. The file never leaves the browser.
-- **Not found:** explains that rejected transactions leave no trace.
+- **Data:** `GET /transactions/{tx_hash}` with `block_number`, `block_hash` and `nonce` (VLA-20, VLA-16). The height, the top block's number from `GET /blocks`, counts the blocks on top. Both are read again every 10 s, so a waiting transaction is seen when it is sealed.
+- **Times are UTC** on this page (product owner, 2026-10-21), so a certificate says the same in every country. The tower shows the reader's own time.
+- **Journey:** Signed → Accepted → Sealed in block #n → Buried under k blocks, from `status`, `block_number` and the height. It is Buried once one block rests on its block.
+  - A mining reward is never signed by a person. Its first steps read "Created · by the node that mined it" and "Accepted · with its block" (2026-10-21; the artboard has no reward example).
+  - The bar fills once on mount, and each step reached pops. A screen reader hears each step with "done" or "not yet".
+- **Header:** the kind, a title ("10.00 VL from d75a…511a to 3d40…660c", "A document notarized by …", "A document waiting to be sealed", "A mining reward of … to …"), the time, and a chip: "In block #n", "Waiting" or "Failed".
+- **Details:** the full hash; From, To and the signature shortened; the document's hash for a notarization; amount, fee and nonce. "Copy link" copies the page's address.
+- **Signature line:** verified in the browser with the API's canonical message (VLW-15), rebuilt from the stored fields with `toFixed(8)` and the nonce (`src/lib/transaction.ts`).
+  - A signature that does not match says so in the danger colour; the artboard has only the checked state.
+  - A mining reward has no signature: "the block's proof of work seals it".
+  - A row from before VLA-16 has no nonce, so it cannot be checked, and the page says so.
+- **Sealed in:** a card linking to `/?block=n`, with the block's hash and how many blocks are on top.
+- **Certificate** (a sealed notarization, VLW-29b):
+  - "This document existed on 21 October 2026 at 15:06:45 UTC." The moment is the block's seal from `GET /blocks/{block_hash}`, which the chain backs, not the time the node received the transaction. Until it loads, the heading says the document existed when block #n was sealed.
+  - The fingerprint is in 8 groups of 8, in a grid that fits its container: four a row on a desktop, three at 360 px.
+  - "Check a file against it": `crypto.subtle.digest('SHA-256', file)` is compared with `payload`. "Match" fades up and "No match" shakes. The file never leaves the browser.
+  - A waiting notarization has no certificate yet.
+- **Not found** (a 404): explains that rejected transactions leave no trace, with "Back to the tower". Any other failure shows a card with the API's `detail` and "Retry now" when `/health` answers; otherwise the shell's banner speaks.
 - **Stories:** VLW-29 (with VLA-20).
 
 ### Sign and send — `/transact`
@@ -216,25 +239,44 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
 - **Artboard:** "E · Wallet". Tweaks: `start` (no wallet, existing wallet).
 - **Data:** keys from `@noble/curves` in the browser (VLW-16); balance `GET /wallets/{address}/balance`; activity `GET /wallets/{address}/transactions` (*new*, VLA-34).
 - **Behaviour:**
-  - create or open a key file;
-  - the identity cube drops in;
-  - "Download .json" saves the key with a Blob download, then a checkbox confirms it was stored;
-  - "Forget this key" asks inline, with no browser dialog;
-  - looking up another address builds its cube as the person types.
+  - Create a key pair, or open a key file. Either becomes the key the tab signs with (`useKeyStore`), which Sign and send shares.
+  - The identity cube drops in, only when the key was just created or opened on this page. The address shows in 8 groups, and the balance pops when it arrives.
+  - "Download .json" saves `{"public_key", "private_key"}` (`keyFileText`) with a Blob download named `veriledger-<first 8>.json`. Then the checkbox confirms the file was stored, and the steps fold away (`grid-template-rows`).
+  - The store remembers whether a file of the key exists. A key opened from its file counts as saved, so the page does not ask again after a visit to another page (VLW-31a).
+  - "Forget this key in this tab" asks inline, with no browser dialog. Forgetting returns to create or open.
+  - **Activity** (VLW-31b): the 20 newest of `GET /wallets/{address}/transactions` (VLA-34). Each is linked to its page and fades in, 40 ms after the one above. Each row reads "Mining reward", "Notarized a document", "Sent to …" or "Received from …", with what it does to the balance ("+50.10", "−10.10") and "Block #n" or "Waiting". A received transfer is worded so; the artboard has no example of one.
+  - Under the balance, "100.20 received · 10.20 sent · 0.00 waiting" adds up the activity, only when the whole of it is loaded; otherwise "The 20 newest of N" shows under the list. A new address reads "New address: nothing received yet".
+  - **Looking up another address** builds its cube as the person types. A face stays grey until its byte is complete, and the counter reads "n / 64". The border is the accent colour while the address is incomplete, and ok when it is valid. "Show balance" gives the balance, or the 64-character rule with a shake. "Use an example" is not built.
 - **Stories:** VLW-31 (with VLW-16, VLA-34).
 
 ### Network — `/network`
 
 - **Artboard:** "E · Red". Tweaks: `role`, `resolveResult` (authoritative, replaced, failed), `registerResult` (ok, duplicate, private address), `startEmpty`.
-- **Data:** `GET /nodes`, `POST /nodes/register` (admin; private addresses refused, VLA-19), `POST /nodes/resolve` (admin). The height before and after resolving comes from `GET /blocks` `total`.
-- **Map:** this node in the centre, the registered peers evenly on a ring. Positions and the edges' rotation use `transform`, so adding a peer glides.
+- **Data:** `GET /nodes`, `POST /nodes/register` (admin; private addresses refused, VLA-19), `POST /nodes/resolve` (admin). The height, before and after resolving, is the newest block's number from `GET /blocks?skip=0&limit=1`.
+- **Map:** this node in the centre with its height, the registered peers evenly on a ring (`src/lib/peers.ts`). Positions and the edges' rotation use `transform`, so adding a peer glides, and the new one pops.
+  - A peer's circle reads the first label of its host over the rest ("node-b" over "example.org"). An IP address stays whole, over its port.
+  - Without peers, a dashed ring. To a screen reader the map is one image ("This node at height 25, with 2 peers"); the list carries the rest.
+- **Add a peer** (admin, VLW-32a):
+  - The form of the address (`http(s)://` and a host) is checked in the browser.
+  - Everything else is the API's: a host that does not resolve, a private or local address (VLA-19), a duplicate. Its 400 is shown in its own words, and the form shakes (canvas version 38 uses the same words).
+  - Typing after a refusal keeps the field and its focus.
+  - In development the API's Compose sets `ALLOW_PRIVATE_PEERS`, so `http://127.0.0.1:8001` registers there. Production refuses it.
+- **Resolve conflicts** (admin, VLW-32b):
+  - While `POST /nodes/resolve` is pending the button reads "Asking N peers…". A pulse per peer travels out along its edge (`offset-path`) and loops, and the peers' rings turn the accent colour. Nothing pretends to know which peer answered: the API reports only the outcome.
+  - When it settles, one reply pulse per peer comes back, once, and the card says what happened:
+    - "Our chain is already the longest valid one": no peer had a longer valid chain.
+    - "Adopted a longer valid chain", with the height before and after.
+    - "Could not finish resolving", with the API's words, and the card shakes.
+  - Disabled without peers, and for other roles.
+- **Other roles and visitors** see the map and the list, with "Only an admin can add peers or resolve conflicts." Signed in, the form shows until `/auth/me` answers, and the API refuses anyone else with a 403. A visitor never sees it (ADR-0005).
+- **The list:** every peer reads "registered". If `GET /nodes` fails, the page says the node did not answer instead of showing an empty list.
 - **Stories:** VLW-32 (with VLA-19).
 
 ### Not found — any unknown route
 
 - **Artboard:** "E · Estados del shell" (404 card).
 - **Where:** inside the shell, as the catch-all child route.
-  - Without a session, an unknown address leads to the login first, like any other page (AR-08).
+  - It opens without a session too, like the tower it leads back to (ADR-0005, product owner, 2026-10-21).
   - The card's heading is the page's `h1`; on the artboard it is an `h2`, because it sits among other states.
 - **Story:** VLW-33.
 

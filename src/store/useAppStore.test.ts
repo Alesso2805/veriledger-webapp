@@ -21,11 +21,25 @@ describe('useAppStore', () => {
     expect(persistedToken()).toBeNull();
   });
 
+  it('remembers that the session that ended was a demo, when its caller says so', () => {
+    useAppStore.getState().setToken('abc.def.ghi');
+    useAppStore.getState().expire('demo-ended');
+
+    expect(useAppStore.getState()).toMatchObject({ token: null, endedReason: 'demo-ended' });
+  });
+
   it('forgets why the last session ended once the person signs in again', () => {
     useAppStore.getState().expire();
     useAppStore.getState().setToken('abc.def.ghi');
 
     expect(useAppStore.getState().endedReason).toBeNull();
+  });
+
+  it('forgets why the last session ended once the login has said so', () => {
+    useAppStore.getState().expire();
+    useAppStore.getState().clearEndedReason();
+
+    expect(useAppStore.getState()).toMatchObject({ token: null, endedReason: null });
   });
 
   it('persists only the token, not why a session ended', () => {
@@ -54,7 +68,7 @@ describe('useAppStore', () => {
   });
 
   it("forgets the signed-in user whenever the session changes, and never persists it", () => {
-    const user = { id: '1', email: 'a@veriledger.test', role: 'viewer' as const, created_at: '', updated_at: '' };
+    const user = { id: '1', email: 'a@veriledger.test', display_name: 'a@veriledger.test', expires_at: null, role: 'viewer' as const, created_at: '', updated_at: '' };
     for (const end of [() => useAppStore.getState().logout(), () => useAppStore.getState().expire(), () => useAppStore.getState().setToken('next')]) {
       useAppStore.getState().setUser(user);
       expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).state).not.toHaveProperty('user');

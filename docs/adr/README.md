@@ -8,5 +8,6 @@ One technical decision per file: context, options, decision and consequences. An
 | [0002](0002-keys-and-signing-only-in-the-browser.md) | Keys and signing only in the browser, with the API's canonical message | Accepted |
 | [0003](0003-static-files-behind-the-api-caddy.md) | Static files behind the API's Caddy, with the API URL in a runtime `config.json` | Accepted |
 | [0004](0004-design-direction-e.md) | Design direction E ("Network"), with motion the code reproduces exactly | Accepted |
+| [0005](0005-visitors-read-without-a-session.md) | Visitors read the tower, transactions and peers without a session | Accepted |
 
 Statuses: Proposed → Accepted → (Superseded by ADR-NNNN | Deprecated). "Retroactive" means the decision was taken in code on July 29, 2026 and written down on October 20, 2026.

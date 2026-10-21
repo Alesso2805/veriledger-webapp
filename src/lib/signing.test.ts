@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import vectors from './__fixtures__/signing-vectors.json';
 import { keyPairFromSecret } from './keys';
-import { AmountError, buildSignedMessage, signMessage, toAmount } from './signing';
+import { AmountError, buildSignedMessage, signMessage, toAmount, verifySignature } from './signing';
 
 // AR-06: the API's golden vectors, copied from veriledger-api docs/signing-vectors.json (47bec5c).
 describe('AR-06 signing vectors', () => {
@@ -21,6 +21,17 @@ describe('AR-06 signing vectors', () => {
 
   it.each(vectors.vectors)('$name: the sender address is the key pair public half', (vector) => {
     expect(keyPairFromSecret(vector.private_key).public_key).toBe(vector.public_key);
+  });
+
+  it.each(vectors.vectors)('$name: the signature verifies against the sender address, and only against it', (vector) => {
+    expect(verifySignature(vector.message, vector.signature, vector.public_key)).toBe(true);
+    expect(verifySignature(vector.message.replace('"nonce":', '"nonce":9'), vector.signature, vector.public_key)).toBe(false);
+    expect(verifySignature(vector.message, vector.signature, vector.fields.receiver_address === vector.public_key ? 'ab'.repeat(32) : vector.fields.receiver_address)).toBe(false);
+  });
+
+  it('treats malformed hex as not signed', () => {
+    const [vector] = vectors.vectors;
+    expect(verifySignature(vector.message, 'COINBASE', vector.public_key)).toBe(false);
   });
 });
 

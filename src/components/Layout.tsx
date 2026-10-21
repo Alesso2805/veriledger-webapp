@@ -1,11 +1,16 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAppStore } from '../store/useAppStore';
+import { useHealthStore } from '../store/useHealthStore';
 import { useKeyStore } from '../store/useKeyStore';
+import { useToastStore } from '../store/useToastStore';
+import type { LoginRedirectState } from '../types/session';
 import { HeaderSearch } from './HeaderSearch';
 import { HealthStatus } from './HealthStatus';
 import { LogoMark } from './LogoMark';
 import { OfflineBanner } from './OfflineBanner';
 import { UserChip } from './UserChip';
+import { useSessionToken } from './useSessionToken';
+import { useStartDemo } from './useStartDemo';
 
 const TABS = [
   { label: 'Tower', to: '/', end: true },
@@ -14,15 +19,22 @@ const TABS = [
   { label: 'Network', to: '/network', end: false },
 ];
 
+const pillClass =
+  'inline-flex h-9 items-center rounded-full border border-vl-line px-3 text-[13px] font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised';
+
 const tabClass = ({ isActive }: { isActive: boolean }) =>
   `whitespace-nowrap border-b-2 px-3 py-2.5 transition-colors duration-(--vl-dur-fast) ${
     isActive ? 'border-vl-accent font-semibold text-vl-text' : 'border-transparent text-vl-muted hover:text-vl-text'
   }`;
 
 export function Layout() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const logout = useAppStore((state) => state.logout);
+  const { token } = useSessionToken();
+  const demoMode = useHealthStore((state) => state.demoMode);
+  const show = useToastStore((state) => state.show);
+  const demo = useStartDemo((text) => show(text, 'err'));
 
   // Signing out also forgets the key this tab held, so the next person at this browser cannot sign with it.
   const signOut = () => {
@@ -51,13 +63,30 @@ export function Layout() {
           <div className="order-1 ml-auto flex items-center gap-2.5 sm:order-none sm:gap-3.5">
             <HealthStatus />
             <UserChip />
-            <button
-              type="button"
-              onClick={signOut}
-              className="inline-flex h-9 items-center rounded-full border border-vl-line px-3 text-[13px] font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
-            >
-              Sign out
-            </button>
+            {token ? (
+              <button type="button" onClick={signOut} className={pillClass}>
+                Sign out
+              </button>
+            ) : (
+              <>
+                {/* After signing in, the login returns the visitor to this page; a demo starts right here. */}
+                <Link to="/login" state={{ from: { pathname, search } } satisfies LoginRedirectState} className={pillClass}>
+                  Sign in
+                </Link>
+                {demoMode && (
+                  <button
+                    type="button"
+                    onClick={() => void demo.start()}
+                    disabled={demo.starting}
+                    className={`inline-flex h-9 items-center rounded-full bg-vl-accent px-3 text-[13px] font-semibold whitespace-nowrap text-vl-on-accent ${
+                      demo.starting ? 'animate-vl-pulse' : ''
+                    }`}
+                  >
+                    {demo.starting ? 'Starting…' : 'Try the demo'}
+                  </button>
+                )}
+              </>
+            )}
           </div>
           <nav aria-label="Main" className="order-3 flex basis-full gap-0.5 overflow-x-auto sm:order-none">
             {TABS.map((tab) => (

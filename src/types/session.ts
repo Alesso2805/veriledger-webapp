@@ -1,20 +1,22 @@
-export type UserRole = 'admin' | 'trader' | 'viewer';
+import type { components } from './api';
 
-export interface CurrentUser {
-  id: string;
-  email: string;
-  role: UserRole;
-  created_at: string;
-  updated_at: string;
-}
+export type UserRole = components['schemas']['UserRole'];
 
-// Router state of a redirect to /login: where to return after signing in, and why the session ended (VLW-17).
+// GET /auth/me. A demo account has no email, display_name "Guest XXXX" and an expires_at; a regular account's
+// display_name is its email and its expires_at is null (API ADR-0006, VLA-35).
+export type CurrentUser = components['schemas']['UserResponseDTO'];
+
+// POST /auth/login and POST /auth/demo.
+export type Token = components['schemas']['TokenDTO'];
+
+// GET /health. demo_mode says whether this node starts demo accounts at POST /auth/demo (VLA-35).
+export type Health = components['schemas']['HealthCheckResponse'];
+
+// Why a session ended without a sign-out: its time ran out (VLW-17), or it was a demo account (VLW-34).
+export type SessionEndReason = 'expired' | 'demo-ended';
+
+// Router state of a redirect to /login: where to return after signing in, and why the session ended.
 export interface LoginRedirectState {
   from?: { pathname: string; search?: string };
-  reason?: 'expired';
-}
-
-export interface Health {
-  status: string;
-  environment: string;
+  reason?: SessionEndReason;
 }

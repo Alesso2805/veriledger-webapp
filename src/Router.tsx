@@ -1,6 +1,6 @@
-import type { RouteObject } from 'react-router';
+import { Outlet, type RouteObject } from 'react-router';
 import { Layout } from './components/Layout';
-import { ProtectedRoute, PublicRoute } from './components/RouteGuards';
+import { OpenRoute, ProtectedRoute, PublicRoute } from './components/RouteGuards';
 import { Login } from './pages/Login';
 import { Tower } from './pages/Tower';
 import { Wallet } from './pages/Wallet';
@@ -21,18 +21,33 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/',
-    element: (
-      <ProtectedRoute>
-        <Layout />
-      </ProtectedRoute>
-    ),
+    element: <Layout />,
     children: [
-      { index: true, element: <Tower /> },
-      { path: 'transaction/:hash', element: <TransactionDetail /> },
-      { path: 'wallet', element: <Wallet /> },
-      { path: 'transact', element: <SignAndSend /> },
-      { path: 'network', element: <Network /> },
-      { path: '*', element: <NotFound /> },
+      {
+        // What the API lets anyone read (ADR-0005).
+        element: (
+          <OpenRoute>
+            <Outlet />
+          </OpenRoute>
+        ),
+        children: [
+          { index: true, element: <Tower /> },
+          { path: 'transaction/:hash', element: <TransactionDetail /> },
+          { path: 'network', element: <Network /> },
+          { path: '*', element: <NotFound /> },
+        ],
+      },
+      {
+        element: (
+          <ProtectedRoute>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: 'wallet', element: <Wallet /> },
+          { path: 'transact', element: <SignAndSend /> },
+        ],
+      },
     ],
   },
 ];

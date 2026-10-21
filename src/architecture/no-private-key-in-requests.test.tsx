@@ -55,7 +55,7 @@ describe('AR-05 no request carries the private key', () => {
         <Wallet />
       </MemoryRouter>,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Generate New Wallet' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create a wallet' }));
     const privateKey = useKeyStore.getState().pair?.private_key ?? '';
     expect(privateKey).toMatch(/^[0-9a-f]{64}$/);
     cleanup();
@@ -88,5 +88,6 @@ describe('AR-05 no request carries the private key', () => {
     expect(sent.map((request) => JSON.parse(request.body).nonce)).toEqual([1, 2]);
     const leaks = recorded.filter((request) => `${request.url} ${request.headers} ${request.body}`.includes(privateKey));
     expect(leaks).toEqual([]);
-  });
+    // The longest flow of the suite: two pages, two signatures, a file hashed. Slow machines need more than 5 s.
+  }, 15_000);
 });

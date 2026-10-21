@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   formatAmount,
+  formatCertified,
   formatClock,
   formatCount,
   formatSealed,
+  formatTimeLeft,
   shortHash,
   splitProofOfWork,
   transactionKind,
@@ -35,8 +37,9 @@ describe('hashes', () => {
     expect(shortHash(alice)).toBe('4655ec4f…a19d');
   });
 
-  it('keeps a longer tail when asked', () => {
+  it('keeps a longer tail, or a shorter head, when asked', () => {
     expect(shortHash(alice, 8)).toBe('4655ec4f…b0d4a19d');
+    expect(shortHash(alice, 4, 4)).toBe('4655…a19d');
   });
 
   it('leaves a short value whole, such as the reward sender', () => {
@@ -80,8 +83,22 @@ describe('times', () => {
     expect(formatSealed(sealed, 'America/Lima')).toBe('20 Oct 2026 · 16:34:47');
   });
 
+  it('writes the moment a certificate states, in UTC whatever the reader’s zone', () => {
+    expect(formatCertified(sealed)).toBe('20 October 2026 at 21:34:47 UTC');
+  });
+
   it('writes the clock time for lists', () => {
     expect(formatClock(sealed, 'UTC')).toBe('21:34');
     expect(formatClock('2026-10-21T00:05:00Z', 'America/Lima')).toBe('19:05');
+  });
+
+  it('writes what is left of a demo in whole hours, then minutes in its last hour', () => {
+    const hour = 3_600_000;
+    expect(formatTimeLeft(24 * hour - 5_000)).toBe('23 h left');
+    expect(formatTimeLeft(hour)).toBe('1 h left');
+    expect(formatTimeLeft(hour - 1)).toBe('60 min left');
+    expect(formatTimeLeft(45 * 60_000)).toBe('45 min left');
+    // Never "0 min left" while the token is still good.
+    expect(formatTimeLeft(10_000)).toBe('1 min left');
   });
 });

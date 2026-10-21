@@ -22,13 +22,13 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 
 | Page | Route | What it does | Status |
 | --- | --- | --- | --- |
-| Login | `/login` | Email and password against `POST /auth/login` (OAuth2 form); stores the token. "Try the demo" starts a 24-hour trader account with one click (API ADR-0006) | Built (VLW-01). VLW-33 adds design E, an empty form, the 401 shake and the return to the page the person was on. VLW-17 adds the session-expired redirect. The demo comes with VLW-34 |
-| Tower | `/` | The newest 10 blocks drawn as a tower; the list with "Load older blocks"; the selected block with its transactions; what waits for the next block. Height, waiting count and last block, refreshed every 10 s. `?block=n` opens a block. Mining to a reward address, for the trader and admin roles | Built (VLW-28), replacing the explorer of VLW-04; block search comes in VLW-19 |
-| Transaction detail | `/transaction/:hash` | Status, hash, parties, value, fee, block; a notarization (amount 0 + payload) is shown as a certificate | Built (VLW-05); links from a block open the wrong key until VLW-19 |
-| Wallet | `/wallet` | Create a key pair, check any address's balance | Built (VLW-02); the pair is created in the browser since VLW-16, and held in the tab's memory for Sign and send since VLW-30 |
+| Login | `/login` | Email and password against `POST /auth/login` (OAuth2 form); stores the token. "Try the demo" starts a 24-hour trader account with one click (API ADR-0006) | Built (VLW-01). VLW-33 adds design E, an empty form, the 401 shake and the return to the page the person was on. VLW-17 adds the session-expired redirect. "Try the demo" since VLW-34b, on a node in demo mode, with "Your demo ended…" when a demo account's session ends |
+| Tower | `/` | The newest 10 blocks drawn as a tower; the list with "Load older blocks"; the selected block with its transactions; what waits for the next block. Height, waiting count and last block, refreshed every 10 s. `?block=n` opens a block. Mining to a reward address, for the trader and admin roles. Open without a session; a visitor sees "Sign in to mine" | Built (VLW-28), replacing the explorer of VLW-04; open to visitors since VLW-34a |
+| Transaction | `/transaction/:hash` | The journey (signed, accepted, sealed, buried); the details with the signature verified in the browser; the block that holds it; a notarization's certificate (VLW-29b); times in UTC. Open without a session | Built (VLW-29, design E), replacing the page of VLW-05; open to visitors since VLW-34a |
+| Wallet | `/wallet` | Create a key pair or open a key file; the address, its identity cube and its balance; save the key file and confirm it; forget the key; the address's activity and a look-up of any address (VLW-31b) | Built (VLW-31, design E), replacing the page of VLW-02; the key is created in the browser (VLW-16) and is the one Sign and send uses |
 | Sign and send | `/transact` | Signs with the key held in the tab: open a key file or use the wallet's. Composes a transfer or a notarization (the document is hashed in the browser) and shows the message being signed. Signs it, sends the message and the signature, and shows the node's answer | Built (VLW-30, design E), replacing the page of VLW-03. It signs the API's canonical message (VLW-15) with the sender's next nonce (VLW-18) |
-| Network | `/network` | Add a peer URL, list peers, resolve conflicts | Built (VLW-06) |
-| Not found | any other path | The 404 tower with "Back to the tower", inside the shell | Built (VLW-33) |
+| Network | `/network` | This node and its peers on a ring map; the peer list; adding a peer (admin); resolving conflicts (admin). Open without a session, read-only | Built (VLW-32, design E), replacing the page of VLW-06; open to visitors since VLW-34a |
+| Not found | any other path | The 404 tower with "Back to the tower", inside the shell. Open without a session | Built (VLW-33); open to visitors since VLW-34a |
 
 **Out of scope for this plan:** storing private keys (encrypted or not) beyond the session, hardware wallets, a block explorer for other networks, internationalization, a light theme.
 
@@ -39,16 +39,16 @@ A single-page app built by Vite into static files (ADR-0001).
 | Folder | Holds | May import |
 | --- | --- | --- |
 | `src/pages` | One component per route | `components`, `lib`, `services`, `store`, `types` |
-| `src/components` | Shared UI: `Layout`, the route guards (`RouteGuards.tsx`) and the shell's pieces; the identity cube (`IdentityCube.tsx`); the tower's pieces in `components/tower/` (drawing, block list, block detail, waiting list, freshness line); Sign and send's pieces in `components/transact/` | `lib`, `services`, `store`, `types` |
-| `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), the token's expiry (`jwt.ts`), display formats (`format.ts`), merging pages of blocks (`chain.ts`), cube geometry (`isometric.ts`), an address's cube colours (`identicon.ts`), reading a key file (`keyFile.ts`), checking what is about to be signed (`compose.ts`), a document's SHA-256 (`digest.ts`) | `types`, `@noble/*` |
-| `src/services` | The axios instance with the base URL, the token interceptor, the 401 handler that ends an expired session (VLW-17) and `detailOf` for the API's error messages; one module per area (`auth.ts`, `health.ts`, `ledger.ts`, `wallets.ts`, `config.ts`). Each read checks the shape of the answer | `lib`, `store`, `types`, axios |
-| `src/store` | Zustand stores: the session token, persisted in `localStorage` under `veriledger-storage`; the signed-in user from `GET /auth/me` (`user`, not persisted), whose role pages use for their rules; the toasts (`useToastStore`, each closes after 4 s), shown by `ToastRegion` on every page; whether the API answers (`useHealthStore`), which the header status, the login and the offline banner read; the key pair this tab signs with (`useKeyStore`), only in memory: a reload forgets it and signing out clears it (ADR-0002, VLW-30) | `types` |
-| `src/types` | Types of the API's responses; generated from its OpenAPI document in VLW-19 | Nothing |
+| `src/components` | Shared UI: `Layout`, the route guards (`RouteGuards.tsx`) and the shell's pieces; the identity cube (`IdentityCube.tsx`); the tower's pieces in `components/tower/` (drawing, block list, block detail, waiting list, freshness line); Sign and send's pieces in `components/transact/`; the transaction page's in `components/transaction/`; the wallet's in `components/wallet/`; the network's in `components/network/` | `lib`, `services`, `store`, `types` |
+| `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), the token's expiry and demo claim (`jwt.ts`), display formats (`format.ts`), merging pages of blocks (`chain.ts`), cube geometry (`isometric.ts`), an address's cube colours (`identicon.ts`), reading a key file (`keyFile.ts`), checking what is about to be signed (`compose.ts`), a document's SHA-256 (`digest.ts`), what a stored transaction says about itself: signature, journey, title (`transaction.ts`), an address's activity in words and sums (`activity.ts`), what a search can look up (`search.ts`), the peer map's ring and names (`peers.ts`) | `types`, `@noble/*` |
+| `src/services` | The axios instance with the base URL, the token interceptor, the 401 handler that ends an expired session (VLW-17) and `detailOf` for the API's error messages; one module per area (`auth.ts`, `health.ts`, `ledger.ts`, `wallets.ts`, `nodes.ts`, `config.ts`). Each read checks the shape of the answer | `lib`, `store`, `types`, axios |
+| `src/store` | Zustand stores: the session token, persisted in `localStorage` under `veriledger-storage`; the signed-in user from `GET /auth/me` (`user`, not persisted), whose role pages use for their rules; the toasts (`useToastStore`, each closes after 4 s), shown by `ToastRegion` on every page; whether the API answers and whether it starts demo accounts (`useHealthStore`), which the header status, the login, the offline banner and the "Try the demo" buttons read; whether a demo account is being started (`startingDemo`), which those buttons share; the key pair this tab signs with (`useKeyStore`), only in memory: a reload forgets it and signing out clears it (ADR-0002, VLW-30). It also remembers whether a key file of it exists (VLW-31) | `types` |
+| `src/types` | The API's responses: `api.ts`, generated from its OpenAPI document (`openapi.json`, AR-09), and the names the code uses for them (`ledger.ts`, `network.ts`, `session.ts`); the webapp's own types beside them (`LoginRedirectState`, `SessionEndReason`, the browser's key pair) | Nothing outside `types` |
 
 `src/Router.tsx` exports the route table as data (`routes`), so that AR-08 can walk it.
-- Every route except `/login` is wrapped in `ProtectedRoute` (`src/components/RouteGuards.tsx`), which redirects to `/login` without a token.
-  - It keeps the page in the router state (`LoginRedirectState`), so `PublicRoute` returns there after signing in.
-  - A 401 on a request that carried the session, or a stored token whose `exp` has passed (`src/lib/jwt.ts`), ends the session. The guards then send the person to the login with `reason: 'expired'` (VLW-17).
+- The pages whose data the API serves to anyone (`/`, `/transaction/:hash`, `/network` and the 404) are wrapped in `OpenRoute`; `/wallet` and `/transact` in `ProtectedRoute` (`src/components/RouteGuards.tsx`), which redirects to `/login` without a token (ADR-0005).
+  - Without a session the header's "Sign in", the tower's "Sign in to mine" and `ProtectedRoute` keep the page in the router state (`LoginRedirectState`), so `PublicRoute` returns there after signing in.
+  - A 401 on a request that carried the session, or a stored token whose `exp` has passed (`src/lib/jwt.ts`), ends the session. Both guards then send the person to the login with `reason: 'expired'` (VLW-17), or `'demo-ended'` when the token carried the `demo` claim (VLW-34). The store reads no tokens, so whoever ends the session (the 401 handler, `useSessionToken`) passes the reason. The login takes the reason from its router state and the store forgets it, so a visitor can go back to an open page.
 - `src/App.tsx` renders the table with `useRoutes`, and `src/main.tsx` mounts it inside `BrowserRouter`.
 - The tests of the architecture rules live in `src/architecture/`.
 
@@ -67,15 +67,17 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 
 | Page | Calls | Auth |
 | --- | --- | --- |
-| Shell | `GET /health` every 10 s on every page, the login included (`HealthWatcher`, `src/services/health.ts`); `GET /auth/me` once per session (`src/services/auth.ts`) | Public; JWT |
-| Login | `POST /auth/login` (form-urlencoded) | Public |
-| Tower | `GET /blocks?skip&limit` (the tower, older pages, a deep link), `GET /blocks/{block_hash}` (the selected block), `GET /transactions?status=PENDING&skip&limit` (waiting), every 10 s (`src/services/ledger.ts`, VLA-20, VLA-33); `POST /blocks/mine`, then `GET /blocks/{block_hash}` for the reward of the toast | JWT |
-| Transaction detail | `GET /transactions/{tx_hash}` | JWT |
-| Wallet | `GET /wallets/{address}/balance`; keys are generated in the browser (`src/lib/keys.ts`, VLW-16) | Public |
+| Shell | `GET /health` every 10 s on every page, the login included (`HealthWatcher`, `src/services/health.ts`); its `demo_mode` shows "Try the demo" (VLA-35); `POST /auth/demo` from "Try the demo"; `GET /auth/me` once per session, with `display_name` for the chip (`src/services/auth.ts`); the search: `GET /blocks?skip&limit=1` for a block number, `GET /blocks/{block_hash}` and `GET /transactions/{tx_hash}` for a full hash (`src/services/ledger.ts`, VLW-19) | Public; JWT |
+| Login | `POST /auth/login` (form-urlencoded); `POST /auth/demo` for "Try the demo" (VLA-35) | Public |
+| Tower | `GET /blocks?skip&limit` (the tower, older pages, a deep link), `GET /blocks/{block_hash}` (the selected block), `GET /transactions?status=PENDING&skip&limit` (waiting), every 10 s (`src/services/ledger.ts`, VLA-20, VLA-33); `POST /blocks/mine`, then `GET /blocks/{block_hash}` for the reward of the toast; `POST /auth/demo` from "Try the demo to mine" | Public; JWT to mine |
+| Transaction | `GET /transactions/{tx_hash}` and `GET /blocks?skip=0&limit=1` (the height), every 10 s; `GET /blocks/{block_hash}` for a certificate's moment (`src/services/ledger.ts`, VLA-20) | Public |
+| Wallet | `GET /wallets/{address}/balance` and `GET /wallets/{address}/transactions?skip=0&limit=20` (VLA-34), for the key's address and any address looked up (`src/services/wallets.ts`); keys are generated in the browser (`src/lib/keys.ts`, VLW-16), and the key file is written in it (`src/lib/keyFile.ts`) | Public |
 | Sign and send | `GET /wallets/{address}/nonce` and `GET /wallets/{address}/balance` when a key is opened, after a 409 (the nonce) and for "Send another" (`src/services/wallets.ts`, VLA-16); `POST /transactions` (`src/services/ledger.ts`) | Public; JWT |
-| Network | `GET /nodes`, `POST /nodes/register`, `POST /nodes/resolve` | JWT |
+| Network | `GET /nodes` and `GET /blocks?skip=0&limit=1` (the height); `POST /nodes/register` and `POST /nodes/resolve`, admin only (`src/services/nodes.ts`, VLA-19) | Public; JWT |
 
 Every request goes through `src/services/api.ts`, which adds `Authorization: Bearer <token>`. Errors show the API's `detail`.
+
+The types of every answer are generated from the API's `docs/openapi.json` (VLA-37), copied unchanged into `src/types/openapi.json` at API commit bbae7db. `npm run types:api` regenerates `src/types/api.ts`, and CI fails when it is stale (AR-09). When the API changes an answer, the copy is updated with the commit it comes from, and `tsc` shows every place the code must follow.
 
 ## Signing contract
 
@@ -123,7 +125,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 | Security | Content Security Policy and security headers on the served files | `docker/smoke-test.sh` on the built image, in the Image workflow (VLW-22) |
 | Security | No known high or critical vulnerability in dependencies | `npm audit --audit-level=high` in CI (VLW-11) |
 | Correctness | Transactions signed here are accepted by the API | The API's golden vectors in Vitest (AR-06, VLW-15) and an end-to-end transfer (VLW-23) |
-| Correctness | Response types match the API | Types generated from the API's OpenAPI document (AR-09, VLW-19) |
+| Correctness | Response types match the API | Types generated from the API's OpenAPI document, regenerated and diffed in CI (AR-09, VLW-19) |
 | Deployment | One image for any hostname; deep links survive a reload | `docker/smoke-test.sh` on the built image (VLW-21, VLW-22); end-to-end tests (VLW-23) |
 | Reproducibility | `npm ci && npm run build` from a clean clone | CI (VLW-10, VLW-11) |
 | Accessibility | Every input has a label; visible focus; usable at 360 px with no horizontal scroll; no serious or critical axe-core violation | axe-core in the component tests and Playwright at 360 px (VLW-24) |
@@ -131,7 +133,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 
 ## Engineering rules
 
-**Stack.** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Zustand 5, axios, lucide-react, `@noble/curves` 2; @fontsource Instrument Sans and Martian Mono; oxlint; Vitest, Testing Library and jsdom; Playwright; dependency-cruiser. Node 22 LTS, 22.13 or later.
+**Stack.** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Zustand 5, axios, lucide-react, `@noble/curves` 2; @fontsource Instrument Sans and Martian Mono; oxlint; Vitest, Testing Library and jsdom; Playwright; dependency-cruiser; openapi-typescript. Node 22 LTS, 22.13 or later.
 
 **Architecture rules.** The folder rules of the Architecture section, written as verifiable rules AR-01 to AR-09 in [ARCHITECTURE_RULES.md](ARCHITECTURE_RULES.md), each with the test that checks it (VLW-13).
 
@@ -165,12 +167,11 @@ veriledger-webapp/
 │   ├── lib/                      # signing.ts, keys.ts, jwt.ts, format.ts, chain.ts, isometric.ts; identicon.ts (VLW-31)
 │   ├── services/api.ts
 │   ├── store/useAppStore.ts
-│   ├── types/                    # generated from the API's OpenAPI (VLW-19)
+│   ├── types/                    # openapi.json, api.ts generated from it (AR-09), and their names
 │   ├── Router.tsx                # the route table
 │   ├── App.tsx
 │   ├── main.tsx
-│   ├── index.css                 # design E tokens: the CSS block of DESIGN.md (AR-10)
-│   └── legacy.css                # neon classes of the pages not yet replaced; deleted by VLW-32
+│   └── index.css                 # design E tokens: the CSS block of DESIGN.md (AR-10)
 ├── public/favicon.svg
 ├── e2e/                          # Playwright (VLW-23)
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh

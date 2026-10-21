@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import vectors from './__fixtures__/signing-vectors.json';
-import { KeyFileError, parseKeyFile } from './keyFile';
+import { KeyFileError, keyFileText, parseKeyFile } from './keyFile';
 
 // RFC 8032 test keys from the API's vectors: published, test-only.
 const { private_key: privateKey, public_key: publicKey } = vectors.vectors[0];
 const other = vectors.vectors[1].public_key;
+
+describe('keyFileText', () => {
+  it('writes the pair so that parseKeyFile reads it back', () => {
+    const pair = { public_key: publicKey, private_key: privateKey };
+
+    expect(JSON.parse(keyFileText(pair))).toEqual(pair);
+    expect(parseKeyFile(keyFileText(pair))).toEqual(pair);
+  });
+});
 
 describe('parseKeyFile', () => {
   it('reads the pair the wallet saves', () => {

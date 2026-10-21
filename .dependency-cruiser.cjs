@@ -44,7 +44,8 @@ module.exports = {
       name: 'AR-03-types-import-nothing',
       severity: 'error',
       from: { path: '^src/types/' },
-      to: { path: '^src/' },
+      // Nothing outside types; the named types are aliases of the generated src/types/api.ts (AR-09).
+      to: { path: '^src/', pathNot: '^src/types/' },
     },
     {
       name: 'AR-04-no-circular',

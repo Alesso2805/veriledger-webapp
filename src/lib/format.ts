@@ -12,10 +12,10 @@ export function formatCount(value: number): string {
   return COUNT.format(value);
 }
 
-// "4655ec4f…a19d" tells addresses and hashes apart in a list; the full value is on the detail. Where one
-// address matters more, such as the key a page signs with, the artboards keep 8 characters at the end.
-export function shortHash(value: string, tail = 4): string {
-  return value.length > 10 + tail ? `${value.slice(0, 8)}…${value.slice(-tail)}` : value;
+// "4655ec4f…a19d" tells addresses and hashes apart in a list; the full value is on the detail. The artboards
+// keep more or fewer characters where it matters: 8 at the end for the key a page signs with, 4 and 4 in a title.
+export function shortHash(value: string, tail = 4, head = 8): string {
+  return value.length > head + tail + 2 ? `${value.slice(0, head)}…${value.slice(-tail)}` : value;
 }
 
 // The leading zeros are the proof of work, which the tower highlights.
@@ -46,6 +46,20 @@ export function formatSealed(iso: string, timeZone?: string): string {
   const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone });
   const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZone });
   return `${day.format(date)} · ${time.format(date)}`;
+}
+
+// The moment a certificate states, always in UTC: "20 October 2026 at 16:21:55 UTC".
+export function formatCertified(iso: string): string {
+  const date = new Date(iso);
+  const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
+  return `${day.format(date)} at ${time.format(date)} UTC`;
+}
+
+// What is left of a demo account: "23 h left", then "45 min left" in its last hour (VLW-34).
+export function formatTimeLeft(ms: number): string {
+  if (ms >= 3_600_000) return `${Math.floor(ms / 3_600_000)} h left`;
+  return `${Math.max(1, Math.ceil(ms / 60_000))} min left`;
 }
 
 export function formatClock(iso: string, timeZone?: string): string {

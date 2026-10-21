@@ -10,12 +10,22 @@ const toasts = () => useToastStore.getState().toasts.map((toast) => toast.text);
 
 describe('checkHealth', () => {
   beforeEach(() => {
-    useHealthStore.setState({ online: null });
+    useHealthStore.setState({ online: null, demoMode: false });
     useToastStore.setState({ toasts: [] });
   });
 
+  it('remembers whether the node starts demo accounts', async () => {
+    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test', demo_mode: true });
+    await checkHealth();
+    expect(useHealthStore.getState().demoMode).toBe(true);
+
+    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test', demo_mode: false });
+    await checkHealth();
+    expect(useHealthStore.getState().demoMode).toBe(false);
+  });
+
   it('marks the API online on the first answer, without a toast', async () => {
-    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test' });
+    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test', demo_mode: false });
 
     await checkHealth();
 
@@ -33,7 +43,7 @@ describe('checkHealth', () => {
 
   it('says "Back online." when the API answers after being offline', async () => {
     useHealthStore.setState({ online: false });
-    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test' });
+    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test', demo_mode: false });
 
     await checkHealth();
 
@@ -43,7 +53,7 @@ describe('checkHealth', () => {
 
   it('stays quiet while the API keeps answering', async () => {
     useHealthStore.setState({ online: true });
-    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test' });
+    vi.mocked(getHealth).mockResolvedValue({ status: 'ok', environment: 'test', demo_mode: false });
 
     await checkHealth();
 
