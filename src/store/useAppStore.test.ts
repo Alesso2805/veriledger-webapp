@@ -53,6 +53,18 @@ describe('useAppStore', () => {
     expect(persistedToken()).toBeNull();
   });
 
+  it("forgets the signed-in user whenever the session changes, and never persists it", () => {
+    const user = { id: '1', email: 'a@veriledger.test', role: 'viewer' as const, created_at: '', updated_at: '' };
+    for (const end of [() => useAppStore.getState().logout(), () => useAppStore.getState().expire(), () => useAppStore.getState().setToken('next')]) {
+      useAppStore.getState().setUser(user);
+      expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).state).not.toHaveProperty('user');
+
+      end();
+
+      expect(useAppStore.getState().user).toBeNull();
+    }
+  });
+
   it('restores a persisted session, as after a page reload', async () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { token: 'from.a.reload' }, version: 0 }));
 

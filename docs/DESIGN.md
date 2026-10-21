@@ -160,13 +160,13 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - blocks: `GET /blocks?skip&limit`. The newest 10 are drawn as the tower; "Load older blocks" pages back; the height is the top block's number (VLA-20).
   - selected block: `GET /blocks/{block_hash}` (VLA-20), with the mining reward first and every transaction linked by `tx_hash`.
   - waiting: `GET /transactions?status=PENDING` (VLA-33). It shows the newest 10; the count is the API's `total`.
-  - mining: `POST /blocks/mine`; the button needs the trader or admin role (VLA-19); the nonce shown is the response's.
+  - mining: `POST /blocks/mine` with the reward address typed in the card. The button needs the trader or admin role: the role comes from `GET /auth/me`, and until VLA-19 only the interface applies it. The toast after mining reads "Block #n sealed · nonce N · reward R VL". The nonce is the response's; the reward is the amount of the block's coinbase transaction, read with `GET /blocks/{block_hash}`. The new block becomes the selection.
 - **Selection:** without `?block=n` it follows the top of the chain. Picking a block writes `?block=n` and keeps it selected while new blocks arrive. A link to a block below the loaded pages reads that one block.
 - **Polling:** every 10 s; "Updated N s ago" counts in the browser and is not a live region, so a screen reader does not read it every second. A block found by polling drops onto the tower and shows the toast "Block #n joined the chain." It does not say "from another node": another user of the same node may have mined it (product owner, 2026-10-21).
 - **States:**
   - loading: skeleton tower;
   - empty: the next block is the genesis block;
-  - API unreachable: the shell's offline banner says so, and the tower keeps the last data. Its freshness line reads "Last update N s ago · retrying".
+  - API unreachable: the shell's offline banner says so, and the tower keeps the last data. Its freshness line reads "Last update N s ago · retrying". Mining is disabled with "Mining is unavailable while the API is unreachable."; the artboard does not draw this state, which belongs to the shell.
   - The tower's own error card is only for failures the banner does not explain, such as a 500 from `/blocks`. It shows the API's `detail` and "Retry now" (product owner, 2026-10-21).
   - viewer role: mining is disabled, with the reason.
 - **Stories:** VLW-28 (with VLA-20, VLA-33).

@@ -65,6 +65,8 @@ describe('Layout (the shell)', () => {
 
     expect(await screen.findByText('trader@veriledger.test')).toBeInTheDocument();
     expect(screen.getByText('trader')).toBeInTheDocument();
+    // Kept in the store, so that pages apply role rules without asking /auth/me again.
+    expect(useAppStore.getState().user).toEqual(ME);
   });
 
   it('signs out: clears the session and opens /login', async () => {

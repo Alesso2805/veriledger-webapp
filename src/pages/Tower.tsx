@@ -3,12 +3,14 @@ import { useSearchParams } from 'react-router';
 import { BlockDetail } from '../components/tower/BlockDetail';
 import { BlockList, type OlderState } from '../components/tower/BlockList';
 import { Freshness } from '../components/tower/Freshness';
+import { MineCard } from '../components/tower/MineCard';
 import { TowerDrawing } from '../components/tower/TowerDrawing';
 import { WaitingList } from '../components/tower/WaitingList';
 import { mergeBlocks } from '../lib/chain';
-import { formatClock } from '../lib/format';
+import { formatAmount, formatClock, formatCount } from '../lib/format';
 import { detailOf } from '../services/api';
-import { getBlocks, getPendingTransactions } from '../services/ledger';
+import { getBlock, getBlocks, getPendingTransactions, mineBlock } from '../services/ledger';
+import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
 import { useToastStore } from '../store/useToastStore';
 import type { Block, Transaction } from '../types/ledger';
@@ -42,20 +44,25 @@ export function Tower() {
   const [linked, setLinked] = useState<Block | null>(null);
   const [peek, setPeek] = useState<number | null>(null);
   const [loadingOlder, setLoadingOlder] = useState(false);
+  const [mining, setMining] = useState(false);
   const [params, setParams] = useSearchParams();
   const online = useHealthStore((state) => state.online);
+  const role = useAppStore((state) => state.user?.role ?? null);
   const show = useToastStore((state) => state.show);
   // The latest chain for callbacks that run between renders, such as the poll that compares tops.
   const chainRef = useRef<Chain | null>(null);
   const inFlight = useRef(false);
   const mounted = useRef(true);
+  // Bumped when this page adds a block itself, so that a poll sent before it cannot take the block away again.
+  const generation = useRef(0);
 
-  const refresh = useCallback(async () => {
-    if (inFlight.current) return;
+  const refresh = useCallback(async (force = false) => {
+    if (inFlight.current && !force) return;
     inFlight.current = true;
+    const sent = generation.current;
     try {
       const [page, waiting] = await Promise.all([getBlocks(0, TOWER_SIZE), getPendingTransactions(0, WAITING_SHOWN)]);
-      if (!mounted.current) return;
+      if (!mounted.current || generation.current !== sent) return;
       const previous = chainRef.current;
       const next = {
         blocks: mergeBlocks(previous?.blocks ?? [], page.items, true),
@@ -134,7 +141,38 @@ export function Tower() {
     }
   };
 
+  const mine = async (minerAddress: string) => {
+    setMining(true);
+    try {
+      const block = await mineBlock(minerAddress);
+      generation.current += 1;
+      const current = chainRef.current;
+      if (current && mounted.current) {
+        const next = { ...current, blocks: mergeBlocks(current.blocks, [block], true) };
+        chainRef.current = next;
+        setChain(next);
+        setFresh((known) => new Set([...known, block.block_number]));
+        setArrivals((count) => count + 1);
+        // Back to following the top, where the new block now is.
+        setParams({}, { replace: true });
+      }
+      // The response has no reward; the block's own coinbase transaction does.
+      const reward = await getBlock(block.block_hash).then(
+        (full) => full.transactions.find((transaction) => transaction.sender_address === 'SYSTEM')?.amount,
+        () => undefined,
+      );
+      const rewardText = reward === undefined ? '' : ` · reward ${formatAmount(reward)} VL`;
+      show(`Block #${block.block_number} sealed · nonce ${formatCount(block.nonce)}${rewardText}`);
+      void refresh(true);
+    } catch (error) {
+      show(detailOf(error, 'The block could not be mined'), 'err');
+    } finally {
+      if (mounted.current) setMining(false);
+    }
+  };
+
   const loading = chain === null;
+  const nextNumber = chain === null ? null : (top ?? -1) + 1;
   const tower = blocks.slice(0, TOWER_SIZE);
   const lowest = blocks[blocks.length - 1]?.block_number;
   const older: OlderState = lowest === 0 ? 'all' : loadingOlder ? 'loading' : 'more';
@@ -205,8 +243,22 @@ export function Tower() {
             loading={loading}
             focus={peek ?? selectedNumber}
             fresh={fresh}
-            ghost={chain && blocks.length === 0 ? { number: 0, floating: false } : null}
+            ghost={
+              mining && nextNumber !== null
+                ? { number: nextNumber, floating: true }
+                : chain && blocks.length === 0
+                  ? { number: 0, floating: false }
+                  : null
+            }
             olderText={olderText(tower, lowest)}
+          />
+          <MineCard
+            next={nextNumber}
+            waiting={chain?.waitingTotal ?? null}
+            role={role}
+            offline={online === false}
+            mining={mining}
+            onMine={(minerAddress) => void mine(minerAddress)}
           />
         </section>
 
@@ -221,7 +273,7 @@ export function Tower() {
             onPeek={setPeek}
             onLoadOlder={() => void loadOlder()}
           />
-          <WaitingList waiting={chain?.waiting ?? null} total={chain?.waitingTotal ?? null} />
+          <WaitingList waiting={chain?.waiting ?? null} total={chain?.waitingTotal ?? null} dimmed={mining} />
         </section>
 
         <section
