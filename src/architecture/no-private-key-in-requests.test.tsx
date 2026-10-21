@@ -55,7 +55,7 @@ describe('AR-05 no request carries the private key', () => {
         <Wallet />
       </MemoryRouter>,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Generate New Wallet' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create a wallet' }));
     const privateKey = useKeyStore.getState().pair?.private_key ?? '';
     expect(privateKey).toMatch(/^[0-9a-f]{64}$/);
     cleanup();
