@@ -15,7 +15,8 @@ const sources = import.meta.glob<string>(['../**/*.{ts,tsx}', '!../**/*.test.{ts
 function absoluteUrls(source: string) {
   // A placeholder shows the user what to type; it is never requested.
   const code = source.replace(/placeholder="[^"]*"/g, '');
-  return [...code.matchAll(/https?:\/\/[^\s'"`<>)]+/g)]
+  // A URL has a host after the slashes; text such as "starts with http:// or https://." names the scheme only.
+  return [...code.matchAll(/https?:\/\/[a-z0-9[][^\s'"`<>)]*/gi)]
     .map((match) => match[0])
     .filter((url) => !ALLOWED_URLS.includes(url));
 }
