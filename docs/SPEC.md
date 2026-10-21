@@ -66,6 +66,7 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 
 | Page | Calls | Auth |
 | --- | --- | --- |
+| Shell (every page but the login) | `GET /health` every 10 s (`src/services/health.ts`), `GET /auth/me` once per session (`src/services/auth.ts`) | Public; JWT |
 | Login | `POST /auth/login` (form-urlencoded) | Public |
 | Explorer | `GET /blocks`, `POST /blocks/mine`, `GET /transactions/{tx_hash}` (search) | JWT |
 | Transaction detail | `GET /transactions/{tx_hash}` | JWT |
