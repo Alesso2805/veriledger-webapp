@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PublicRoute } from '../components/RouteGuards';
 import { InvalidCredentialsError, login } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
+import { useHealthStore } from '../store/useHealthStore';
 import type { LoginRedirectState } from '../types/session';
 import { Login } from './Login';
 
@@ -48,6 +49,13 @@ describe('Login', () => {
 
     expect(screen.getByLabelText('Email')).toHaveValue('');
     expect(screen.getByLabelText('Password')).toHaveValue('');
+  });
+
+  it('shows which API it signs in to and whether it answers', () => {
+    useHealthStore.setState({ online: true });
+    renderLogin();
+
+    expect(screen.getByText('127.0.0.1:8000 · online')).toBeInTheDocument();
   });
 
   it('explains that the session expired', () => {

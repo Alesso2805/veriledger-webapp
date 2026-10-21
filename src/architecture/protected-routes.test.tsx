@@ -8,7 +8,8 @@ import { routes } from '../Router';
 // VLW-34 makes the tower, transactions and peers public; it adds them here.
 const PUBLIC_PATHS = ['/login'];
 
-vi.mock('../services/api', () => ({
+vi.mock('../services/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../services/api')>()),
   api: {
     get: () => new Promise(() => {}),
     post: () => new Promise(() => {}),

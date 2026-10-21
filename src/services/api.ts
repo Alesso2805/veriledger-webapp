@@ -16,6 +16,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// The API's host as people know it, for messages such as the offline banner.
+export function apiHost(): string {
+  return new URL(api.defaults.baseURL ?? window.location.origin).host;
+}
+
 export function statusOf(error: unknown): number | undefined {
   return isAxiosError(error) ? error.response?.status : undefined;
 }

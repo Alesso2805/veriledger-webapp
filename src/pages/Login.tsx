@@ -2,11 +2,15 @@ import { useState, type FormEvent } from 'react';
 import { useLocation } from 'react-router';
 import { LogoMark } from '../components/LogoMark';
 import { cubeFaces } from '../lib/isometric';
+import { apiHost } from '../services/api';
 import { InvalidCredentialsError, login } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
+import { useHealthStore } from '../store/useHealthStore';
 import type { LoginRedirectState } from '../types/session';
 
 type Phase = 'idle' | 'submitting' | 'refused' | 'unreachable';
+
+const HEALTH_DOT = { checking: 'fill-vl-faint', online: 'fill-vl-ok', offline: 'fill-vl-danger' };
 
 const CUBES = [0, 1, 2, 3, 4, 5].map((level) => ({ level, ...cubeFaces(170, 270 - level * 40) }));
 
@@ -18,6 +22,8 @@ const fieldClass = (refused: boolean) =>
 export function Login() {
   const reason = (useLocation().state as LoginRedirectState | null)?.reason;
   const setToken = useAppStore((state) => state.setToken);
+  const online = useHealthStore((state) => state.online);
+  const healthState = online === null ? 'checking' : online ? 'online' : 'offline';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -89,6 +95,12 @@ export function Login() {
             </div>
           )}
           <h1 className="text-[32px] font-bold tracking-[-0.02em]">Sign in</h1>
+          <p className="mt-1.5 flex items-center gap-2 font-vl-mono text-xs text-vl-muted">
+            <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true">
+              <circle cx="4" cy="4" r="4" className={HEALTH_DOT[healthState]} />
+            </svg>
+            {apiHost()} · {healthState}
+          </p>
 
           {/* Remounted on each failed attempt so the shake replays (DESIGN.md › The promise, rule 4). */}
           <form
