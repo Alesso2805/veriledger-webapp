@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { Certificate } from '../components/transaction/Certificate';
 import { JourneyBar } from '../components/transaction/JourneyBar';
 import { SealedIn } from '../components/transaction/SealedIn';
 import { TransactionDetails } from '../components/transaction/TransactionDetails';
@@ -177,6 +178,9 @@ export function TransactionDetail() {
                   blockHash={transaction.block_hash}
                   above={journeyOf(transaction, view.top).above ?? 0}
                 />
+              )}
+              {blockNumber !== null && transaction.block_hash && transaction.payload && transactionKind(transaction) === 'Notarization' && (
+                <Certificate payload={transaction.payload} blockNumber={blockNumber} blockHash={transaction.block_hash} />
               )}
             </aside>
           </div>
