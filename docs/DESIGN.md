@@ -6,7 +6,7 @@ Oct 22, 2026 · Chosen by the product owner on 2026-10-22 ([ADR-0006](adr/0006-d
 
 - **"C · Vistas finales"** is the specification: every view at 1440, 768 and 360 px, in light, with each view's states as tweaks.
 - **"C · Modo oscuro"** mounts the same views in the dark theme, and **"C · Español"** in Spanish. Every view also has a `theme` and a `lang` tweak, and its navbar switches work.
-- "E · Vistas finales" is what the code draws until epic E6 rebuilds each view, in C's tokens since VLW-39 (see [E's leftovers](#tokens-and-motion)). "D · Vistas finales" and "Exploración A–E" are kept for reference only.
+- "E · Vistas finales", the direction the code drew until epic E6 rebuilt every view in C (VLW-41 to VLW-47), "D · Vistas finales" and "Exploración A–E" are kept for reference only.
 
 ## The promise: what the canvas shows is what ships
 
@@ -29,7 +29,6 @@ This block goes into `src/index.css` as is (VLW-39). A test (AR-10) fails if the
 - **The light values** are the theme's defaults, in `@theme`. **The dark values** override the same names, once for a dark choice in the navbar (`data-theme="dark"`) and once for the system's preference when nothing is chosen (ADR-0008). The two dark lists are the same, and AR-10's test keeps them so.
 - Each theme sets `color-scheme`, so the browser's own scrollbars and form controls follow it.
 - Tokens that do not change with the theme (`wait`, `on-wait`, `on-ink`, `on-ink-muted`, `ink-danger`, `logo-tile`) are declared once.
-- **E's leftovers** close the block, marked: the cube colours, `drop` and `float`. No view uses them since VLW-47; VLW-48 removes them.
 
 ```css
 @import "tailwindcss" source("../src");
@@ -161,20 +160,6 @@ body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family:
 @keyframes vl-reveal { from { opacity: 0; filter: blur(6px) } to { opacity: 1; filter: none } }
 @keyframes vl-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .45 } }
 @keyframes vl-toast-in { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
-
-/* Design E's leftovers, for the views not yet redrawn in C. VLW-48 removes them. */
-@theme {
-  --color-vl-cube-top: #3A4150;
-  --color-vl-cube-left: #262B35;
-  --color-vl-cube-right: #2F3541;
-  --color-vl-cube-left-on: #4A4F5C;
-  --color-vl-cube-right-on: #3A3F4B;
-  --ease-vl-drop: cubic-bezier(.3, .6, .2, 1);
-  --animate-vl-drop: vl-drop 760ms var(--ease-vl-drop) both;
-  --animate-vl-float: vl-float 900ms ease-in-out infinite;
-}
-@keyframes vl-drop { 0% { opacity: 0; transform: translateY(-140px) } 70% { opacity: 1; transform: translateY(6px) } 85% { transform: translateY(-3px) } 100% { opacity: 1; transform: none } }
-@keyframes vl-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -526,4 +511,4 @@ They exist in the canvas to review the design and are not built:
 - **Interactive elements** are `<button>` or `<a>`, with a visible 3 px accent focus outline and a skip link.
 - **Colour is never alone:** every status has text next to its dot or colour, and every fingerprint has its hash or address beside it.
 - **Language:** `<html lang>` is the page's language, so a screen reader reads each in its own voice.
-- VLW-24 checks all of it with axe-core and Playwright at 360 px, and VLW-48 runs the same pass in both themes and both languages.
+- VLW-24 checks all of it with axe-core and Playwright at 1280 and 360 px. VLW-48 runs each width twice, light in English and dark in Spanish: a theme changes only colours and a language only words, so the two pairs reach every colour of both themes and every text of both languages.

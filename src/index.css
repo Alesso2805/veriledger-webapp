@@ -128,20 +128,6 @@ body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family:
 @keyframes vl-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .45 } }
 @keyframes vl-toast-in { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
 
-/* Design E's leftovers, for the views not yet redrawn in C. VLW-48 removes them. */
-@theme {
-  --color-vl-cube-top: #3A4150;
-  --color-vl-cube-left: #262B35;
-  --color-vl-cube-right: #2F3541;
-  --color-vl-cube-left-on: #4A4F5C;
-  --color-vl-cube-right-on: #3A3F4B;
-  --ease-vl-drop: cubic-bezier(.3, .6, .2, 1);
-  --animate-vl-drop: vl-drop 760ms var(--ease-vl-drop) both;
-  --animate-vl-float: vl-float 900ms ease-in-out infinite;
-}
-@keyframes vl-drop { 0% { opacity: 0; transform: translateY(-140px) } 70% { opacity: 1; transform: translateY(6px) } 85% { transform: translateY(-3px) } 100% { opacity: 1; transform: none } }
-@keyframes vl-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 1ms !important;
