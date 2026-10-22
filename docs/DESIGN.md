@@ -449,7 +449,7 @@ Each view lists its artboard, its data and the stories that build it. Its texts 
 - **The shell or the login throwing** turns the whole screen into one card: the logo, "Error", "VeriLedger ran into a problem", "Reloading usually fixes it. A reload forgets a key held in this tab, so open its key file again afterwards." and "Reload". It needs no router, store or API, and it reads the stored language and theme itself.
 - **Both cards** have `role="alert"`, with the heading as the page's `h1` (an `h2` on the artboard, among other states); enter with `animate-vl-fade-up` when the failure is caught; and send the error nowhere: React logs it to the browser's console.
 - **Not covered:** a failure in an event handler or a request. It does not blank the page, and each one shows its own error.
-- **The pieces every view reuses**, on the same artboard: `<Loading />` (skeletons), `<Empty />` (what is missing, what to do next, one action) and `<ErrorState />` (the API's answer, "Try again").
+- **The pattern of every view's states**, on the same artboard: loading (pulsing `skeleton` shapes), empty (what is missing, what to do next, one action) and error (on `danger-soft`, the API's answer and a way to try again). Each view draws its own states in this pattern, in the shape its artboard gives them, so they are not shared components (product owner, 2026-10-22).
 - **Stories:** VLW-41; before it VLW-35.
 
 ## Fingerprints
