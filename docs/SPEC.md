@@ -120,7 +120,8 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
   - `/assets/*` is cached for a year (`immutable`); everything else, `index.html` and `config.json` included, is `no-store`.
   - It sends the security headers: a Content Security Policy with `'self'` everywhere and `connect-src 'self'`, widened only by `CSP_CONNECT_SRC` for an API on another origin; `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`; and no `Server` header.
 - **No `data:` URIs** (`build.assetsInlineLimit: 0`), so the policy needs no `data:` source.
-- **`docker/smoke-test.sh`** checks a running image for deep links, caching, `config.json`, inline `data:` URIs and the headers. The Image workflow runs it on every PR.
+- **`public/theme.js`** (VLW-39) sets the stored theme on `<html>` before the first paint, so a page never flashes the other theme (ADR-0008). It is a file because the policy allows only `'self'` scripts, and it is not hashed, so it is `no-store` like `index.html`.
+- **`docker/smoke-test.sh`** checks a running image for deep links, caching, `config.json`, `theme.js`, inline `data:` URIs and the headers. The Image workflow runs it on every PR.
 
 ## Non-functional requirements and security
 
@@ -180,6 +181,7 @@ veriledger-webapp/
 │   ├── main.tsx
 │   └── index.css                 # design C tokens, light and dark: the CSS block of DESIGN.md (AR-10)
 ├── public/favicon.svg            # the logo on the background colour (VLW-26)
+├── public/theme.js               # the stored theme before the first paint (VLW-39, ADR-0008)
 ├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); robustness.spec.ts on the same fixtures (VLW-36); flows.spec.ts against the API's stack (VLW-23)
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh
 ├── docs/
