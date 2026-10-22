@@ -10,6 +10,7 @@ import { HealthStatus } from './HealthStatus';
 import { LogoMark } from './LogoMark';
 import { OfflineBanner } from './OfflineBanner';
 import { PageFailed } from './PageFailed';
+import { ThemeSwitch } from './ThemeSwitch';
 import { UserChip } from './UserChip';
 import { useSessionToken } from './useSessionToken';
 import { useStartDemo } from './useStartDemo';
@@ -63,6 +64,7 @@ export function Layout() {
           <HeaderSearch />
           {/* Below sm the status and Sign out share the logo's row and the search drops below, as in "E · Estados del shell". */}
           <div className="order-1 ml-auto flex items-center gap-2.5 sm:order-none sm:gap-3.5">
+            <ThemeSwitch />
             <HealthStatus />
             <UserChip />
             {token ? (

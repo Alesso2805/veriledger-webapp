@@ -89,7 +89,7 @@ test('odd peer addresses, admin', async ({ page }) => {
   await mockApi(page, 'admin');
   await page.goto('/network');
   for (const text of [...ODD, 'http://', 'https://[::1', 'ftp://node.example.org']) {
-    await page.getByLabel('Peer address').fill(text);
+    await page.getByLabel('Peer address', { exact: true }).fill(text);
     await page.getByRole('button', { name: 'Add peer' }).click();
     await page.waitForLoadState('networkidle');
     await check(`peer "${text.slice(0, 20)}"`);
@@ -105,7 +105,7 @@ test('files that are not key files', async ({ page }) => {
     ['object-key.json', '{"private_key":{"a":1}}'], ['binary.json', '\u0000\u0001ÿ'], ['empty.json', '']]) {
     // A reload forgets a key opened before, so each file meets the empty wallet.
     await page.goto('/wallet');
-    await page.getByLabel('Choose a key file').setInputFiles({ name, mimeType: 'application/json', buffer: Buffer.from(body, 'latin1') });
+    await page.getByLabel('Choose a key file', { exact: true }).setInputFiles({ name, mimeType: 'application/json', buffer: Buffer.from(body, 'latin1') });
     await expect(page.getByRole('alert').or(page.getByRole('heading', { name: /^Your address/ }))).toBeVisible();
     await check(`key file ${name}`);
   }
@@ -127,6 +127,22 @@ test('a stored session the app did not write', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await check(`stored token: ${label}`);
+  }
+});
+
+test('stored preferences the app did not write', async ({ page }) => {
+  const check = watch(page);
+  await mockApi(page);
+  for (const [label, value] of [
+    ['a theme it does not know', JSON.stringify({ state: { theme: 'purple' }, version: 0 })],
+    ['a theme that is an object', JSON.stringify({ state: { theme: { a: 1 } }, version: 0 })],
+    ['storage that is not JSON', '{not json'],
+    ['a null state', JSON.stringify({ state: null, version: 0 })],
+  ]) {
+    await page.addInitScript((stored) => localStorage.setItem('veriledger-preferences', stored), value);
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await check(`stored preferences: ${label}`);
   }
 });
 
@@ -162,8 +178,8 @@ test('answers of the wrong shape from the API and config.json', async ({ context
   await mockApi(page);
   await page.route('**/api/auth/login', json({}));
   await page.goto('/login');
-  await page.getByLabel('Email').fill('someone@veriledger.com');
-  await page.getByLabel('Password').fill('whatever');
+  await page.getByLabel('Email', { exact: true }).fill('someone@veriledger.com');
+  await page.getByLabel('Password', { exact: true }).fill('whatever');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByText('The API did not answer. Check that it is running and try again.')).toBeVisible();
   await check('a sign-in answered without a token');

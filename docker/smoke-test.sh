@@ -1,5 +1,5 @@
 #!/bin/sh
-# Checks a running image (VLW-22): deep links, caching, config.json and the security headers.
+# Checks a running image (VLW-22): deep links, caching, config.json, theme.js and the security headers.
 # Usage: smoke-test.sh [base URL], http://127.0.0.1:8080 by default.
 set -eu
 
@@ -17,7 +17,8 @@ for path in /wallet /transaction/0000abc /no/such/page; do
 done
 
 body /config.json | grep -q '"apiBaseUrl"' || fail "/config.json is missing"
-for path in / /index.html /config.json; do
+body /theme.js | grep -q 'data-theme' || fail "/theme.js is missing"
+for path in / /index.html /config.json /theme.js; do
   headers "$path" | grep -qi '^cache-control: no-store' || fail "$path may be cached"
 done
 
