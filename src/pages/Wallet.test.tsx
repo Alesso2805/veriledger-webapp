@@ -185,6 +185,10 @@ describe('Wallet activity and look-up', () => {
 
     fireEvent.change(input, { target: { value: 'abc' } });
     expect(screen.getByText('3 / 64')).toBeInTheDocument();
+    // The fingerprint builds as the address is typed: one bar for the one complete byte, skeletons for the rest.
+    const bars = input.closest('form')!.firstElementChild!.children;
+    expect(bars).toHaveLength(12);
+    expect([...bars].filter((bar) => bar.classList.contains('bg-vl-skeleton'))).toHaveLength(11);
     fireEvent.submit(input.closest('form')!);
     expect(await screen.findByText('An address has 64 characters from 0–9 and a–f.')).toBeInTheDocument();
 
@@ -192,6 +196,7 @@ describe('Wallet activity and look-up', () => {
     fireEvent.change(input, { target: { value: ` ${'EF'.repeat(32)} ` } });
     fireEvent.submit(input.closest('form')!);
     expect(await screen.findByText('12.50 VL')).toBeInTheDocument();
+    expect(screen.getByText('Balance of efefefef…efefefef')).toBeInTheDocument();
     expect(getBalance).toHaveBeenLastCalledWith('ef'.repeat(32));
   });
 

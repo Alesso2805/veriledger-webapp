@@ -12,7 +12,7 @@ import type { Transaction } from '../types/ledger';
 
 const ACTIVITY_SHOWN = 20;
 
-// Artboard "E · Wallet" (VLW-31). The key it creates or opens is the one Sign and send signs with.
+// Artboard "C · Wallet" (VLW-46; before it VLW-31). The key it creates or opens is the one Sign and send signs with.
 export function Wallet() {
   const t = useT();
   const pair = useKeyStore((state) => state.pair);
@@ -46,15 +46,15 @@ export function Wallet() {
 
   return (
     <>
-      <h1 className="text-[30px] font-bold tracking-[-0.02em]">{t.wallet.title}</h1>
-      <p className="mt-1 text-vl-muted">{t.wallet.lead}</p>
+      <h1 className="text-[56px] leading-none font-extrabold tracking-[-0.035em] max-sm:text-[40px]">{t.wallet.title}</h1>
+      <p className="mt-2.5 max-w-[640px] text-[17px] text-vl-muted">{t.wallet.lead}</p>
       {pair ? (
         <>
-          <div className="mt-6 flex flex-wrap items-stretch gap-5">
+          <div className="mt-6 flex flex-wrap items-stretch gap-[22px]">
             <IdentityCard address={pair.public_key} fresh={fresh} balance={balance} note={note} />
             <KeyCard key={pair.public_key} pair={pair} />
           </div>
-          <div className="mt-5 flex flex-wrap items-start gap-5">
+          <div className="mt-[22px] flex flex-wrap items-start gap-[22px]">
             <Activity address={pair.public_key} transactions={items} total={activity.total} />
             <AddressLookup />
           </div>

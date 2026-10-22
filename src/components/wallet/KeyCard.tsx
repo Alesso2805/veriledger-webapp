@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { ON_INK, PALETTE } from '../../lib/fingerprint';
 import { keyFileText } from '../../lib/keyFile';
 import { useKeyStore } from '../../store/useKeyStore';
 import type { Wallet } from '../../types/ledger';
 import { useT } from '../useT';
 
-// The key's two saving steps, and forgetting it. Both panels open and close with grid-template-rows
-// (DESIGN.md › Motion map), and the confirmation is inline: a browser dialog would stop the page.
+// The key's two saving steps, and forgetting it, on ink in both themes. Both panels open and close with
+// grid-template-rows (DESIGN.md › Motion map), and the confirmation is inline: a browser dialog would stop the page.
 export function KeyCard({ pair }: { pair: Wallet }) {
   const words = useT().wallet.key;
   const saved = useKeyStore((state) => state.saved);
@@ -27,29 +28,28 @@ export function KeyCard({ pair }: { pair: Wallet }) {
 
   const panel = (open: boolean) =>
     `grid transition-[grid-template-rows] duration-(--vl-dur-slow) ease-vl-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`;
+  // The step waiting for the person has a ring of the waiting yellow.
+  const current = 'shadow-[inset_0_0_0_2px_var(--color-vl-wait)]';
 
   return (
     <section
       aria-labelledby="key-h"
-      className={`flex min-w-0 flex-[1_1_340px] flex-col gap-3 rounded-2xl border bg-vl-surface p-[22px] transition-colors duration-(--vl-dur-slow) ${
-        saved ? 'border-vl-line' : 'border-vl-accent'
-      }`}
+      className="flex min-w-0 flex-[1_1_340px] flex-col gap-4 rounded-[28px] bg-vl-ink p-7 text-vl-on-ink max-sm:p-5"
     >
-      <h2 id="key-h" className="text-lg font-bold">
+      <h2 id="key-h" className="text-[26px] leading-[1.1] font-extrabold tracking-[-0.02em]">
         {saved ? words.savedTitle : words.unsavedTitle}
       </h2>
-      <p className="text-sm text-vl-muted">
-        {saved ? words.savedText : words.unsavedText}
-      </p>
+      <p className="text-vl-on-ink-muted">{saved ? words.savedText : words.unsavedText}</p>
       <div className={panel(!saved)}>
         <div className="min-h-0 overflow-hidden" inert={saved} aria-hidden={saved}>
-          <ol className="flex flex-col gap-2 p-0.5">
-            <li className="flex flex-wrap items-center gap-2.5 rounded-[10px] bg-vl-bg px-3 py-2.5">
+          <ol className="flex flex-col gap-2.5 p-0.5">
+            <li className={`flex flex-wrap items-center gap-2.5 rounded-2xl bg-vl-ink-raised px-3.5 py-3 ${downloaded ? '' : current}`}>
               <span className="flex-auto">{words.step1}</span>
               {downloaded ? (
-                <span className="flex animate-vl-pop items-center gap-1.5 text-[13px] text-vl-ok">
-                  <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-                    <path d="M2.5 7.5l3 3L11.5 4" fill="none" strokeWidth="2" className="stroke-vl-ok" />
+                <span className="flex animate-vl-pop items-center gap-1.5 text-[15px]" style={{ color: ON_INK.ok }}>
+                  <svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true">
+                    <circle cx="11" cy="11" r="10" style={{ fill: ON_INK.ok }} />
+                    <path d="M6.5 11.5l3 3 6-6.5" fill="none" strokeWidth="2" style={{ stroke: PALETTE[4] }} />
                   </svg>
                   {words.saved}
                 </span>
@@ -57,15 +57,15 @@ export function KeyCard({ pair }: { pair: Wallet }) {
                 <button
                   type="button"
                   onClick={download}
-                  className="h-9 rounded-lg bg-vl-accent px-3 text-[13px] font-semibold text-vl-on-accent"
+                  className="h-11 rounded-xl bg-vl-wait px-3.5 text-[15px] font-bold text-vl-on-wait"
                 >
                   {words.download}
                 </button>
               )}
             </li>
             <li
-              className={`flex items-center gap-2.5 rounded-[10px] bg-vl-bg px-3 py-2.5 transition-opacity duration-(--vl-dur-base) ${
-                downloaded ? '' : 'opacity-50'
+              className={`flex items-center gap-3 rounded-2xl bg-vl-ink-raised px-3.5 py-3 transition-opacity duration-(--vl-dur-base) ${
+                downloaded ? current : 'opacity-55'
               }`}
             >
               <input
@@ -74,7 +74,8 @@ export function KeyCard({ pair }: { pair: Wallet }) {
                 checked={saved}
                 disabled={!downloaded}
                 onChange={(event) => event.target.checked && markSaved()}
-                className="size-5 accent-vl-accent"
+                className="size-[22px]"
+                style={{ accentColor: ON_INK.ok }}
               />
               <label htmlFor="kept">{words.step2}</label>
             </li>
@@ -83,20 +84,24 @@ export function KeyCard({ pair }: { pair: Wallet }) {
       </div>
       <div className={panel(asking)}>
         <div className="min-h-0 overflow-hidden" inert={!asking} aria-hidden={!asking}>
-          <div className="flex flex-col gap-2.5 rounded-[10px] border border-vl-danger p-3">
-            <p className="text-sm">{words.ask}</p>
-            <div className="flex gap-2">
+          <div
+            className="flex flex-col gap-2.5 rounded-2xl bg-vl-ink-danger p-3.5"
+            style={{ boxShadow: `inset 0 0 0 1.5px ${ON_INK.refused}` }}
+          >
+            <p className="text-[15px]">{words.ask}</p>
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={forget}
-                className="h-9 rounded-lg bg-vl-danger px-3 text-[13px] font-semibold text-vl-on-accent"
+                className="h-11 rounded-xl px-3.5 text-[15px] font-bold"
+                style={{ background: ON_INK.refused, color: PALETTE[4] }}
               >
                 {words.forget}
               </button>
               <button
                 type="button"
                 onClick={() => setAsking(false)}
-                className="h-9 rounded-lg border border-vl-line px-3 text-[13px] font-semibold"
+                className="h-11 rounded-xl border-[1.5px] border-vl-ink-line px-3.5 text-[15px] font-bold"
               >
                 {words.keep}
               </button>
@@ -107,7 +112,7 @@ export function KeyCard({ pair }: { pair: Wallet }) {
       <button
         type="button"
         onClick={() => setAsking(true)}
-        className="h-9 self-start text-[13px] font-medium text-vl-muted underline"
+        className="min-h-11 self-start text-[15px] font-medium text-vl-on-ink-muted underline"
       >
         {words.forgetLink}
       </button>

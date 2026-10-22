@@ -93,7 +93,8 @@ test('an admin makes a wallet, mines to it, transfers and notarizes, and sees bo
   await test.step('create a wallet in the browser', async () => {
     await tab(page, 'Wallet').click();
     await page.getByRole('button', { name: 'Create a wallet' }).click();
-    const groups = page.getByRole('heading', { name: /^Your address/ }).locator('xpath=following-sibling::p[1]');
+    // The address's groups follow its heading, beside the copy button.
+    const groups = page.getByRole('heading', { name: /^Your address/ }).locator('xpath=following-sibling::div[1]/p');
     address = ((await groups.textContent()) ?? '').replace(/\s/g, '');
     expect(address).toMatch(/^[0-9a-f]{64}$/);
   });
