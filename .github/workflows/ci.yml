@@ -46,8 +46,9 @@ jobs:
     timeout-minutes: 25
     env:
       # Move both forward together with the API: the checkout holds the Compose file, the tag names the image.
-      API_REF: 154e497a9fe4a34a19a6386af99cac6c2de3611e
-      API_IMAGE_TAG: sha-154e497
+      # The API's release v1.0.0 (fd109e5).
+      API_REF: fd109e5a45b4f1b5558c6c42e5e52355c7e5ec11
+      API_IMAGE_TAG: 1.0.0
       CORS_ORIGINS: http://127.0.0.1:4173
       DEMO_MODE: "true"
       MINING_DIFFICULTY: "2"
@@ -80,3 +81,60 @@ jobs:
         if: failure()
         working-directory: api
         run: docker compose -f docker-compose.ghcr.yml logs --no-color migrate backend | tail -n 200
+
+  # VLW-25: the deploy rehearsed as the API's runbook does it (VLA-27): this pull request's own image behind the
+  # API's Caddy on https://localhost, one origin with the real Content Security Policy, and the flows through it.
+  rehearsal:
+    name: rehearsal
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # The API's commit for deploy/ and its image; move both forward together with the API. Its release v1.0.0.
+      API_REF: fd109e5a45b4f1b5558c6c42e5e52355c7e5ec11
+      API_IMAGE_TAG: 1.0.0
+      E2E_BASE_URL: https://localhost
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Alesso2805/veriledger-api
+          ref: ${{ env.API_REF }}
+          path: api
+      - name: This pull request's image, built as the Image workflow builds it
+        run: docker build -t ghcr.io/alesso2805/veriledger-webapp:rehearsal .
+      - name: Write deploy/.env as the API's runbook does, with throwaway secrets
+        working-directory: api
+        run: |
+          cp deploy/.env.example deploy/.env
+          admin_password=$(openssl rand -hex 16)
+          echo "::add-mask::$admin_password"
+          sed -i \
+            -e "s/^POSTGRES_PASSWORD=$/POSTGRES_PASSWORD=$(openssl rand -hex 24)/" \
+            -e "s/^SECRET_KEY=$/SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')/" \
+            -e "s/^ADMIN_EMAIL=$/ADMIN_EMAIL=operator@example.com/" \
+            -e "s/^ADMIN_PASSWORD=$/ADMIN_PASSWORD=$admin_password/" \
+            -e "s/^DOMAIN=$/DOMAIN=localhost/" \
+            -e "s/^API_IMAGE_TAG=main$/API_IMAGE_TAG=$API_IMAGE_TAG/" \
+            -e "s/^WEBAPP_IMAGE_TAG=main$/WEBAPP_IMAGE_TAG=rehearsal/" \
+            -e "s/^DEMO_MODE=false$/DEMO_MODE=true/" \
+            deploy/.env
+          echo "E2E_ADMIN_EMAIL=operator@example.com" >> "$GITHUB_ENV"
+          echo "E2E_ADMIN_PASSWORD=$admin_password" >> "$GITHUB_ENV"
+      - name: Start it as the runbook does, and wait for the API behind Caddy
+        working-directory: api
+        run: |
+          docker compose -f deploy/docker-compose.prod.yml up -d
+          for i in $(seq 1 60); do curl -fsk https://localhost/api/health > /dev/null && break; sleep 2; done
+          curl -fsk https://localhost/api/health
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: The stack's logs, when a flow fails
+        if: failure()
+        working-directory: api
+        run: docker compose -f deploy/docker-compose.prod.yml logs --no-color | tail -n 300
