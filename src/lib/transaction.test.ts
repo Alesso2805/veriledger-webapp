@@ -66,8 +66,8 @@ describe('journeyOf', () => {
   });
 
   it('says how many blocks are on top', () => {
-    expect([0, 1, 2].map(en.transaction.blocksOnTop)).toEqual(['nothing on top yet', '1 block on top', '2 blocks on top']);
-    expect([0, 1, 2].map(es.transaction.blocksOnTop)).toEqual(['aún nada encima', '1 bloque encima', '2 bloques encima']);
+    expect([0, 1, 2].map(en.transaction.linkBack)).toEqual(['nothing links back to it yet', '1 block links back to it', '2 blocks link back to it']);
+    expect([0, 1, 2].map(es.transaction.linkBack)).toEqual(['aún nada lo enlaza', '1 bloque lo enlaza', '2 bloques lo enlazan']);
   });
 });
 

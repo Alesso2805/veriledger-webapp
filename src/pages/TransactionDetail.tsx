@@ -20,7 +20,7 @@ type View =
   | { phase: 'not-found' }
   | { phase: 'failed'; detail: string };
 
-// Artboard "E · Transacción y certificado" (VLW-29). Times are UTC, so the page says the same in every country.
+// Artboard "C · Transacción y certificado" (VLW-44). Times are UTC, so the page says the same in every country.
 export function TransactionDetail() {
   const t = useT();
   const language = useLanguage();
@@ -66,7 +66,7 @@ export function TransactionDetail() {
 
   return (
     <>
-      <nav aria-label={t.transaction.breadcrumb} className="flex flex-wrap gap-2 text-[13px] text-vl-muted">
+      <nav aria-label={t.transaction.breadcrumb} className="flex flex-wrap gap-2 text-sm text-vl-muted">
         <Link to="/" className="text-vl-muted hover:text-vl-text">
           {t.transaction.chain}
         </Link>
@@ -85,39 +85,39 @@ export function TransactionDetail() {
       </nav>
 
       {(view.phase === 'loading' || (view.phase === 'failed' && online !== true)) && (
-        <div role="status" aria-label={t.transaction.loading} className="mt-6 flex flex-col gap-3">
-          <span className="h-9 w-[280px] max-w-full animate-vl-pulse rounded-lg bg-vl-surface" />
-          <span className="h-24 animate-vl-pulse rounded-2xl bg-vl-surface" />
-          <span className="h-[260px] animate-vl-pulse rounded-2xl bg-vl-surface" />
+        <div role="status" aria-label={t.transaction.loading} className="mt-6 flex flex-col gap-3.5">
+          <span className="h-11 w-[300px] max-w-full animate-vl-pulse rounded-xl bg-vl-skeleton" />
+          <span className="h-[120px] animate-vl-pulse rounded-3xl bg-vl-skeleton" />
+          <span className="h-[300px] animate-vl-pulse rounded-3xl bg-vl-skeleton" />
         </div>
       )}
 
       {view.phase === 'failed' && online === true && (
         <div
           role="alert"
-          className="mt-6 flex animate-vl-fade-up flex-wrap items-center justify-between gap-3 rounded-[14px] border border-vl-danger bg-vl-surface px-[18px] py-4"
+          className="mt-6 flex animate-vl-fade-up flex-wrap items-center justify-between gap-3 rounded-[18px] bg-vl-danger-soft px-[18px] py-3.5"
         >
-          <span>{t.transaction.cantLoad(view.detail.replace(/\.$/, ''))}</span>
-          <button
-            type="button"
-            onClick={() => void load()}
-            className="h-10 rounded-[10px] border border-vl-line px-3.5 text-sm font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
-          >
+          <span className="flex items-center gap-2.5">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="shrink-0 fill-none stroke-vl-danger" strokeWidth="1.6">
+              <path d="M9 2l7.5 13h-15z" />
+              <path d="M9 7v3.5M9 12.5v.5" />
+            </svg>
+            <span>{t.transaction.cantLoad(view.detail.replace(/\.$/, ''))}</span>
+          </span>
+          <button type="button" onClick={() => void load()} className="h-11 rounded-xl bg-vl-strong px-4 text-sm font-bold text-vl-on-strong">
             {t.shell.offline.retry}
           </button>
         </div>
       )}
 
       {view.phase === 'not-found' && (
-        <section className="mt-10 max-w-[620px] animate-vl-fade-up">
-          <h1 className="text-[34px] font-bold tracking-[-0.02em]">{t.transaction.notFoundTitle}</h1>
-          <p className="mt-2.5 font-vl-mono text-xs text-vl-muted [overflow-wrap:anywhere]">{hash}</p>
-          <p className="mt-4 text-vl-muted">
-            {t.transaction.notFoundText}
-          </p>
+        <section className="mt-8 max-w-[680px] animate-vl-fade-up rounded-[28px] bg-vl-surface p-8 max-sm:p-[18px]">
+          <h1 className="text-[40px] leading-[1.05] font-extrabold tracking-[-0.03em] max-sm:text-[30px]">{t.transaction.notFoundTitle}</h1>
+          <p className="mt-3 font-vl-mono text-[13px] text-vl-muted [overflow-wrap:anywhere]">{hash}</p>
+          <p className="mt-4 text-vl-muted">{t.transaction.notFoundText}</p>
           <Link
             to="/"
-            className="mt-5 inline-flex h-11 items-center rounded-[10px] bg-vl-accent px-4 font-semibold text-vl-on-accent"
+            className="mt-[22px] inline-flex h-[50px] items-center rounded-[14px] bg-vl-strong px-[22px] font-bold text-vl-on-strong"
           >
             {t.transaction.back}
           </Link>
@@ -126,39 +126,33 @@ export function TransactionDetail() {
 
       {view.phase === 'found' && transaction && (
         <>
-          <section className="mt-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
-            <div>
-              <p className="text-[13px] text-vl-muted">{t.kinds[transactionKind(transaction)]}</p>
-              <h1 className="text-[36px] leading-[1.15] font-bold tracking-[-0.02em]">{transactionTitle(transaction, t.transaction.titles)}</h1>
-              <p className="mt-1.5 font-vl-mono text-xs text-vl-muted">
+          <section className="mt-3.5 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+            <div className="min-w-0">
+              <p className="text-[15px] text-vl-muted">{t.kinds[transactionKind(transaction)]}</p>
+              <h1 className="text-[40px] leading-[1.1] font-extrabold tracking-[-0.03em] [overflow-wrap:anywhere] max-sm:text-[30px]">
+                {transactionTitle(transaction, t.transaction.titles)}
+              </h1>
+              <p className="mt-1.5 font-vl-mono text-[13px] text-vl-muted">
                 {formatSealed(transaction.timestamp, 'UTC', language)} {t.transaction.utc}
               </p>
             </div>
             {/* key: the chip fades in again when the status changes, as when a waiting transaction is sealed. */}
             <span
               key={transaction.status}
-              className={`inline-flex h-9 animate-vl-fade-in items-center gap-2 rounded-full border bg-vl-surface px-3.5 text-sm font-semibold ${
+              className={`inline-flex h-10 animate-vl-fade-in items-center gap-2 rounded-full px-4 text-[15px] font-bold ${
                 transaction.status === 'CONFIRMED'
-                  ? 'border-vl-line'
+                  ? 'bg-vl-ok-soft'
                   : transaction.status === 'FAILED'
-                    ? 'border-vl-danger'
-                    : 'border-vl-accent'
+                    ? 'bg-vl-danger-soft'
+                    : 'bg-vl-wait-soft'
               }`}
             >
-              <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true">
-                <circle
-                  cx="4"
-                  cy="4"
-                  r="4"
-                  className={
-                    transaction.status === 'CONFIRMED'
-                      ? 'fill-vl-ok'
-                      : transaction.status === 'FAILED'
-                        ? 'fill-vl-danger'
-                        : 'fill-vl-accent'
-                  }
-                />
-              </svg>
+              <span
+                aria-hidden="true"
+                className={`size-[9px] rounded-full ${
+                  transaction.status === 'CONFIRMED' ? 'bg-vl-ok' : transaction.status === 'FAILED' ? 'bg-vl-danger' : 'bg-vl-text'
+                }`}
+              />
               {transaction.status === 'CONFIRMED' && blockNumber !== null
                 ? t.transaction.chips.sealed(blockNumber)
                 : transaction.status === 'FAILED'
@@ -174,9 +168,9 @@ export function TransactionDetail() {
             reward={transactionKind(transaction) === 'Mining reward'}
           />
 
-          <div className="mt-5 flex flex-wrap items-start gap-5">
+          <div className="mt-[22px] flex flex-wrap items-start gap-[22px]">
             <TransactionDetails transaction={transaction} />
-            <aside className="flex min-w-0 flex-[1_1_380px] flex-col gap-5">
+            <aside className="flex min-w-0 flex-[1_1_380px] flex-col gap-[22px]">
               {blockNumber !== null && transaction.block_hash && (
                 <SealedIn
                   blockNumber={blockNumber}

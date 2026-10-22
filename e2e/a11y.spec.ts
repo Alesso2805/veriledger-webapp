@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { mockApi, TRANSFER_HASH, type Role } from './mockApi';
+import { mockApi, NOTARIZATION_HASH, TRANSFER_HASH, type Role } from './mockApi';
 
 // VLW-24 on every page and state, in both projects (1280 and 360 px): no serious or critical axe violation, no
 // sideways scroll, and a visible focus on every control the keyboard reaches.
@@ -29,6 +29,11 @@ const cases: Case[] = [
   { name: 'chain, trader', path: '/?block=11', role: 'trader', ready: (page) => page.getByRole('button', { name: /^Mine block #12/ }) },
   { name: 'transaction, visitor', path: `/transaction/${TRANSFER_HASH}`, ready: (page) => page.getByRole('heading', { name: 'Details' }) },
   { name: 'transaction, viewer', path: `/transaction/${TRANSFER_HASH}`, role: 'viewer', ready: (page) => page.getByRole('heading', { name: 'Details' }) },
+  {
+    name: 'notarization and its certificate',
+    path: `/transaction/${NOTARIZATION_HASH}`,
+    ready: (page) => page.getByRole('heading', { name: /^This document existed on / }),
+  },
   { name: 'network, visitor', path: '/network', ready: (page) => page.getByRole('heading', { name: 'Registered peers · 2' }) },
   { name: 'network, admin', path: '/network', role: 'admin', ready: (page) => page.getByRole('button', { name: 'Add peer' }) },
   { name: 'not found', path: '/no/such/page', ready: (page) => page.getByRole('heading', { name: 'This page is not on the chain' }) },
