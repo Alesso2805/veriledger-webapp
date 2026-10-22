@@ -13,12 +13,15 @@ A visitor should be able to see, in a few minutes and without installing anythin
 - A deployed instance anyone can try, on the same hostname as the API (VLW-25).
 - Every claim of the README backed by a test: keys never leave the browser (AR-05), signatures the API accepts (AR-06), deep links that survive a reload (VLW-22).
 - Green from a clean clone, with CI (VLW-10, VLW-11).
+- Design C in English and Spanish, light and dark, before release 1.0.0 (epic E6, ADR-0006 to ADR-0008).
 
 ## Scope and features
 
 Status: **Built** (exists on `main`, see the audit for its defects), **Planned** (a story in the backlog).
 
 The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The Explorer became the **Tower** (VLW-28) and every page gets the new shell (VLW-27, VLW-33); the "Status" column describes what exists today.
+
+Epic E6 rebuilds every page in design C (ADR-0006), in English and Spanish (ADR-0007) and in light and dark themes (ADR-0008), with no change of route. The Tower becomes **The chain** (VLW-43).
 
 | Page | Route | What it does | Status |
 | --- | --- | --- | --- |
@@ -31,7 +34,7 @@ The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The 
 | Not found | any other path | The 404 tower with "Back to the tower", inside the shell. Open without a session | Built (VLW-33); open to visitors since VLW-34a |
 | Failure | any page | A page that throws while drawing shows "This page ran into a problem" inside the shell, with "Try again" (no reload, so the key held in the tab stays) and "Back to the tower". The shell or the login throwing shows one full-screen card with "Reload" | Built (VLW-35) |
 
-**Out of scope for this plan:** storing private keys (encrypted or not) beyond the session, hardware wallets, a block explorer for other networks, internationalization, a light theme.
+**Out of scope for this plan:** storing private keys (encrypted or not) beyond the session, hardware wallets, a block explorer for other networks, languages other than English and Spanish.
 
 ## Architecture
 
@@ -41,9 +44,9 @@ A single-page app built by Vite into static files (ADR-0001).
 | --- | --- | --- |
 | `src/pages` | One component per route | `components`, `lib`, `services`, `store`, `types` |
 | `src/components` | Shared UI: `Layout`, the route guards (`RouteGuards.tsx`) and the shell's pieces; the error boundary (`ErrorBoundary.tsx`) and its two fallbacks, `PageFailed.tsx` inside the shell and `AppFailed.tsx` for the whole app (VLW-35); the identity cube (`IdentityCube.tsx`); the tower's pieces in `components/tower/` (drawing, block list, block detail, waiting list, freshness line); Sign and send's pieces in `components/transact/`; the transaction page's in `components/transaction/`; the wallet's in `components/wallet/`; the network's in `components/network/` | `lib`, `services`, `store`, `types` |
-| `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), the token's expiry and demo claim (`jwt.ts`), display formats (`format.ts`), merging pages of blocks (`chain.ts`), cube geometry (`isometric.ts`), an address's cube colours (`identicon.ts`), reading a key file (`keyFile.ts`), checking what is about to be signed (`compose.ts`), a document's SHA-256 (`digest.ts`), what a stored transaction says about itself: signature, journey, title (`transaction.ts`), an address's activity in words and sums (`activity.ts`), what a search can look up (`search.ts`), the peer map's ring and names (`peers.ts`) | `types`, `@noble/*` |
+| `src/lib` | Pure logic with no React and no HTTP: the signed message and signing (`signing.ts`), key generation (`keys.ts`), the token's expiry and demo claim (`jwt.ts`), display formats (`format.ts`), merging pages of blocks (`chain.ts`), cube geometry (`isometric.ts`), an address's cube colours (`identicon.ts`), reading a key file (`keyFile.ts`), checking what is about to be signed (`compose.ts`), a document's SHA-256 (`digest.ts`), what a stored transaction says about itself: signature, journey, title (`transaction.ts`), an address's activity in words and sums (`activity.ts`), what a search can look up (`search.ts`), the peer map's ring and names (`peers.ts`). Epic E6 adds the texts of both languages and the API's known errors (`i18n/`, VLW-40) and the fingerprints of hashes and addresses (`fingerprint.ts`), which replace the cube's `identicon.ts` and `isometric.ts` | `types`, `@noble/*` |
 | `src/services` | The axios instance with the base URL, the token interceptor, the 401 handler that ends an expired session (VLW-17) and `detailOf` for the API's error messages; one module per area (`auth.ts`, `health.ts`, `ledger.ts`, `wallets.ts`, `nodes.ts`, `config.ts`). Each read checks the shape of the answer | `lib`, `store`, `types`, axios |
-| `src/store` | Zustand stores: the session token, persisted in `localStorage` under `veriledger-storage`; the signed-in user from `GET /auth/me` (`user`, not persisted), whose role pages use for their rules; the toasts (`useToastStore`, each closes after 4 s), shown by `ToastRegion` on every page; whether the API answers and whether it starts demo accounts (`useHealthStore`), which the header status, the login, the offline banner and the "Try the demo" buttons read; whether a demo account is being started (`startingDemo`), which those buttons share; the key pair this tab signs with (`useKeyStore`), only in memory: a reload forgets it and signing out clears it (ADR-0002, VLW-30). It also remembers whether a key file of it exists (VLW-31) | `types` |
+| `src/store` | Zustand stores: the session token, persisted in `localStorage` under `veriledger-storage`; the signed-in user from `GET /auth/me` (`user`, not persisted), whose role pages use for their rules; the toasts (`useToastStore`, each closes after 4 s), shown by `ToastRegion` on every page; whether the API answers and whether it starts demo accounts (`useHealthStore`), which the header status, the login, the offline banner and the "Try the demo" buttons read; whether a demo account is being started (`startingDemo`), which those buttons share; the key pair this tab signs with (`useKeyStore`), only in memory: a reload forgets it and signing out clears it (ADR-0002, VLW-30). It also remembers whether a key file of it exists (VLW-31). Epic E6 adds the person's language and theme (`usePreferencesStore`, persisted under `veriledger-preferences`, VLW-39, VLW-40) | `types` |
 | `src/types` | The API's responses: `api.ts`, generated from its OpenAPI document (`openapi.json`, AR-09), and the names the code uses for them (`ledger.ts`, `network.ts`, `session.ts`); the webapp's own types beside them (`LoginRedirectState`, `SessionEndReason`, the browser's key pair) | Nothing outside `types` |
 
 `src/Router.tsx` exports the route table as data (`routes`), so that AR-08 can walk it.
@@ -56,7 +59,7 @@ A single-page app built by Vite into static files (ADR-0001).
 
 ## Design
 
-Design direction E ("Network", ADR-0004). [DESIGN.md](DESIGN.md) is the specification of the look and behaviour of every page. It covers:
+Design direction C ("Fingerprint", ADR-0006) replaces E ("Network", ADR-0004), in light and dark themes that follow the system (ADR-0008) and in English and Spanish (ADR-0007). Until VLW-38 rewrites DESIGN.md for C, it describes E, which is what is built today. [DESIGN.md](DESIGN.md) is the specification of the look and behaviour of every page. It covers:
 
 - the CSS tokens and animations that go into `src/index.css`, unchanged;
 - which real event triggers each animation;
@@ -77,7 +80,7 @@ The design canvas's artboards are its pictures. A page and its artboard must mat
 | Sign and send | `GET /wallets/{address}/nonce` and `GET /wallets/{address}/balance` when a key is opened, after a 409 (the nonce) and for "Send another" (`src/services/wallets.ts`, VLA-16); `POST /transactions` (`src/services/ledger.ts`) | Public; JWT |
 | Network | `GET /nodes` and `GET /blocks?skip=0&limit=1` (the height); `POST /nodes/register` and `POST /nodes/resolve`, admin only (`src/services/nodes.ts`, VLA-19) | Public; JWT |
 
-Every request goes through `src/services/api.ts`, which adds `Authorization: Bearer <token>`. Errors show the API's `detail`.
+Every request goes through `src/services/api.ts`, which adds `Authorization: Bearer <token>`. Errors show the API's `detail`; from VLW-40, a known message is shown in the person's language and an unknown one as it came (ADR-0007).
 
 The types of every answer are generated from the API's `docs/openapi.json` (VLA-37), copied unchanged into `src/types/openapi.json` at API commit b205e4e (VLA-26). `npm run types:api` regenerates `src/types/api.ts`, and CI fails when it is stale (AR-09). When the API changes an answer, the copy is updated with the commit it comes from, and `tsc` shows every place the code must follow.
 
@@ -131,7 +134,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 | Correctness | Response types match the API | Types generated from the API's OpenAPI document, regenerated and diffed in CI (AR-09, VLW-19) |
 | Deployment | One image for any hostname; deep links survive a reload | `docker/smoke-test.sh` on the built image (VLW-21, VLW-22); the image published to GHCR for the API's Compose (VLW-25a); the end-to-end flows (VLW-23). The `rehearsal` job (VLW-25b) runs the API's production Compose (`deploy/docker-compose.prod.yml`) with the pull request's own image on `https://localhost`, and runs the flows through its Caddy: one origin, the image's `/config.json`, and its Content Security Policy, any violation of which fails the run |
 | Reproducibility | `npm ci && npm run build` from a clean clone | CI (VLW-10, VLW-11) |
-| Accessibility | Every input has a label; visible focus; usable at 360 px with no horizontal scroll; no serious or critical axe-core violation | `npm run test:a11y` (VLW-24): Playwright in Chromium against the built app, with the API answered from fixtures (`e2e/mockApi.ts`), on every page and state at 1280 and 360 px: no serious or critical axe violation, no sideways scroll, and a visible focus on every control the keyboard reaches. axe-core also runs in the component tests for refusals, empty lists and not-found states (`toPassAxe`). Both run in CI |
+| Accessibility | Every input has a label; visible focus; usable at 360 px with no horizontal scroll; no serious or critical axe-core violation | `npm run test:a11y` (VLW-24): Playwright in Chromium against the built app, with the API answered from fixtures (`e2e/mockApi.ts`), on every page and state at 1280 and 360 px: no serious or critical axe violation, no sideways scroll, and a visible focus on every control the keyboard reaches. axe-core also runs in the component tests for refusals, empty lists and not-found states (`toPassAxe`). Both run in CI. From VLW-48, the pass runs in both themes and both languages |
 | Robustness | A throw while drawing shows a fallback, never a blank page; nothing a person types, opens or navigates to, and no malformed answer from the API or `config.json`, makes a page throw | Component tests of both boundaries (VLW-35). `npm run test:a11y` also runs `e2e/robustness.spec.ts` (VLW-36), the audit of 2026-10-21 as a spec, in CI. It runs in Chromium at 1280 and 360 px against the mocked API, and covers odd routes, odd text in every field, files that are not key files, stored sessions the app did not write, and malformed answers. A step fails on an uncaught error or when a fallback shows |
 | Quality | `tsc` strict, oxlint without warnings, architecture tests and Vitest green | GitHub Actions (VLW-10, VLW-13) |
 
@@ -146,7 +149,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 - **A plan first.** Each story starts from a short plan, what will change and which files, agreed with the product owner before any code.
 - **Raise contradictions.** If a request contradicts this specification, the contradiction is raised before the work starts. A change to this document goes in its own `docs(spec)` commit.
 - **Small commits.** Conventional Commits, one PR per story; work over about 300 lines is split.
-- **Check it in the browser.** Each screen is checked at 1280 and 360 px against a running API, with the demo's own data.
+- **Check it in the browser.** Each screen is checked at 1280 and 360 px against a running API, with the demo's own data. From epic E6, at 1440, 768 and 360 px, in both themes and both languages.
 - **Cross-repository contracts.** Signing and endpoints are decided in the API's ADRs; a VLW story that depends on a VLA story says so and merges after it.
 
 **Definition of done**
@@ -216,4 +219,4 @@ veriledger-webapp/
 | `docs/sprints/sprint-N.md` | What was delivered, decisions, spec changes, retro | At the close of each sprint |
 | `docs/AUDIT.md` | Independent comparison of the repository against these documents | Before a release, or when asked |
 
-**Conventions.** Branches `feat/VLW-NN-description`, `fix/…`, `chore/…`; Conventional Commits; PRs reference the story and include the DoD checklist; components in PascalCase, one per file; code, comments and documentation in English; user-facing text in English.
+**Conventions.** Branches `feat/VLW-NN-description`, `fix/…`, `chore/…`; Conventional Commits; PRs reference the story and include the DoD checklist; components in PascalCase, one per file; code, comments and documentation in English; user-facing text in English and Spanish, from `src/lib/i18n` (ADR-0007; English only until VLW-40).
