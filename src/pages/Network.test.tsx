@@ -1,5 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fingerprint } from '../lib/fingerprint';
+import { peerHex } from '../lib/peers';
 import { getBlocks } from '../services/ledger';
 import { getPeers, registerPeer, resolveConflicts } from '../services/nodes';
 import { useAppStore } from '../store/useAppStore';
@@ -33,6 +35,22 @@ describe('Network', () => {
     expect(screen.queryByText(/active/i)).not.toBeInTheDocument();
     expect(screen.getByText('node-b')).toBeInTheDocument();
     expect(screen.getByText('127.0.0.1')).toBeInTheDocument();
+  });
+
+  it("gives each peer the avatar of its URL, on the map and in the list", async () => {
+    render(<Network />);
+    const row = (await screen.findByText('https://node-b.example.org')).closest('li')!;
+    const colours = fingerprint(peerHex('https://node-b.example.org'), 4);
+
+    // jsdom keeps the colour as written in the style, so compare against the same element's colouring.
+    const drawn = (element: Element) => [...element.querySelector('[aria-hidden="true"]')!.children].map((bar) => (bar as HTMLElement).style.background);
+    const expected = colours.map((colour) => {
+      const probe = document.createElement('span');
+      probe.style.background = colour ?? '';
+      return probe.style.background;
+    });
+    expect(drawn(row)).toEqual(expected);
+    expect(drawn(screen.getByText('node-b').parentElement!)).toEqual(expected);
   });
 
   it('opens a narrow map on this node, in its middle', async () => {

@@ -38,6 +38,17 @@ export function peerLabel(url: string): { name: string; detail: string } {
   return { name: first, detail: `${rest.join('.')}${port}`.slice(0, 14) };
 }
 
+// A peer has no key, so its 2×2 avatar comes from its URL: FNV-1a of the URL as four bytes, low byte first, which
+// the fingerprint colours like any other hex (DESIGN.md › Network). It tells peers apart and claims nothing else.
+export function peerHex(url: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < url.length; index += 1) {
+    hash ^= url.charCodeAt(index);
+    hash = Math.imul(hash, 16777619) >>> 0;
+  }
+  return [0, 8, 16, 24].map((shift) => ((hash >>> shift) & 0xff).toString(16).padStart(2, '0')).join('');
+}
+
 // Only the form of the address is checked here; the API decides whether the host is public and resolves.
 export function looksLikePeerUrl(text: string): boolean {
   return /^https?:\/\/[^\s/]+/.test(text.trim());
