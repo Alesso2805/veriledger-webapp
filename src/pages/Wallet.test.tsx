@@ -194,4 +194,15 @@ describe('Wallet activity and look-up', () => {
     expect(await screen.findByText('12.50 VL')).toBeInTheDocument();
     expect(getBalance).toHaveBeenLastCalledWith('ef'.repeat(32));
   });
+
+  it('keeps the page while letters past f are typed, and says what is wrong', async () => {
+    renderWallet();
+    const input = screen.getByLabelText('Address');
+
+    fireEvent.change(input, { target: { value: 'hello' } });
+    expect(screen.getByText('5 / 64')).toBeInTheDocument();
+    fireEvent.submit(input.closest('form')!);
+    expect(await screen.findByText('An address has 64 characters from 0–9 and a–f.')).toBeInTheDocument();
+    expect(getBalance).not.toHaveBeenCalledWith('hello');
+  });
 });
