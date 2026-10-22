@@ -1,16 +1,18 @@
 import { useToastStore, type ToastKind } from '../store/useToastStore';
+import { useT } from './useT';
 
 const DOT: Record<ToastKind, string> = { ok: 'fill-vl-ok', err: 'fill-vl-danger', info: 'fill-vl-muted' };
 const BORDER: Record<ToastKind, string> = { ok: 'border-vl-line', err: 'border-vl-danger', info: 'border-vl-line' };
 
 export function ToastRegion() {
+  const t = useT();
   const toasts = useToastStore((state) => state.toasts);
   const dismiss = useToastStore((state) => state.dismiss);
 
   return (
     // One live region that exists before any toast, so each new toast is announced once.
     <section
-      aria-label="Notifications"
+      aria-label={t.shell.toasts.region}
       aria-live="polite"
       className="fixed right-5 bottom-5 z-50 flex max-w-[calc(100vw-40px)] flex-col gap-2"
     >
@@ -28,7 +30,7 @@ export function ToastRegion() {
           <span>{toast.text}</span>
           <button
             type="button"
-            aria-label="Dismiss"
+            aria-label={t.shell.toasts.dismiss}
             onClick={() => dismiss(toast.id)}
             className="size-7 shrink-0 rounded-md text-base font-medium text-vl-muted transition-colors duration-(--vl-dur-fast) hover:text-vl-text"
           >

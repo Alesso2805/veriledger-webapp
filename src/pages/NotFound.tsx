@@ -1,6 +1,8 @@
 import { Link } from 'react-router';
+import { useT } from '../components/useT';
 
 export function NotFound() {
+  const t = useT();
   return (
     <section
       aria-labelledby="not-found-title"
@@ -21,16 +23,16 @@ export function NotFound() {
       <div className="min-w-0 flex-[1_1_260px]">
         <p className="font-vl-mono text-xs text-vl-accent">404</p>
         <h1 id="not-found-title" className="mt-0.5 text-[28px] font-bold tracking-[-0.02em]">
-          This page is not in the tower
+          {t.notFound.title}
         </h1>
         <p className="mt-2 mb-4 text-vl-muted">
-          The address may be mistyped, or the link is from an older version of the app.
+          {t.notFound.text}
         </p>
         <Link
           to="/"
           className="inline-flex h-[42px] items-center rounded-[10px] bg-vl-accent px-3.5 font-semibold text-vl-on-accent"
         >
-          Back to the tower
+          {t.notFound.back}
         </Link>
       </div>
     </section>

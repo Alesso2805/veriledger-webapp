@@ -1,8 +1,10 @@
 import { apiHost } from '../services/api';
 import { useHealthStore } from '../store/useHealthStore';
 import { checkHealth } from './checkHealth';
+import { useT } from './useT';
 
 export function OfflineBanner() {
+  const t = useT();
   const offline = useHealthStore((state) => state.online === false);
   const databaseDown = useHealthStore((state) => state.databaseDown);
 
@@ -19,15 +21,14 @@ export function OfflineBanner() {
           className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2.5 border-t border-vl-danger bg-vl-danger-soft px-4 py-2.5 text-sm"
         >
           <span>
-            {databaseDown ? `${apiHost()} answers, but its database does not.` : `Can’t reach ${apiHost()}.`} Retrying every
-            10 s.
+            {databaseDown ? t.shell.offline.noDatabase(apiHost()) : t.shell.offline.unreachable(apiHost())} {t.shell.offline.retrying}
           </span>
           <button
             type="button"
             onClick={() => void checkHealth()}
             className="h-8 rounded-lg border border-vl-danger px-3 text-[13px] font-semibold"
           >
-            Retry now
+            {t.shell.offline.retry}
           </button>
         </div>
       </div>

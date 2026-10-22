@@ -1,9 +1,11 @@
 import { useEffect, useState, type FocusEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { transactionKind } from '../lib/format';
+import type { Messages } from '../lib/i18n';
 import { parseSearch } from '../lib/search';
 import { detailOf } from '../services/api';
 import { findBlockNumber, findHash, type Found } from '../services/ledger';
+import { useT } from './useT';
 
 type Results =
   | { phase: 'idle' }
@@ -13,15 +15,15 @@ type Results =
 
 const WAIT_MS = 250;
 
-function present(item: Found): { label: string; meta: string; to: string } {
+function present(item: Found, t: Messages): { label: string; meta: string; to: string } {
   if (item.kind === 'block') {
-    return { label: `Block #${item.number}`, meta: `${item.hash.slice(0, 12)}…`, to: `/?block=${item.number}` };
+    return { label: t.shell.search.block(item.number), meta: `${item.hash.slice(0, 12)}…`, to: `/?block=${item.number}` };
   }
   const { transaction } = item;
   const hash = transaction.tx_hash ?? '';
   return {
-    label: `${transactionKind(transaction)} ${hash.slice(0, 8)}…`,
-    meta: typeof transaction.block_number === 'number' ? `in block #${transaction.block_number}` : 'waiting',
+    label: `${t.kinds[transactionKind(transaction)]} ${hash.slice(0, 8)}…`,
+    meta: typeof transaction.block_number === 'number' ? t.shell.search.inBlock(transaction.block_number) : t.shell.search.waiting,
     to: `/transaction/${hash}`,
   };
 }
@@ -29,6 +31,7 @@ function present(item: Found): { label: string; meta: string; to: string } {
 // Finds a block by its number, or a block or a transaction by its full hash. The API cannot search by prefix,
 // so part of a hash is not looked up (VLW-19).
 export function HeaderSearch() {
+  const t = useT();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -43,7 +46,7 @@ export function HeaderSearch() {
       return;
     }
     if (lookup === 'incomplete') {
-      setResults({ phase: 'message', text: 'Type a block number or a full 64-character hash.' });
+      setResults({ phase: 'message', text: t.shell.search.typeMore });
       return;
     }
     const search = parseSearch(lookup);
@@ -60,22 +63,20 @@ export function HeaderSearch() {
             setResults({
               phase: 'message',
               text:
-                search.kind === 'number'
-                  ? `No block #${search.number} yet.`
-                  : 'No block or transaction with this hash on this node.',
+                search.kind === 'number' ? t.shell.search.noBlock(search.number) : t.shell.search.noHash,
             });
         },
-        (error: unknown) => active && setResults({ phase: 'message', text: detailOf(error, 'The node did not answer') }),
+        (error: unknown) => active && setResults({ phase: 'message', text: detailOf(error, t.shell.search.noAnswer) }),
       );
     }, WAIT_MS);
     return () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [lookup]);
+  }, [lookup, t]);
 
   const go = (item: Found) => {
-    navigate(present(item).to);
+    navigate(present(item, t).to);
     setQuery('');
     setOpen(false);
   };
@@ -99,7 +100,7 @@ export function HeaderSearch() {
       className="relative order-2 max-w-[520px] flex-[1_1_280px] sm:order-none"
     >
       <label htmlFor="header-search" className="sr-only">
-        Search a block number or a hash
+        {t.shell.search.label}
       </label>
       <input
         id="header-search"
@@ -110,7 +111,7 @@ export function HeaderSearch() {
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
-        placeholder="Block number or hash"
+        placeholder={t.shell.search.placeholder}
         autoComplete="off"
         spellCheck={false}
         className="h-10 w-full rounded-[10px] border border-vl-line bg-vl-surface px-3 text-sm text-vl-text placeholder:text-vl-faint"
@@ -118,12 +119,12 @@ export function HeaderSearch() {
       {open && results.phase !== 'idle' && (
         <div
           role="listbox"
-          aria-label="Results"
+          aria-label={t.shell.search.results}
           className="absolute top-[46px] right-0 left-0 z-40 animate-vl-fade-up rounded-xl border border-vl-line bg-vl-raised p-1.5"
         >
           {results.phase === 'searching' && (
             <p aria-live="polite" className="animate-vl-pulse p-2.5 text-sm text-vl-muted">
-              Looking it up…
+              {t.shell.search.lookingUp}
             </p>
           )}
           {results.phase === 'message' && (
@@ -133,7 +134,7 @@ export function HeaderSearch() {
           )}
           {results.phase === 'found' &&
             results.items.map((item) => {
-              const { label, meta, to } = present(item);
+              const { label, meta, to } = present(item, t);
               return (
                 <div key={to} role="option" aria-selected="false">
                   <button

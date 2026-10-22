@@ -1,17 +1,19 @@
 import { Monitor, Moon, Sun } from 'lucide-react';
 import { usePreferencesStore } from '../store/usePreferencesStore';
 import type { ThemePreference } from '../types/preferences';
+import { useT } from './useT';
 
 const NEXT: Record<ThemePreference, ThemePreference> = { system: 'light', light: 'dark', dark: 'system' };
-const NAMES: Record<ThemePreference, string> = { system: 'System', light: 'Light', dark: 'Dark' };
 const ICONS = { system: Monitor, light: Sun, dark: Moon };
 
 // The navbar's theme switch (DESIGN.md › Themes): it cycles System → Light → Dark, and says the choice in words.
 export function ThemeSwitch({ className = 'bg-vl-surface' }: { className?: string }) {
+  const t = useT();
   const theme = usePreferencesStore((state) => state.theme);
   const setTheme = usePreferencesStore((state) => state.setTheme);
   const Icon = ICONS[theme];
-  const label = `Theme: ${NAMES[theme]}. Switch to ${NAMES[NEXT[theme]]}`;
+  const names = t.shell.theme.names;
+  const label = t.shell.theme.label(names[theme], names[NEXT[theme]]);
   return (
     <button
       type="button"

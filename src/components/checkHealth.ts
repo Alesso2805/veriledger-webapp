@@ -1,5 +1,7 @@
+import { messages } from '../lib/i18n';
 import { DatabaseDownError, getHealth } from '../services/health';
 import { useHealthStore } from '../store/useHealthStore';
+import { usePreferencesStore } from '../store/usePreferencesStore';
 import { useToastStore } from '../store/useToastStore';
 
 export const HEALTH_POLL_MS = 10_000;
@@ -9,7 +11,7 @@ export async function checkHealth() {
   const { online, setOnline, setDatabaseDown, setDemoMode } = useHealthStore.getState();
   try {
     const health = await getHealth();
-    if (online === false) useToastStore.getState().show('Back online.');
+    if (online === false) useToastStore.getState().show(messages(usePreferencesStore.getState().language).shell.toasts.backOnline);
     setOnline(true);
     setDatabaseDown(false);
     setDemoMode(health.demo_mode === true);

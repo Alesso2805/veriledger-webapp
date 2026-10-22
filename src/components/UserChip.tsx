@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { formatTimeLeft } from '../lib/format';
+import { timeLeft } from '../lib/format';
 import { getMe } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
 import { useSessionToken } from './useSessionToken';
+import { useT } from './useT';
 
 export function UserChip() {
+  const t = useT();
   // Never an expired token: its 401 could arrive after the login and end the session a second time.
   const { token } = useSessionToken();
   const user = useAppStore((state) => state.user);
@@ -36,12 +38,13 @@ export function UserChip() {
   }, [expiresAt]);
 
   if (!user) return null;
+  const left = expiresAt ? timeLeft(Date.parse(expiresAt) - now) : null;
 
   return (
     <span className="hidden h-9 animate-vl-fade-in items-center gap-2 rounded-full border border-vl-line px-3 text-[13px] sm:flex">
       <span>{user.display_name}</span>
       <span className="font-vl-mono text-[11px] text-vl-accent">
-        {expiresAt ? `demo · ${formatTimeLeft(Date.parse(expiresAt) - now)}` : user.role}
+        {left ? t.shell.demoChip('hours' in left ? t.shell.hoursLeft(left.hours) : t.shell.minutesLeft(left.minutes)) : user.role}
       </span>
     </span>
   );
