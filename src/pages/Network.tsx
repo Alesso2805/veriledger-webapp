@@ -16,7 +16,7 @@ const topNumber = () =>
     () => null,
   );
 
-// Artboard "E · Red" (VLW-32).
+// Artboard "C · Red" (VLW-47; before it VLW-32).
 export function Network() {
   const t = useT();
   const [peers, setPeers] = useState<Peer[] | 'unknown' | null>(null);
@@ -68,11 +68,11 @@ export function Network() {
 
   return (
     <>
-      <h1 className="text-[30px] font-bold tracking-[-0.02em]">{t.network.title}</h1>
-      <p className="mt-1 max-w-[720px] text-vl-muted">{t.network.lead}</p>
-      <div className="mt-5 flex flex-wrap items-start gap-5">
+      <h1 className="text-[56px] leading-none font-extrabold tracking-[-0.035em] max-sm:text-[40px]">{t.network.title}</h1>
+      <p className="mt-2.5 max-w-[720px] text-[17px] text-vl-muted">{t.network.lead}</p>
+      <div className="mt-[22px] flex flex-wrap items-start gap-[22px]">
         <PeerMap peers={list} height={height} fresh={fresh} phase={phase} round={round} />
-        <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-4">
+        <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-[22px]">
           <ResolveCard
             admin={admin}
             peerCount={list.length}

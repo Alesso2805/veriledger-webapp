@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { looksLikePeerUrl, MAP, peerLabel, ringPoints } from './peers';
+import { looksLikePeerUrl, MAP, peerHex, peerLabel, ringPoints } from './peers';
 
 describe('ringPoints', () => {
   it('puts the first peer at the top and spreads the others evenly', () => {
@@ -39,5 +39,14 @@ describe('looksLikePeerUrl', () => {
     ['https://', false],
   ])('%j → %s', (text, expected) => {
     expect(looksLikePeerUrl(text)).toBe(expected);
+  });
+});
+
+describe('peerHex', () => {
+  it('gives each URL four bytes of its own, the same on every visit', () => {
+    // FNV-1a of "a" is 0xe40c292c; its bytes, low first.
+    expect(peerHex('a')).toBe('2c290ce4');
+    expect(peerHex('https://node-b.example.org')).toBe(peerHex('https://node-b.example.org'));
+    expect(peerHex('https://node-b.example.org')).not.toBe(peerHex('https://node-c.example.org'));
   });
 });

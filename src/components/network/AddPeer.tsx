@@ -45,8 +45,8 @@ export function AddPeer({ admin, onAdded }: Props) {
   };
 
   return (
-    <section aria-labelledby="add-h" className="rounded-2xl border border-vl-line bg-vl-surface p-5">
-      <h2 id="add-h" className="text-[17px] font-bold">
+    <section aria-labelledby="add-h" className="rounded-3xl bg-vl-surface p-6 max-sm:p-5">
+      <h2 id="add-h" className="text-[22px] font-bold tracking-[-0.02em]">
         {words.title}
       </h2>
       {admin ? (
@@ -55,7 +55,7 @@ export function AddPeer({ admin, onAdded }: Props) {
           onSubmit={(event) => void submit(event)}
           className={`mt-3 flex flex-col gap-2 ${refusal ? 'animate-vl-shake' : ''}`}
         >
-          <label htmlFor="url" className="text-[13px] font-medium">
+          <label htmlFor="url" className="text-sm font-medium">
             {words.address}
           </label>
           <input
@@ -70,25 +70,23 @@ export function AddPeer({ admin, onAdded }: Props) {
             aria-invalid={refusal !== null}
             autoComplete="off"
             spellCheck={false}
-            className={`h-11 rounded-[10px] border bg-vl-bg px-3 font-vl-mono text-[13px] transition-colors duration-(--vl-dur-fast) ${
+            className={`h-[50px] rounded-[14px] border-[1.5px] bg-vl-surface px-3.5 font-vl-mono text-sm transition-colors duration-(--vl-dur-fast) ${
               refusal ? 'border-vl-danger' : 'border-vl-line'
             }`}
           />
-          <p id="url-help" aria-live="polite" className={`text-[13px] ${refusal ? 'text-vl-danger' : 'text-vl-muted'}`}>
+          <p id="url-help" aria-live="polite" className={`text-sm ${refusal ? 'text-vl-danger' : 'text-vl-muted'}`}>
             {refusal ?? words.help}
           </p>
           <button
             type="submit"
             disabled={adding}
-            className="h-[42px] self-start rounded-[10px] bg-vl-text px-3.5 text-sm font-semibold text-vl-on-accent"
+            className="h-12 self-start rounded-[14px] bg-vl-strong px-5 text-[15px] font-bold text-vl-on-strong"
           >
             {adding ? words.adding : words.button}
           </button>
         </form>
       ) : (
-        <p className="mt-2 text-sm text-vl-muted">
-          {words.onlyAdmin}
-        </p>
+        <p className="mt-2 text-[15px] text-vl-muted">{words.onlyAdmin}</p>
       )}
     </section>
   );
