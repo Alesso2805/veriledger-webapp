@@ -189,8 +189,6 @@ veriledger-webapp/
 │   ├── DESIGN.md                 # design C: tokens for both themes, motion, languages, views
 │   ├── BACKLOG.md
 │   ├── ARCHITECTURE_RULES.md
-│   ├── AUDIT.md
-│   ├── COMMENTS_REVIEW.md        # what the comment cleanup kept and removed (VLW-14)
 │   ├── adr/
 │   └── sprints/
 ├── .github/workflows/          # ci.yml (checks), image.yml (amd64 and arm64 image, smoke test)
@@ -206,10 +204,13 @@ veriledger-webapp/
 ├── vite.config.ts
 ├── tsconfig*.json
 ├── .oxlintrc.json
-├── CLAUDE.md
 ├── CHANGELOG.md                  # what changes, release by release (VLW-26)
-└── README.md
+├── LICENSE                       # MIT (VLW-49)
+├── SECURITY.md                   # how to report a vulnerability (VLW-49)
+└── README.md                     # for visitors: the live demo, highlights, quality, architecture (VLW-49)
 ```
+
+Kept on each workstation and out of version control (VLW-49): `CLAUDE.md` and `.claude/`, the coding agent's instructions and settings; `docs/AUDIT.md` and `docs/COMMENTS_REVIEW.md`, internal working notes. The README sums up the audit's result.
 
 | Artifact | Purpose | When it is updated |
 | --- | --- | --- |
@@ -219,6 +220,6 @@ veriledger-webapp/
 | `docs/ARCHITECTURE_RULES.md` | Verifiable architecture rules and their tests | When a story changes the architecture |
 | `docs/adr/NNNN-*.md` | One technical decision | Every non-trivial decision |
 | `docs/sprints/sprint-N.md` | What was delivered, decisions, spec changes, retro | At the close of each sprint |
-| `docs/AUDIT.md` | Independent comparison of the repository against these documents | Before a release, or when asked |
+| `docs/AUDIT.md` (local, VLW-49) | Independent comparison of the repository against these documents; the README sums up its result | Before a release, or when asked |
 
 **Conventions.** Branches `feat/VLW-NN-description`, `fix/…`, `chore/…`; Conventional Commits; PRs reference the story and include the DoD checklist; components in PascalCase, one per file; code, comments and documentation in English; user-facing text in English and Spanish, from `src/lib/i18n` (ADR-0007, AR-11).
