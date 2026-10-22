@@ -8,7 +8,7 @@ import { useHealthStore } from '../store/useHealthStore';
 import { usePreferencesStore } from '../store/usePreferencesStore';
 import { useToastStore } from '../store/useToastStore';
 import type { Block, Paginated, Transaction } from '../types/ledger';
-import { Tower } from './Tower';
+import { Chain } from './Chain';
 
 vi.mock('../services/ledger', () => ({
   getBlocks: vi.fn(),
@@ -71,7 +71,7 @@ function Search() {
   return <p data-testid="search">{useLocation().search}</p>;
 }
 
-function renderTower(path = '/') {
+function renderChain(path = '/') {
   render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
@@ -79,7 +79,7 @@ function renderTower(path = '/') {
           path="/"
           element={
             <>
-              <Tower />
+              <Chain />
               <Search />
             </>
           }
@@ -93,7 +93,7 @@ const stat = (label: string) => screen.getByText(label, { selector: 'dt' }).next
 const blockButton = (n: number) => screen.getByRole('button', { name: new RegExp(`^Block #${n} `) });
 const poll = () => act(() => vi.advanceTimersByTimeAsync(10_000));
 
-describe('Tower', () => {
+describe('Chain', () => {
   beforeEach(() => {
     useHealthStore.setState({ online: true });
     useToastStore.setState({ toasts: [] });
@@ -109,44 +109,59 @@ describe('Tower', () => {
   it('speaks Spanish when that is the language', async () => {
     usePreferencesStore.setState({ language: 'es' });
     serve(chainOf(3), [transfer]);
-    renderTower();
+    renderChain();
 
-    expect(await screen.findByRole('img', { name: 'Torre de los 3 bloques más nuevos, #0 abajo y #2 arriba' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Torre de bloques' })).toBeInTheDocument();
+    expect(await screen.findByRole('list', { name: 'Los 3 bloques más nuevos, del #0 al #2. Desplázate hacia los lados.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'La cadena' })).toBeInTheDocument();
     expect(screen.getByText('Altura')).toBeInTheDocument();
-    expect(screen.getByText('Nada aún: es la cima de la torre')).toBeInTheDocument();
+    expect(screen.getByText('Nada aún: es el bloque más nuevo')).toBeInTheDocument();
+    expect(screen.getByText('#2 es el bloque más nuevo. El siguiente enlazará a su huella.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Transferencia/ })).toHaveTextContent('comisión 0.10');
   });
 
   it('draws a skeleton until the first answer', () => {
     vi.mocked(getBlocks).mockReturnValue(new Promise(() => {}));
     vi.mocked(getPendingTransactions).mockReturnValue(new Promise(() => {}));
-    renderTower();
+    renderChain();
 
-    expect(screen.getByRole('img', { name: 'Loading blocks' })).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Loading blocks' })).toBeInTheDocument();
     expect(screen.getByText('Loading blocks…')).toBeInTheDocument();
     expect(stat('Height')).toHaveTextContent('—');
   });
 
   it('draws the newest blocks, selects the top one and lists what is waiting', async () => {
     serve(chainOf(3), [transfer]);
-    renderTower();
+    renderChain();
 
-    expect(await screen.findByRole('img', { name: 'Tower of the 3 newest blocks, #0 at the bottom and #2 on top' })).toBeInTheDocument();
+    expect(await screen.findByRole('list', { name: 'The 3 newest blocks, #0 to #2. Scroll sideways.' })).toBeInTheDocument();
     expect(stat('Height')).toHaveTextContent('2');
     expect(stat('Waiting')).toHaveTextContent('1');
     expect(blockButton(2)).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('heading', { name: '#2' })).toBeInTheDocument();
-    expect(screen.getByText('Nothing yet: it is the top of the tower')).toBeInTheDocument();
+    expect(screen.getByText('Nothing yet: it is the newest block')).toBeInTheDocument();
     expect(await screen.findByRole('link', { name: /Mining reward/ })).toHaveAttribute('href', '/transaction/rh2');
     const waiting = screen.getByRole('link', { name: /Transfer/ });
     expect(waiting).toHaveAttribute('href', '/transaction/ph1');
     expect(waiting).toHaveTextContent('fee 0.10');
   });
 
-  it('keeps the tower when the node sends a time it cannot read', async () => {
+  it('lights the link of the block pointed at, and says what it links to', async () => {
+    serve(chainOf(3));
+    renderChain();
+    const tile = await screen.findByRole('button', { name: /^#1 .* · 1 tx, links to #0$/ });
+
+    fireEvent.mouseEnter(tile);
+
+    expect(screen.getByText('The fingerprint of #1 is exactly what #2 links to.')).toBeInTheDocument();
+    expect(tile).toHaveStyle({ transform: 'translateY(-4px)' });
+    fireEvent.click(tile);
+    expect(tile).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('search')).toHaveTextContent('?block=1');
+  });
+
+  it('keeps the chain when the node sends a time it cannot read', async () => {
     serve([{ ...block(0), timestamp: 'not a date' }]);
-    renderTower();
+    renderChain();
 
     expect(await screen.findByRole('heading', { name: '#0' })).toBeInTheDocument();
     expect(stat('Last block')).toHaveTextContent('—');
@@ -155,18 +170,19 @@ describe('Tower', () => {
 
   it('says the first block mined becomes the genesis block', async () => {
     serve([]);
-    renderTower();
+    renderChain();
 
     expect(await screen.findByText('No blocks yet. The first block mined becomes the genesis block, number 0.')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'No blocks yet' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'No blocks yet' })).toBeInTheDocument();
+    expect(screen.getByText('the genesis block')).toBeInTheDocument();
     expect(screen.getByText('Nothing waiting. New transactions appear here within 10 s.')).toBeInTheDocument();
   });
 
   it('announces a block that joined the chain, and a picked block stays selected', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     serve(chainOf(3));
-    renderTower();
-    await screen.findByRole('img', { name: /#2 on top/ });
+    renderChain();
+    await screen.findByRole('list', { name: /#0 to #2\./ });
 
     serve(chainOf(4));
     await poll();
@@ -186,18 +202,18 @@ describe('Tower', () => {
 
   it('opens the block of a deep link, even below the loaded pages', async () => {
     serve(chainOf(15));
-    renderTower('/?block=2');
+    renderChain('/?block=2');
 
     expect(await screen.findByRole('heading', { name: '#2' })).toBeInTheDocument();
     expect(getBlocks).toHaveBeenCalledWith(12, 1);
-    expect(screen.getByText('12 blocks rest on it')).toBeInTheDocument();
+    expect(screen.getByText('12 blocks link back to it')).toBeInTheDocument();
   });
 
   it('loads older blocks until the genesis block', async () => {
     serve(chainOf(12));
-    renderTower();
-    await screen.findByRole('img', { name: /#11 on top/ });
-    expect(screen.getByText('+ 2 older blocks below (#0 to #1)')).toBeInTheDocument();
+    renderChain();
+    await screen.findByRole('list', { name: /#2 to #11\./ });
+    expect(screen.getByText('+ 2 older blocks (#0 to #1)')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Load older blocks' }));
 
@@ -210,7 +226,7 @@ describe('Tower', () => {
   it('shows the failure when /health answers but the blocks do not', async () => {
     vi.mocked(getBlocks).mockRejectedValue(new Error('Database is locked'));
     vi.mocked(getPendingTransactions).mockResolvedValue(page([]));
-    renderTower();
+    renderChain();
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Can’t load the blocks: Database is locked. Retrying every 10 s.');
     expect(screen.getByText('Not loaded yet · retrying every 10 s')).toBeInTheDocument();
@@ -220,20 +236,20 @@ describe('Tower', () => {
     useHealthStore.setState({ online: false });
     vi.mocked(getBlocks).mockRejectedValue(new Error('Network Error'));
     vi.mocked(getPendingTransactions).mockRejectedValue(new Error('Network Error'));
-    renderTower();
+    renderChain();
 
     expect(await screen.findByText('Not loaded yet · retrying every 10 s')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });
 
-describe('Tower mining', () => {
+describe('Chain mining', () => {
   const minerAddress = 'f'.repeat(64);
   const toasts = () => useToastStore.getState().toasts.map(({ text, kind }) => ({ text, kind }));
 
   async function readyToMine(path = '/') {
-    renderTower(path);
-    await screen.findByRole('img', { name: /on top/ });
+    renderChain(path);
+    await screen.findByRole('list', { name: /newest blocks/ });
     fireEvent.change(screen.getByLabelText('Reward address'), { target: { value: ` ${minerAddress} ` } });
   }
 
@@ -342,7 +358,7 @@ describe('Tower mining', () => {
 
   it('offers the genesis block on an empty chain', async () => {
     serve([]);
-    renderTower();
+    renderChain();
 
     expect(await screen.findByRole('button', { name: 'Mine the genesis block' })).toBeInTheDocument();
     expect(screen.getByText('The first block you mine becomes the genesis block.')).toBeInTheDocument();

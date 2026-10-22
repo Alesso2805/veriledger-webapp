@@ -2,7 +2,7 @@ import { Outlet, type RouteObject } from 'react-router';
 import { Layout } from './components/Layout';
 import { OpenRoute, ProtectedRoute, PublicRoute } from './components/RouteGuards';
 import { Login } from './pages/Login';
-import { Tower } from './pages/Tower';
+import { Chain } from './pages/Chain';
 import { Wallet } from './pages/Wallet';
 import { SignAndSend } from './pages/SignAndSend';
 import { TransactionDetail } from './pages/TransactionDetail';
@@ -31,7 +31,7 @@ export const routes: RouteObject[] = [
           </OpenRoute>
         ),
         children: [
-          { index: true, element: <Tower /> },
+          { index: true, element: <Chain /> },
           { path: 'transaction/:hash', element: <TransactionDetail /> },
           { path: 'network', element: <Network /> },
           { path: '*', element: <NotFound /> },

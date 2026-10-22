@@ -117,8 +117,8 @@ interface Case {
 
 const CASES: Case[] = [
   { name: 'the login', path: '/login', ready: '¿Solo quieres mirar?' },
-  { name: 'the tower', path: '/', signedIn: true, ready: 'Nada aún: es la cima de la torre' },
-  { name: 'the tower, to a visitor', path: '/', ready: 'Prueba la demo para minar' },
+  { name: 'the chain', path: '/', signedIn: true, ready: 'Nada aún: es el bloque más nuevo' },
+  { name: 'the chain, to a visitor', path: '/', ready: 'Prueba la demo para minar' },
   { name: 'a sealed notarization', path: `/transaction/${notarization.tx_hash}`, ready: /^Este documento existía el/ },
   { name: 'the network', path: '/network', signedIn: true, ready: 'Nodos registrados · 2' },
   { name: 'the wallet with a key', path: '/wallet', signedIn: true, key: true, ready: 'Actividad' },
