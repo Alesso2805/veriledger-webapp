@@ -143,7 +143,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 
 **Stack.** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Zustand 5, axios, lucide-react, `@noble/curves` 2; @fontsource Bricolage Grotesque (variable, with optical sizes) and JetBrains Mono; oxlint; Vitest, Testing Library and jsdom; axe-core and @axe-core/playwright; Playwright; dependency-cruiser; openapi-typescript. Node 22 LTS, 22.13 or later.
 
-**Architecture rules.** The folder rules of the Architecture section, written as verifiable rules AR-01 to AR-09 in [ARCHITECTURE_RULES.md](ARCHITECTURE_RULES.md), each with the test that checks it (VLW-13).
+**Architecture rules.** The folder rules of the Architecture section, written as verifiable rules AR-01 to AR-11 in [ARCHITECTURE_RULES.md](ARCHITECTURE_RULES.md), each with the test that checks it (VLW-13).
 
 **How we work**
 
@@ -221,4 +221,4 @@ veriledger-webapp/
 | `docs/sprints/sprint-N.md` | What was delivered, decisions, spec changes, retro | At the close of each sprint |
 | `docs/AUDIT.md` | Independent comparison of the repository against these documents | Before a release, or when asked |
 
-**Conventions.** Branches `feat/VLW-NN-description`, `fix/…`, `chore/…`; Conventional Commits; PRs reference the story and include the DoD checklist; components in PascalCase, one per file; code, comments and documentation in English; user-facing text in English and Spanish, from `src/lib/i18n` (ADR-0007; English only until VLW-40).
+**Conventions.** Branches `feat/VLW-NN-description`, `fix/…`, `chore/…`; Conventional Commits; PRs reference the story and include the DoD checklist; components in PascalCase, one per file; code, comments and documentation in English; user-facing text in English and Spanish, from `src/lib/i18n` (ADR-0007, AR-11).
