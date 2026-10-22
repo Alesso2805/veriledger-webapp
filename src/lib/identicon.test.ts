@@ -20,6 +20,14 @@ describe('addressCube', () => {
     expect(partialCube('zz55')).toEqual({ top: null, left: '#857e3b', right: null });
   });
 
+  it('leaves grey a face whose byte has a letter past f, in any of the three bytes', () => {
+    const { top, left } = addressCube('4655ec');
+
+    expect(partialCube('hello')).toEqual({ top: null, left: null, right: null });
+    expect(partialCube('46zz')).toEqual({ top, left: null, right: null });
+    expect(partialCube('4655gg')).toEqual({ top, left, right: null });
+  });
+
   it('gives the same address the same cube, and another address another cube', () => {
     const address = 'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a';
 

@@ -19,6 +19,7 @@ export function addressCube(address: string): CubeColors {
 // The cube of an address still being typed: a face is null until its byte is complete, and the page draws it grey.
 export function partialCube(typed: string): { top: string | null; left: string | null; right: string | null } {
   const byte = (i: number) => /^[0-9a-f]{2}$/.test(typed.slice(i * 2, i * 2 + 2));
-  const cube = addressCube(typed.padEnd(6, '0'));
+  // A byte that is incomplete or not hex is coloured from 00: parseInt would turn it into NaN, and the palette has no NaN
+  const cube = addressCube([0, 1, 2].map((i) => (byte(i) ? typed.slice(i * 2, i * 2 + 2) : '00')).join(''));
   return { top: byte(0) ? cube.top : null, left: byte(1) ? cube.left : null, right: byte(2) ? cube.right : null };
 }
