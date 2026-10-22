@@ -120,6 +120,7 @@ Utilities follow from the names: `bg-vl-surface`, `text-vl-muted`, `font-vl-mono
 | `/auth/me` answers, after signing in or starting a demo | The user chip `animate-vl-fade-in` | Shell |
 | `POST /auth/demo` is pending | "Try the demo" and "Creating a demo account…" `animate-vl-pulse`; a refusal on the login `animate-vl-shake` | Shell, Login |
 | A panel opens or closes (key steps, forget-key confirmation) | `grid-template-rows` 0fr ↔ 1fr (`--vl-dur-slow`) | Wallet |
+| A page, the shell or the login throws while drawing, and its boundary catches it | The fallback card `animate-vl-fade-up` | Every view (VLW-35) |
 | Hover on rows and buttons | Background and border, `--vl-dur-fast` | Everywhere |
 
 Only `transform`, `opacity`, colours, `filter` (reveal) and `grid-template-rows` animate. Layout properties (`left`, `top`, `width`, `height`) never do; the one width transition is the journey bar's fill on the transaction page, which runs once on mount.
@@ -143,13 +144,14 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - signed out: "Sign in" and "Try the demo" (API ADR-0006, VLW-34). "Sign in" came with VLW-34a and returns to the page the visitor was on. "Try the demo" (VLW-34b) shows only when `/health` says `demo_mode`; it reads "Starting…" with `animate-vl-pulse` while `POST /auth/demo` is pending, signs the visitor in where they are, and puts a refusal (a 429) in a toast in the API's words;
   - skip link, which slides in with `transform` on focus; toast region;
   - offline banner under the header: "Can’t reach <API host>. Retrying every 10 s." with "Retry now". When the API answers but its database does not, it says so instead: "<API host> answers, but its database does not. Retrying every 10 s." (product owner, 2026-10-21), and mining says it waits for the database. When `/health` answers again, it closes and a "Back online." toast appears. The first artboard also promised "the last data we had" and "Data is up to date"; the pages do not keep or refresh data yet, so that text was removed (2026-10-20);
-  - 404 page: a tower with a missing cube.
+  - 404 page: a tower with a missing cube;
+  - a page that fails, and the app failing: see [Failure](#failure--a-page-or-the-shell-vlw-35).
 - **At 360 px** (shown in "E · Estados del shell"):
   - the status ("online") and "Sign out", or "Sign in", share the logo's row. Signed out on a node in demo mode, the status, "Sign in" and "Try the demo" do not fit beside the logo and take their own row under it (VLW-34b; the artboard draws 360 px signed in only);
   - the search drops to its own line;
   - the tabs scroll sideways;
   - the user chip is hidden.
-- **Stories:** VLW-27 (tokens, fonts, shell, toasts), VLW-33 (login, session expiry, offline, 404), VLW-17 (401 handling).
+- **Stories:** VLW-27 (tokens, fonts, shell, toasts), VLW-33 (login, session expiry, offline, 404), VLW-17 (401 handling), VLW-35 (failures).
 
 ### Login — `/login`
 
@@ -197,8 +199,8 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - A signature that does not match says so in the danger colour; the artboard has only the checked state.
   - A mining reward has no signature: "the block's proof of work seals it".
   - A row from before VLA-16 has no nonce, so it cannot be checked, and the page says so.
-  - Near 10^10 a float cannot spell an amount back with 8 decimals, so the message cannot be rebuilt. The page says this browser cannot check it, in the neutral colour, and never calls it invalid (2026-10-22).
-- **A time the browser cannot read** shows as "—", here and in the tower, instead of failing the page. A certificate without a readable moment says "when block #n was sealed" (2026-10-22).
+  - Near 10^10 a float cannot spell an amount back with 8 decimals, so the message cannot be rebuilt. The page says this browser cannot check it, in the neutral colour, and never calls it invalid (2026-10-21).
+- **A time the browser cannot read** shows as "—", here and in the tower, instead of failing the page. A certificate without a readable moment says "when block #n was sealed" (2026-10-21).
 - **Sealed in:** a card linking to `/?block=n`, with the block's hash and how many blocks are on top.
 - **Certificate** (a sealed notarization, VLW-29b):
   - "This document existed on 21 October 2026 at 15:06:45 UTC." The moment is the block's seal from `GET /blocks/{block_hash}`, which the chain backs, not the time the node received the transaction. Until it loads, the heading says the document existed when block #n was sealed.
@@ -282,6 +284,23 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - It opens without a session too, like the tower it leads back to (ADR-0005, product owner, 2026-10-21).
   - The card's heading is the page's `h1`; on the artboard it is an `h2`, because it sits among other states.
 - **Story:** VLW-33.
+
+### Failure — a page, or the shell (VLW-35)
+
+- **Artboard:** "E · Estados del shell" (the "This page ran into a problem" card, and "When the shell itself fails"; canvas version 44).
+- **Why:** a throw while drawing unmounts the whole React app and leaves a blank page. A boundary catches it instead (product owner, 2026-10-21, after the audit that found the wallet's look-up blanking the app).
+- **A page that throws** is replaced by a card inside the shell, which keeps working:
+  - the 404's tower with its top cube outlined in `--color-vl-danger`, and still: nothing is missing this time, something broke;
+  - "Error", "This page ran into a problem", and "Something failed while it was drawn. The other pages still work, and a key held in this tab is kept.";
+  - "Try again" draws the page again without a reload, which would forget the key held in the tab. "Back to the tower" opens `/`, and on the tower itself only "Try again" is offered;
+  - another route starts without the failure, because `<main>` is keyed by pathname.
+- **The shell or the login throwing** turns the whole screen into one card: the logo, the same tower, "VeriLedger ran into a problem", "Reloading usually fixes it. A reload forgets a key held in this tab, so open its key file again afterwards." and "Reload". It needs no router, store or API.
+- **Both cards:**
+  - have the danger border and `role="alert"`, with the heading as the page's `h1` (an `h2` on the artboard);
+  - enter with `animate-vl-fade-up` when the failure is caught;
+  - send the error nowhere: React logs it to the browser's console.
+- **Not covered:** a failure in an event handler or a request. It does not blank the page, and each one shows its own error.
+- **Story:** VLW-35.
 
 ## What the design does not show
 
