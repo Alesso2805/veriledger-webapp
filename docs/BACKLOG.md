@@ -2,7 +2,7 @@
 
 Oct 20, 2026 · @Alessandro David
 
-46 stories in 7 epics (E0 to E6). E0 records what was built on July 29, 2026, retroactively, so that the audit can check each criterion against a test; VLW-07 is the documentation of October 20. E1 to E4 come from the audit of the same day ([AUDIT.md](AUDIT.md)). E5 (VLW-27 to VLW-34) builds design direction E, chosen the same day ([ADR-0004](adr/0004-design-direction-e.md), [DESIGN.md](DESIGN.md)), and absorbs VLW-20; VLW-34 follows the API's ADR-0006 (visitors browse without an account and start a demo with one click). VLW-35 and VLW-36 come from the audit of October 21 that looked for anything able to blank the app (#53, #54). E6 (VLW-37 to VLW-48) moves the webapp to design direction C, in English and Spanish and in light and dark themes, chosen by the product owner on October 22 after seeing C, D and E drawn in full ([ADR-0006](adr/0006-design-direction-c.md), [ADR-0007](adr/0007-two-languages.md), [ADR-0008](adr/0008-light-and-dark-themes.md)). MoSCoW priority (M = Must, S = Should, C = Could) and estimate in points (1, 2, 3, 5, 8). IDs VLW-08, VLW-09 are left free.
+47 stories in 7 epics (E0 to E6). E0 records what was built on July 29, 2026, retroactively, so that the audit can check each criterion against a test; VLW-07 is the documentation of October 20. E1 to E4 come from the audit of the same day (`docs/AUDIT.md`, kept locally since VLW-49; the README sums it up). E5 (VLW-27 to VLW-34) builds design direction E, chosen the same day ([ADR-0004](adr/0004-design-direction-e.md), [DESIGN.md](DESIGN.md)), and absorbs VLW-20; VLW-34 follows the API's ADR-0006 (visitors browse without an account and start a demo with one click). VLW-35 and VLW-36 come from the audit of October 21 that looked for anything able to blank the app (#53, #54). E6 (VLW-37 to VLW-48) moves the webapp to design direction C, in English and Spanish and in light and dark themes, chosen by the product owner on October 22 after seeing C, D and E drawn in full ([ADR-0006](adr/0006-design-direction-c.md), [ADR-0007](adr/0007-two-languages.md), [ADR-0008](adr/0008-light-and-dark-themes.md)). MoSCoW priority (M = Must, S = Should, C = Could) and estimate in points (1, 2, 3, 5, 8). IDs VLW-08, VLW-09 are left free.
 
 **Redesign early, in order** (product owner, 2026-10-20). The redesign does not wait for the rest of the plan, and it does not run ahead of the API either:
 
@@ -63,6 +63,7 @@ The API's stories (VLA-NN) live in `veriledger-api/docs/BACKLOG.md`. Both backlo
 | VLW-46 | E6 Design C | As a user I want my wallet in design C | Artboard "C · Wallet": the address's fingerprint of 12 bars, the balance, the key steps and the forget confirmation on an ink panel, the activity with avatars, a look-up that builds the fingerprint as the address is typed | M | 3 | 6 | Done (#70) |
 | VLW-47 | E6 Design C | As an admin I want the peers in design C | Artboard "C · Red": this node on an ink card and the peers as cards with avatars, pulses while resolving, the resolve card, adding a peer, the list | S | 3 | 6 | Done (#71) |
 | VLW-48 | E6 Design C | As a developer I want the checks to cover both themes and both languages | `npm run test:a11y` and the robustness spec in both themes and both languages, at 1280 and 360 px; the end-to-end flows follow C's texts; E's leftovers removed (the cube tokens and the tower's pieces); ARCHITECTURE_RULES.md updated | M | 3 | 6 | Done (this PR) |
+| VLW-49 | E4 Production | As the product owner I want the repository ready to be public | As Willay's is (its VIG-45): MIT license; `SECURITY.md` on how to report a vulnerability, with GitHub's private vulnerability reporting on; a README for visitors with the live demo, what to try, highlights, the audit's result and the architecture; the coding agent's instructions and the internal notes (`CLAUDE.md`, `.claude/`, `docs/AUDIT.md`, `docs/COMMENTS_REVIEW.md`) out of version control; the repository's description, website and topics. With VLA-39 (product owner, 2026-10-22) | M | 2 | 6 | Done (this PR) |
 
 ## Sprint plan
 
@@ -76,7 +77,7 @@ Two-week sprints, the same as the API's. Each sprint closes with a demonstrable 
 | 3 | Nov 23 – Dec 6 | Every other view in design E, open to visitors, and the production image. Done on 2026-10-21 (#31 to #41) | VLW-19, 29, 31, 32, 34 | 14 | VLA-19, VLA-34, VLA-35, VLA-36, VLA-37 |
 | 4 | Dec 7 – 20 | End-to-end and accessibility checks, a page that fails without blanking the app, deployed with the API. Release 1.0.0 moved to Sprint 6 (product owner, 2026-10-22) | VLW-23 to 25, 35, 36 | 15 | VLA-21, VLA-22, VLA-23, VLA-24, VLA-27 |
 | 5 | Dec 21 – Jan 3, 2027 | Design C's foundation: its dark theme designed, both themes and both languages in the code, the shell and the sign-in in C | VLW-37 to 42 | 19 | — |
-| 6 | Jan 4 – 17, 2027 | Every view in design C, the checks in both themes and both languages, released as 1.0.0 | VLW-43 to 48, 26 | 22 | — |
+| 6 | Jan 4 – 17, 2027 | Every view in design C, the checks in both themes and both languages, the repository ready to be public, released as 1.0.0 | VLW-43 to 49, 26 | 24 | VLA-39 |
 
 **Order inside Sprint 1.** VLW-11 first (nothing else is green without it), then VLW-12, VLW-10, VLW-13, VLW-27, VLW-33, and VLW-14 last on the files that survive.
 
@@ -100,6 +101,7 @@ Two-week sprints, the same as the API's. Each sprint closes with a demonstrable 
 4. VLW-41 and VLW-42, the shell and the sign-in, closing Sprint 5.
 5. VLW-43 to VLW-47, one view each, in Sprint 6.
 6. VLW-48, then VLW-26: release 1.0.0 with screenshots of C, taken from the deployed instance.
+7. VLW-49, the repository ready to be public as Willay's is, with the API's VLA-39 (product owner, 2026-10-22). It comes before VLW-26, whose README screenshots it leaves room for.
 
 Until then the server keeps its pinned image, so visitors never see a half-redesigned app.
 
