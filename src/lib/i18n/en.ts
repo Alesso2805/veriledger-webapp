@@ -79,9 +79,10 @@ export const en = {
     regular: 'Regular accounts are created by an administrator.',
     browse: 'Browse the chain without an account →',
     tagline: 'A ledger anyone can check.',
+    linksTo: 'links to',
     lines: [
       'Every entry is signed by its author.',
-      'Every block is sealed by proof of work and rests on the one below.',
+      'Every block carries the fingerprint of the one before it.',
       'Every node keeps a copy and checks what it receives.',
     ],
   },

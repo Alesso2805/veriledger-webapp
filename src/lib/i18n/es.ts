@@ -80,9 +80,10 @@ export const es: Messages = {
     regular: 'Las cuentas normales las crea un administrador.',
     browse: 'Explorar la cadena sin cuenta →',
     tagline: 'Un registro que cualquiera puede verificar.',
+    linksTo: 'enlaza a',
     lines: [
       'Cada entrada la firma su autor.',
-      'Cada bloque se sella con prueba de trabajo y se apoya en el de abajo.',
+      'Cada bloque lleva la huella del anterior.',
       'Cada nodo guarda una copia y verifica lo que recibe.',
     ],
   },
