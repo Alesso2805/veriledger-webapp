@@ -1,5 +1,6 @@
 import { cubeFaces } from '../../lib/isometric';
 import type { Block } from '../../types/ledger';
+import { useT } from '../useT';
 
 const CX = 170;
 // Level 0 sits on the shadow; each block above it is 40 px higher.
@@ -16,9 +17,10 @@ interface Props {
 }
 
 export function TowerDrawing({ blocks, loading, focus, fresh, ghost, olderText }: Props) {
+  const t = useT();
   if (loading) {
     return (
-      <svg viewBox="0 0 440 560" role="img" aria-label="Loading blocks" className="w-full max-w-[440px] self-center">
+      <svg viewBox="0 0 440 560" role="img" aria-label={t.chain.drawingLoading} className="w-full max-w-[440px] self-center">
         {[0, 1, 2, 3, 4].map((level) => {
           const faces = cubeFaces(CX, levelTop(level));
           return (
@@ -34,9 +36,7 @@ export function TowerDrawing({ blocks, loading, focus, fresh, ghost, olderText }
   }
 
   const stack = [...blocks].reverse();
-  const label = stack.length
-    ? `Tower of the ${stack.length} newest blocks, #${stack[0].block_number} at the bottom and #${blocks[0].block_number} on top`
-    : 'No blocks yet';
+  const label = stack.length ? t.chain.drawingLabel(stack.length, stack[0].block_number, blocks[0].block_number) : t.chain.noBlocks;
   const ghostFaces = cubeFaces(CX, levelTop(stack.length));
 
   return (

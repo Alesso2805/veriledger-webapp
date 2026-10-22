@@ -1,8 +1,9 @@
 import { Link } from 'react-router';
-import { blocksOnTop } from '../../lib/transaction';
+import { useT } from '../useT';
 
 // The block that holds the transaction, linked to its place in the tower.
 export function SealedIn({ blockNumber, blockHash, above }: { blockNumber: number; blockHash: string; above: number }) {
+  const t = useT();
   return (
     <Link
       to={`/?block=${blockNumber}`}
@@ -14,10 +15,10 @@ export function SealedIn({ blockNumber, blockHash, above }: { blockNumber: numbe
         <polygon points="32,32 60,19 60,37 32,50" className="fill-vl-cube-right" />
       </svg>
       <span>
-        <span className="block text-[13px] text-vl-muted">Sealed in</span>{' '}
-        <span className="block text-[22px] font-bold">Block #{blockNumber}</span>{' '}
+        <span className="block text-[13px] text-vl-muted">{t.transaction.sealedIn.label}</span>{' '}
+        <span className="block text-[22px] font-bold">{t.transaction.sealedIn.block(blockNumber)}</span>{' '}
         <span className="block font-vl-mono text-[11px] text-vl-muted">
-          {blockHash.slice(0, 12)}… · {blocksOnTop(above)}
+          {blockHash.slice(0, 12)}… · {t.transaction.blocksOnTop(above)}
         </span>
       </span>
     </Link>

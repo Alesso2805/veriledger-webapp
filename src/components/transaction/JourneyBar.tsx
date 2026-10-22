@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { blocksOnTop, type Journey } from '../../lib/transaction';
+import type { Journey } from '../../lib/transaction';
+import { useT } from '../useT';
 
 interface Props {
   journey: Journey;
@@ -11,6 +12,8 @@ interface Props {
 
 // Signed → Accepted → Sealed → Buried, from the status, the block number and the height.
 export function JourneyBar({ journey, blockNumber, waiting, reward }: Props) {
+  const t = useT();
+  const words = t.transaction.journey;
   const [filled, setFilled] = useState(false);
 
   // The bar fills once the page has drawn, the page's one width transition (DESIGN.md › Motion map).
@@ -21,15 +24,15 @@ export function JourneyBar({ journey, blockNumber, waiting, reward }: Props) {
 
   const { reached, above } = journey;
   const steps: [string, string][] = [
-    reward ? ['Created', 'by the node that mined it'] : ['Signed', 'by the sender, in their browser'],
-    ['Accepted', reward ? 'with its block' : 'signature and balance checked'],
-    ['Sealed', blockNumber === null ? 'waiting for a miner' : `in block #${blockNumber}`],
-    ['Buried', above === null || above === 0 ? 'no blocks on top yet' : blocksOnTop(above)],
+    reward ? [words.created, words.createdHint] : [words.signed, words.signedHint],
+    [words.accepted, reward ? words.acceptedReward : words.acceptedHint],
+    [words.sealed, blockNumber === null ? words.sealedWaiting : words.sealedIn(blockNumber)],
+    [words.buried, above === null || above === 0 ? words.buriedNot : t.transaction.blocksOnTop(above)],
   ];
   const width = reached <= 1 ? 0 : ((reached - 1) / 3) * 100;
 
   return (
-    <section aria-label="Journey" className="mt-6 rounded-2xl border border-vl-line bg-vl-surface px-[22px] pt-[22px] pb-5">
+    <section aria-label={words.label} className="mt-6 rounded-2xl border border-vl-line bg-vl-surface px-[22px] pt-[22px] pb-5">
       <div className="relative px-2.5">
         <div aria-hidden="true" className="absolute top-[13px] right-[22px] left-[22px] h-1 rounded bg-vl-line">
           <div
@@ -56,7 +59,7 @@ export function JourneyBar({ journey, blockNumber, waiting, reward }: Props) {
                 </span>
                 <span className={`text-sm font-semibold ${done ? 'text-vl-text' : 'text-vl-muted'}`}>
                   {label}
-                  <span className="sr-only">{done ? ', done' : ', not yet'}</span>
+                  <span className="sr-only">{done ? words.done : words.notYet}</span>
                 </span>{' '}
                 <span className="text-[13px] text-vl-muted">{hint}</span>
               </li>
@@ -66,7 +69,7 @@ export function JourneyBar({ journey, blockNumber, waiting, reward }: Props) {
       </div>
       {waiting && (
         <p aria-live="polite" className="mt-4 animate-vl-pulse text-center text-sm text-vl-muted">
-          Waiting for the next block. This page checks again every 10 s.
+          {words.waiting}
         </p>
       )}
     </section>

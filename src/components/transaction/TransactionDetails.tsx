@@ -2,14 +2,7 @@ import { useEffect, useState } from 'react';
 import { formatAmount, shortHash, transactionKind } from '../../lib/format';
 import { checkSignature, type SignatureCheck } from '../../lib/transaction';
 import type { Transaction } from '../../types/ledger';
-
-const SIGNATURE_LINE: Record<SignatureCheck, string> = {
-  valid: 'Signature checked in this browser against the sender’s address',
-  invalid: 'The signature does not match this transaction and the sender’s address',
-  reward: 'A mining reward has no signature: the block’s proof of work seals it',
-  'no-nonce': 'Signed before nonces existed, so this browser cannot check it',
-  'cannot-rebuild': 'This browser cannot spell the amounts back as they were signed, so it cannot check it',
-};
+import { useT } from '../useT';
 
 function signatureIcon(check: SignatureCheck) {
   if (check === 'valid') {
@@ -29,6 +22,7 @@ function signatureIcon(check: SignatureCheck) {
 }
 
 export function TransactionDetails({ transaction }: { transaction: Transaction }) {
+  const words = useT().transaction.details;
   const [copied, setCopied] = useState(false);
   const check = checkSignature(transaction);
   const notarization = transactionKind(transaction) === 'Notarization';
@@ -49,14 +43,14 @@ export function TransactionDetails({ transaction }: { transaction: Transaction }
 
   const mono = 'font-vl-mono text-xs [overflow-wrap:anywhere]';
   const rows: [string, string, string][] = [
-    ['Hash', transaction.tx_hash ?? '—', mono],
-    ['From', shortHash(transaction.sender_address, 8, 16), mono],
-    ['To', notarization ? 'the same address' : shortHash(transaction.receiver_address, 8, 16), notarization ? 'text-sm' : mono],
-    ...(notarization ? [['Document', shortHash(transaction.payload ?? '', 8), mono] as [string, string, string]] : []),
-    ['Amount', `${formatAmount(transaction.amount)} VL`, 'font-vl-mono text-[13px]'],
-    ['Fee', `${formatAmount(transaction.fee)} VL`, 'font-vl-mono text-[13px]'],
-    ['Nonce', typeof transaction.nonce === 'number' ? String(transaction.nonce) : '—', 'font-vl-mono text-[13px]'],
-    ['Signature', check === 'reward' ? 'none' : `Ed25519 · ${shortHash(transaction.signature ?? '', 8, 12)}`, mono],
+    [words.hash, transaction.tx_hash ?? '—', mono],
+    [words.from, shortHash(transaction.sender_address, 8, 16), mono],
+    [words.to, notarization ? words.sameAddress : shortHash(transaction.receiver_address, 8, 16), notarization ? 'text-sm' : mono],
+    ...(notarization ? [[words.document, shortHash(transaction.payload ?? '', 8), mono] as [string, string, string]] : []),
+    [words.amount, `${formatAmount(transaction.amount)} VL`, 'font-vl-mono text-[13px]'],
+    [words.fee, `${formatAmount(transaction.fee)} VL`, 'font-vl-mono text-[13px]'],
+    [words.nonce, typeof transaction.nonce === 'number' ? String(transaction.nonce) : '—', 'font-vl-mono text-[13px]'],
+    [words.signature, check === 'reward' ? words.none : `Ed25519 · ${shortHash(transaction.signature ?? '', 8, 12)}`, mono],
   ];
 
   return (
@@ -65,7 +59,7 @@ export function TransactionDetails({ transaction }: { transaction: Transaction }
       className="min-w-0 flex-[999_1_560px] rounded-2xl border border-vl-line bg-vl-surface p-[22px]"
     >
       <h2 id="details-h" className="mb-3.5 text-[15px] font-semibold">
-        Details
+        {words.title}
       </h2>
       <dl className="grid grid-cols-[120px_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm">
         {rows.map(([label, value, className]) => (
@@ -78,14 +72,14 @@ export function TransactionDetails({ transaction }: { transaction: Transaction }
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2.5 border-t border-vl-line pt-3.5">
         <span className={`flex items-center gap-2 text-sm ${check === 'invalid' ? 'text-vl-danger' : ''}`}>
           {signatureIcon(check)}
-          {SIGNATURE_LINE[check]}
+          {words.check[check]}
         </span>
         <button
           type="button"
           onClick={copy}
           className="h-10 min-w-[150px] rounded-[10px] border border-vl-line px-3.5 text-sm font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
         >
-          {copied ? 'Link copied' : 'Copy link'}
+          {copied ? words.copied : words.copy}
         </button>
       </div>
     </section>

@@ -4,6 +4,7 @@ import { Certificate } from '../components/transaction/Certificate';
 import { JourneyBar } from '../components/transaction/JourneyBar';
 import { SealedIn } from '../components/transaction/SealedIn';
 import { TransactionDetails } from '../components/transaction/TransactionDetails';
+import { useLanguage, useT } from '../components/useT';
 import { formatSealed, transactionKind } from '../lib/format';
 import { journeyOf, transactionTitle } from '../lib/transaction';
 import { detailOf, statusOf } from '../services/api';
@@ -21,6 +22,9 @@ type View =
 
 // Artboard "E · Transacción y certificado" (VLW-29). Times are UTC, so the page says the same in every country.
 export function TransactionDetail() {
+  const t = useT();
+  const language = useLanguage();
+  const noAnswer = t.transaction.noAnswer;
   const { hash = '' } = useParams<{ hash: string }>();
   const [view, setView] = useState<View>({ phase: 'loading' });
   const online = useHealthStore((state) => state.online);
@@ -42,9 +46,9 @@ export function TransactionDetail() {
       if (!mounted.current) return;
       if (statusOf(error) === 404) setView({ phase: 'not-found' });
       // What is already on screen stays when a later read fails; the shell's banner explains an outage.
-      else setView((current) => (current.phase === 'found' ? current : { phase: 'failed', detail: detailOf(error, 'The API did not answer') }));
+      else setView((current) => (current.phase === 'found' ? current : { phase: 'failed', detail: detailOf(error, noAnswer) }));
     }
-  }, [hash]);
+  }, [hash, noAnswer]);
 
   useEffect(() => {
     mounted.current = true;
@@ -62,26 +66,26 @@ export function TransactionDetail() {
 
   return (
     <>
-      <nav aria-label="Breadcrumb" className="flex flex-wrap gap-2 text-[13px] text-vl-muted">
+      <nav aria-label={t.transaction.breadcrumb} className="flex flex-wrap gap-2 text-[13px] text-vl-muted">
         <Link to="/" className="text-vl-muted hover:text-vl-text">
-          Tower
+          {t.transaction.tower}
         </Link>
         <span aria-hidden="true">/</span>
         {blockNumber !== null && (
           <>
             <Link to={`/?block=${blockNumber}`} className="text-vl-muted hover:text-vl-text">
-              Block #{blockNumber}
+              {t.transaction.block(blockNumber)}
             </Link>
             <span aria-hidden="true">/</span>
           </>
         )}
         <span aria-current="page" className="text-vl-text">
-          Transaction
+          {t.transaction.transaction}
         </span>
       </nav>
 
       {(view.phase === 'loading' || (view.phase === 'failed' && online !== true)) && (
-        <div role="status" aria-label="Loading transaction" className="mt-6 flex flex-col gap-3">
+        <div role="status" aria-label={t.transaction.loading} className="mt-6 flex flex-col gap-3">
           <span className="h-9 w-[280px] max-w-full animate-vl-pulse rounded-lg bg-vl-surface" />
           <span className="h-24 animate-vl-pulse rounded-2xl bg-vl-surface" />
           <span className="h-[260px] animate-vl-pulse rounded-2xl bg-vl-surface" />
@@ -93,30 +97,29 @@ export function TransactionDetail() {
           role="alert"
           className="mt-6 flex animate-vl-fade-up flex-wrap items-center justify-between gap-3 rounded-[14px] border border-vl-danger bg-vl-surface px-[18px] py-4"
         >
-          <span>Can’t load this transaction: {view.detail.replace(/\.$/, '')}. Retrying every 10 s.</span>
+          <span>{t.transaction.cantLoad(view.detail.replace(/\.$/, ''))}</span>
           <button
             type="button"
             onClick={() => void load()}
             className="h-10 rounded-[10px] border border-vl-line px-3.5 text-sm font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
           >
-            Retry now
+            {t.shell.offline.retry}
           </button>
         </div>
       )}
 
       {view.phase === 'not-found' && (
         <section className="mt-10 max-w-[620px] animate-vl-fade-up">
-          <h1 className="text-[34px] font-bold tracking-[-0.02em]">No transaction with this hash on this node</h1>
+          <h1 className="text-[34px] font-bold tracking-[-0.02em]">{t.transaction.notFoundTitle}</h1>
           <p className="mt-2.5 font-vl-mono text-xs text-vl-muted [overflow-wrap:anywhere]">{hash}</p>
           <p className="mt-4 text-vl-muted">
-            It may still be on its way from another node, or it was refused when it was sent, so it was never recorded.
-            Rejected transactions leave no trace.
+            {t.transaction.notFoundText}
           </p>
           <Link
             to="/"
             className="mt-5 inline-flex h-11 items-center rounded-[10px] bg-vl-accent px-4 font-semibold text-vl-on-accent"
           >
-            Back to the tower
+            {t.transaction.back}
           </Link>
         </section>
       )}
@@ -125,9 +128,11 @@ export function TransactionDetail() {
         <>
           <section className="mt-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
             <div>
-              <p className="text-[13px] text-vl-muted">{transactionKind(transaction)}</p>
-              <h1 className="text-[36px] leading-[1.15] font-bold tracking-[-0.02em]">{transactionTitle(transaction)}</h1>
-              <p className="mt-1.5 font-vl-mono text-xs text-vl-muted">{formatSealed(transaction.timestamp, 'UTC')} UTC</p>
+              <p className="text-[13px] text-vl-muted">{t.kinds[transactionKind(transaction)]}</p>
+              <h1 className="text-[36px] leading-[1.15] font-bold tracking-[-0.02em]">{transactionTitle(transaction, t.transaction.titles)}</h1>
+              <p className="mt-1.5 font-vl-mono text-xs text-vl-muted">
+                {formatSealed(transaction.timestamp, 'UTC', language)} {t.transaction.utc}
+              </p>
             </div>
             {/* key: the chip fades in again when the status changes, as when a waiting transaction is sealed. */}
             <span
@@ -155,10 +160,10 @@ export function TransactionDetail() {
                 />
               </svg>
               {transaction.status === 'CONFIRMED' && blockNumber !== null
-                ? `In block #${blockNumber}`
+                ? t.transaction.chips.sealed(blockNumber)
                 : transaction.status === 'FAILED'
-                  ? 'Failed'
-                  : 'Waiting'}
+                  ? t.transaction.chips.failed
+                  : t.transaction.chips.waiting}
             </span>
           </section>
 

@@ -5,6 +5,7 @@ import { PublicRoute } from '../components/RouteGuards';
 import { InvalidCredentialsError, login, startDemo } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
+import { usePreferencesStore } from '../store/usePreferencesStore';
 import type { LoginRedirectState } from '../types/session';
 import { Login } from './Login';
 
@@ -44,10 +45,24 @@ function signIn() {
 
 describe('Login', () => {
   beforeEach(() => {
+    usePreferencesStore.setState({ language: 'en' });
     useAppStore.setState({ token: null });
     useHealthStore.setState({ demoMode: false });
     vi.mocked(login).mockReset();
     vi.mocked(startDemo).mockReset();
+  });
+
+  it('speaks Spanish when that is the language', () => {
+    usePreferencesStore.setState({ language: 'es' });
+    useHealthStore.setState({ demoMode: true });
+    renderLogin({ reason: 'expired' });
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Iniciar sesión' })).toBeInTheDocument();
+    expect(screen.getByText('Tu sesión expiró. Inicia sesión de nuevo para seguir donde estabas.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Correo electrónico')).toBeInTheDocument();
+    expect(screen.getByLabelText('Contraseña')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Probar la demo · sin cuenta' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Explorar la torre sin cuenta →' })).toHaveAttribute('href', '/');
   });
 
   it('starts a demo with one click and returns to the page the visitor was on', async () => {
