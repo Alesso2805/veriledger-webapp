@@ -24,6 +24,10 @@ function LoginProbe() {
   return <p>login page, back to {from ? `${from.pathname}${from.search ?? ''}` : 'nowhere'}</p>;
 }
 
+function Broken(): never {
+  throw new Error('drawing failed');
+}
+
 function renderShell(path = '/wallet') {
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -33,6 +37,7 @@ function renderShell(path = '/wallet') {
           <Route path="/" element={<p>tower page</p>} />
           <Route path="/wallet" element={<p>wallet page</p>} />
           <Route path="/transaction/:hash" element={<p>transaction page</p>} />
+          <Route path="/broken" element={<Broken />} />
         </Route>
       </Routes>
       <CurrentPath />
@@ -184,5 +189,40 @@ describe('Layout (the shell)', () => {
 
     expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main');
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main');
+  });
+
+  it('keeps the shell when a page throws while drawing, and leaves that page for the tower (VLW-35)', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    renderShell('/broken');
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'This page ran into a problem' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument();
+    await apiStatus('api · online');
+    await expect(document.body).toPassAxe();
+
+    fireEvent.click(screen.getByRole('link', { name: 'Back to the tower' }));
+
+    expect(await screen.findByText('tower page')).toBeInTheDocument();
+    expect(screen.queryByText('This page ran into a problem')).not.toBeInTheDocument();
+    vi.mocked(console.error).mockRestore();
+  });
+
+  it('offers only "Try again" when the page that failed is the tower', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Broken />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'This page ran into a problem' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Back to the tower' })).not.toBeInTheDocument();
+    await apiStatus('api · online');
+    vi.mocked(console.error).mockRestore();
   });
 });

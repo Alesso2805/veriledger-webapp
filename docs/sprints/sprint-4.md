@@ -39,6 +39,10 @@
 - **The server** (product owner, 2026-10-21): a VM on Google Cloud, with a DuckDNS subdomain, set up by the product owner, and deployed with the API's runbook.
 - **The image's files are built natively.** The Image workflow usually takes about 3 minutes, but two pull request runs hung for 30 minutes and were cancelled, in the arm64 build that ran `npm ci` under QEMU. The Node stage now runs on the build machine's own platform (`--platform=$BUILDPLATFORM`), since its output is the same static files for every architecture. Only the Caddy stage runs per target; a local arm64 build passed the smoke test.
 - **No server yet** (product owner, 2026-10-21). VLW-25 is prepared and rehearsed locally, like the API's VLA-27, and the real deployment waits for the product owner. The webapp's image is published to GHCR, public like the API's, so the API's Compose can run it behind Caddy (VLW-25a).
+- **Nothing blanks the app any more** (product owner, 2026-10-21). Letters past `f` in the wallet's look-up blanked the whole page (#53). An audit then read every function that runs while a page draws, and fuzzed Chromium, WebKit and Firefox with 795 checks.
+  - Nothing a person types, opens or navigates to blanked a page. Five cases from stored or server data did, and #54 fixed them.
+  - Two stories joined the sprint: VLW-35, a fallback for any future throw while drawing, and VLW-36, the fuzzer in CI.
+  - The push of #54's merge started no workflows on `main`, so no `sha-ba528f1` image exists. The product owner chose to let the next merge publish one.
 
 ## Changes to the specification in this sprint
 
