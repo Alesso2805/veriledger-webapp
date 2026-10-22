@@ -21,7 +21,7 @@ export function shortHash(value: string, tail = 4, head = 8): string {
   return value.length > head + tail + 2 ? `${value.slice(0, head)}…${value.slice(-tail)}` : value;
 }
 
-// The leading zeros are the proof of work, which the tower highlights.
+// The leading zeros are the proof of work, which the chain highlights.
 export function splitProofOfWork(hash: string): [zeros: string, rest: string] {
   const zeros = hash.length - hash.replace(/^0+/, '').length;
   return [hash.slice(0, zeros), hash.slice(zeros)];
