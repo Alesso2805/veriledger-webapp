@@ -1,40 +1,52 @@
 # Changelog
 
-What changes in the VeriLedger webapp, release by release. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/). Version 1.0.0 is the first release (VLW-26); until then everything is under Unreleased. The stories (VLW-NN) are in [docs/BACKLOG.md](docs/BACKLOG.md).
+What changes in the VeriLedger webapp, release by release. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/). The stories (VLW-NN) are in [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-22
+
+The first release: design C, in English and Spanish and in light and dark themes. It is live at [veriledger.duckdns.org](https://veriledger.duckdns.org), with the API's 1.0.0.
+
 ### Added
 
-- **An MIT license** and **a security policy**: vulnerabilities are reported privately, through GitHub (VLW-49).
-- **A README for visitors**, with the live demo and what to try (VLW-49).
-
-- **Design E** ("Network") on every page: the tokens, the fonts, and the shell with its search, the API's status, the user chip, a skip link and toasts. Routes fade in, and reduced motion is respected (VLW-27, VLW-33).
-- **Sign in.** It says when a session has expired and returns to the page you were on (VLW-17, VLW-33).
-- **The block tower.**
-  - The newest 10 blocks are drawn as a tower, older blocks are listed below, and the selected block shows its transactions.
-  - What waits for the next block is listed too, and everything refreshes every 10 s.
-  - Mining, for the trader and admin roles (VLW-28).
-- **Sign and send.**
-  - Keys are made in the browser and held only in the tab.
-  - The API's canonical message is signed in the browser with Ed25519 and the sender's nonce.
-  - It sends transfers and notarizations, and handles the API's refusals (VLW-15, VLW-16, VLW-18, VLW-30).
-- **A transaction's page.** Its journey, its details with the signature checked in the browser, and a notarization's certificate with "Check a file against it" (VLW-29).
-- **The wallet.** Create a key or open a key file, the address's identity cube, saving the key file, the address's activity, and a look-up of any address (VLW-31).
+- **Design C ("Fingerprint")** on every page (VLW-37 to VLW-47, ADR-0006 to ADR-0008):
+  - every hash and address is drawn as a fingerprint: coloured bars, one per byte;
+  - light and dark themes, which follow the system or your choice and are set before the first paint;
+  - English and Spanish, from typed dictionaries, with the API's known errors translated;
+  - the shell: search, the API's status, the user chip, the theme and language switches, tabs, a skip link, toasts, and the offline and no-database banners.
+- **Sign in.** It says when a session or a demo has ended, and returns to the page you were on. **Try the demo** starts a 24-hour account with one click (VLW-17, VLW-34, VLW-42).
+- **The chain:**
+  - the newest 10 blocks as a ribbon of fingerprints; pointing at one lights the fingerprint it links to;
+  - the selected block and older blocks;
+  - what waits for the next block;
+  - mining, for the trader and admin roles (VLW-28, VLW-43).
+- **Sign and send** (VLW-15, VLW-16, VLW-18, VLW-30, VLW-45):
+  - keys made in the browser and held only in the tab;
+  - the API's canonical message, shown before it is signed with Ed25519 and the sender's nonce;
+  - transfers and notarizations, with the document hashed in the browser;
+  - the API's refusals explained.
+- **A transaction's page.** Its journey, its signature checked in the browser, and the block that seals it. A notarization also gets its certificate, which checks a file in the browser (VLW-29, VLW-44).
+- **The wallet:**
+  - create a key, or open a key file, and save the file;
+  - the address's fingerprint, balance and activity;
+  - a look-up of any address (VLW-31, VLW-46).
 - **Search** by block number or full hash (VLW-19).
-- **The network.** The peers on a ring, adding a peer, and resolving conflicts (VLW-32).
-- **Visitors and the demo.** Visitors browse the tower, transactions and peers without an account, and start a 24-hour demo account with one click (VLW-34).
-- **"no database".** Shown when the API answers but its database does not (the API's VLA-26).
-- **The production image.**
-  - One image for any hostname, with `/config.json` written at start and strict security headers (VLW-21, VLW-22).
-  - Published to GHCR for amd64 and arm64 (VLW-25).
-- **Checks in CI:**
+- **The network.** This node and its peers on a ring map; adding a peer and resolving conflicts, for the admin (VLW-32, VLW-47).
+- **Visitors** browse the chain, transactions and peers without an account (VLW-34).
+- **No blank pages.** A page that throws while drawing shows a fallback with "Try again" (VLW-35).
+- **The production image** (VLW-21, VLW-22, VLW-25):
+  - one image for any hostname, with `/config.json` written at start;
+  - strict security headers;
+  - built for amd64 and arm64 and published to GHCR.
+- **Checks in CI** (VLW-10 to VLW-13, VLW-19, VLW-23, VLW-24, VLW-36, VLW-48):
   - unit and component tests;
-  - the architecture rules;
+  - the architecture rules AR-01 to AR-11;
   - types generated from the API's OpenAPI document;
-  - accessibility with axe at 1280 and 360 px;
-  - the main flows end to end against the API (VLW-10 to VLW-13, VLW-19, VLW-23, VLW-24).
-- **The page title "VeriLedger"**, and the logo as the favicon (VLW-26).
+  - accessibility and robustness in a real browser at 1280 and 360 px, in light in English and in dark in Spanish;
+  - the main flows end to end against the API, and again behind its production Caddy.
+- **The page title "VeriLedger"**, and the logo as the favicon (VLW-26, VLW-41).
+- **An MIT license, a security policy, and a README for visitors** with screenshots of the live demo (VLW-26, VLW-49).
 
 ### Changed
 
@@ -44,3 +56,6 @@ What changes in the VeriLedger webapp, release by release. The format follows [K
 ### Removed
 
 - The neon styles of the first version (VLW-27, VLW-32).
+
+[Unreleased]: https://github.com/Alesso2805/veriledger-webapp/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Alesso2805/veriledger-webapp/releases/tag/v1.0.0
