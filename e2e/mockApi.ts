@@ -5,6 +5,7 @@ import type { Page, Route } from '@playwright/test';
 // is the API's own "transfer" vector, so the transaction page verifies its signature as it would for real.
 const vectors = JSON.parse(readFileSync(new URL('../src/lib/__fixtures__/signing-vectors.json', import.meta.url), 'utf8'));
 const transfer = vectors.vectors.find((vector: { name: string }) => vector.name === 'transfer');
+const notarization = vectors.vectors.find((vector: { name: string }) => vector.name === 'notarization');
 
 export const ADDRESS: string = transfer.public_key;
 const OTHER: string = transfer.fields.receiver_address;
@@ -18,6 +19,8 @@ const blockHash = (n: number) =>
     .join('')}`;
 const rewardHash = (n: number) => `c0${n.toString(16).padStart(62, '0')}`;
 export const TRANSFER_HASH = 'b1'.repeat(32);
+export const NOTARIZATION_HASH = 'e0'.repeat(32);
+const NOTARIZED = 9;
 
 const reward = (n: number) => ({
   id: `r${n}`,
@@ -53,9 +56,27 @@ const sealedTransfer = {
   block_hash: blockHash(TOP),
 };
 
+// The API's "notarization" vector, sealed in block #9, so the certificate is drawn on ink.
+const sealedNotarization = {
+  ...sealedTransfer,
+  id: 't3',
+  sender_address: notarization.fields.sender_address,
+  receiver_address: notarization.fields.receiver_address,
+  amount: 0,
+  timestamp: time(NOTARIZED),
+  signature: notarization.signature,
+  tx_hash: NOTARIZATION_HASH,
+  payload: notarization.fields.payload,
+  nonce: notarization.fields.nonce,
+  block_id: `b${NOTARIZED}`,
+  block_number: NOTARIZED,
+  block_hash: blockHash(NOTARIZED),
+};
+
 const waiting = { ...sealedTransfer, id: 't2', status: 'PENDING', tx_hash: 'b2'.repeat(32), nonce: 2, block_id: null, block_number: null, block_hash: null };
 
-const blockTransactions = (n: number) => (n === TOP ? [reward(n), sealedTransfer] : [reward(n)]);
+const blockTransactions = (n: number) =>
+  n === TOP ? [reward(n), sealedTransfer] : n === NOTARIZED ? [reward(n), sealedNotarization] : [reward(n)];
 const block = (n: number) => ({
   id: `b${n}`,
   block_number: n,
@@ -109,7 +130,7 @@ export async function mockApi(target: Page, role?: Role) {
     if (path === '/transactions') return answer(route, page([waiting], skip, limit));
     const txMatch = /^\/transactions\/([0-9a-f]{64})$/.exec(path);
     if (txMatch) {
-      const found = [sealedTransfer, waiting, ...blocks.map((b) => reward(b.block_number))].find((tx) => tx.tx_hash === txMatch[1]);
+      const found = [sealedTransfer, sealedNotarization, waiting, ...blocks.map((b) => reward(b.block_number))].find((tx) => tx.tx_hash === txMatch[1]);
       return found ? answer(route, found) : answer(route, { detail: 'Transaction not found' }, 404);
     }
     const walletMatch = /^\/wallets\/([0-9a-f]{64})\/(balance|nonce|transactions)$/.exec(path);

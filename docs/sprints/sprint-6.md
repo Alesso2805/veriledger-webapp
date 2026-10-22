@@ -19,8 +19,8 @@
 
 | Story | PRs | Result | Verification |
 | --- | --- | --- | --- |
-| VLW-43 | this PR | The chain in design C, replacing the tower. The ribbon of the newest 10 blocks, each tile with its fingerprint and the fingerprint it links to; pointing at a tile lights the link, and a caption explains it; the dashed next tile counts the mining time. The detail with the block's fingerprint, the list, the mine card (it starts with the address of the key held in the tab), the waiting list with avatars, and "How to read a fingerprint". `fingerprint.ts` gains `afterProofOfWork`; `isometric.ts` and the tower's components are gone | `/` at 1440, 768 and 360 px, light and dark, English and Spanish: point at a tile and its link lights; mine a block and its tile slides in |
-| VLW-44 | — | — | — |
+| VLW-43 | #67 | The chain in design C, replacing the tower. The ribbon of the newest 10 blocks, each tile with its fingerprint and the fingerprint it links to; pointing at a tile lights the link, and a caption explains it; the dashed next tile counts the mining time. The detail with the block's fingerprint, the list, the mine card (it starts with the address of the key held in the tab), the waiting list with avatars, and "How to read a fingerprint". `fingerprint.ts` gains `afterProofOfWork`; `isometric.ts` and the tower's components are gone | `/` at 1440, 768 and 360 px, light and dark, English and Spanish: point at a tile and its link lights; mine a block and its tile slides in |
+| VLW-44 | this PR | The transaction and its certificate in design C. The journey on a card, the status chip on `ok-soft`, `wait-soft` or `danger-soft`, the details with the mint signature check, "Sealed in" with the block's fingerprint and "N blocks link back to it". The certificate on ink: the document's fingerprint over its hash in groups, and a checked file's fingerprint under the certified one, so a mismatch shows bar by bar. The mocked API gains a sealed notarization, so the accessibility pass draws the certificate | `/transaction/<hash>` of a transfer and of a notarization at 1440, 768 and 360 px, light and dark, English and Spanish: check the original file (Match) and an edited one (No match, its bars differ) |
 | VLW-45 | — | — | — |
 | VLW-46 | — | — | — |
 | VLW-47 | — | — | — |
@@ -32,9 +32,13 @@
 - **A tile of the ribbon is named by its content** (VLW-43). A label of its own ("Block #11, 2 txs") hid the tile's visible text from its name, which axe reports. The content is ordered to be read as "#11 16:34 0000a3f19c… · 2 txs, links to #10", and order classes draw the link on top, as the canvas does.
 - **The mocked API's hashes look like a chain's** (VLW-43): the proof of work's four zeros, then hex that changes from block to block, so the fingerprints in the accessibility pass and in screenshots are like a real node's.
 
+- **A fingerprint on ink is ringed with `ink-line`** (VLW-44). `fp-ring` is nearly transparent in the light theme, so the ink bar of a document's fingerprint vanished on the certificate's ink panel; the legend already used `ink-line`.
+- **The mocked API has a sealed notarization** (VLW-44), the API's own "notarization" vector in block #9, so the accessibility pass checks the certificate on ink, which no other case draws.
+
 ## Changes to the specification in this sprint
 
 - The tower becomes the chain (VLW-43).
+- The transaction page in design C (VLW-44).
 
 ## Retro
 

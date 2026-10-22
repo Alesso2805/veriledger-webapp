@@ -76,6 +76,8 @@ describe('TransactionDetail', () => {
     expect(screen.getByText('21 oct 2026 · 15:00:00 UTC')).toBeInTheDocument();
     expect(screen.getByText('En el bloque #3')).toBeInTheDocument();
     expect(step('Enterrada, hecho')).toBeInTheDocument();
+    expect(screen.getByText('2 bloques después')).toBeInTheDocument();
+    expect(screen.getByText('2 bloques lo enlazan')).toBeInTheDocument();
     expect(screen.getByText('Firma verificada en este navegador con la dirección del remitente')).toBeInTheDocument();
   });
 
@@ -89,9 +91,10 @@ describe('TransactionDetail', () => {
     expect(screen.getByText('In block #3')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Block #3' })).toHaveAttribute('href', '/?block=3');
     expect(step('Buried, done')).toBeInTheDocument();
-    expect(screen.getAllByText('2 blocks on top').length).toBeGreaterThan(0);
+    // The journey's hint and the "Sealed in" card say it the same way.
+    expect(screen.getAllByText('2 blocks link back to it')).toHaveLength(2);
     expect(screen.getByText('Signature checked in this browser against the sender’s address')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Sealed in Block #3/ })).toHaveAttribute('href', '/?block=3');
+    expect(screen.getByRole('link', { name: /^Sealed in 2 blocks link back to it Block #3/ })).toHaveAttribute('href', '/?block=3');
   });
 
   it('says so when the stored transaction does not match its signature', async () => {
@@ -178,6 +181,9 @@ describe('TransactionDetail', () => {
     const chooser = screen.getByLabelText(/Choose a file/);
     fireEvent.change(chooser, { target: { files: [new File(['abc'], 'contract.txt')] } });
     expect(await screen.findByText('contract.txt is exactly the certified document.')).toBeInTheDocument();
+    expect(screen.getByText('Its fingerprint, sealed in block #3')).toBeInTheDocument();
+    expect(screen.getByText('Certified')).toBeInTheDocument();
+    expect(screen.getByText('contract.txt')).toBeInTheDocument();
 
     fireEvent.change(chooser, { target: { files: [new File(['abd'], 'contract (edited).txt')] } });
     expect(await screen.findByText('No match')).toBeInTheDocument();

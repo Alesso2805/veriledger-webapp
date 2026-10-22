@@ -362,7 +362,7 @@ Each view lists its artboard, its data and the stories that build it. Its texts 
 - **Times are UTC** on this page (product owner, 2026-10-21), so a certificate says the same in every country and language. The chain shows the reader's own time.
 - **Breadcrumb:** Chain / Block #n / Transaction.
 - **Header:** the kind, a title ("5.00 VL from 1bf8…0e42 to 7c2d…e51b", "A document notarized by …", "A document waiting to be sealed", "A mining reward of … to …"), the time, and a chip: "In block #n" on `ok-soft`, "Waiting" on `wait-soft`, or "Failed" on `danger-soft`.
-- **Journey:** Signed → Accepted → Sealed in block #n → Buried, from `status`, `block_number` and the height. It is Buried once one block rests on its block, with "N blocks after it".
+- **Journey:** Signed → Accepted → Sealed in block #n → Buried, from `status`, `block_number` and the height. It is Buried once one block rests on its block, with "N blocks link back to it" ("N bloques después").
   - A mining reward is never signed by a person. Its first steps read "Created · by the node that mined it" and "Accepted · with its block" (2026-10-21; the artboard has no reward example).
   - The bar fills once on mount, and each step reached pops. A screen reader hears each step with "done" or "not yet". At 360 px the hints are hidden and the four labels stay.
   - Waiting: "Waiting for the next block. This page checks again every 10 s." pulses under it.
@@ -488,7 +488,7 @@ export function fingerprint(hex: string, bars: number): (string | null)[] {
 - **An address** shows its first 12 bytes in the wallet, its first 8 in "Signing as", and its first 4 as a 2×2 avatar in lists.
 - **A signature** shows its first 16 bytes, and **a document** its first 8.
 - **A peer** has no key; its 2×2 avatar comes from a hash of its URL ([Network](#network--network)).
-- **Every bar** has a 1 px inset ring of `fp-ring`, so the ink bar shows on dark cards and the cobalt one on ink.
+- **Every bar** has a 1 px inset ring of `fp-ring`, so the ink bar shows on dark cards and the cobalt one on ink. On an ink panel (the certificate, the legend) the ring is `ink-line`, so the ink bar shows there in the light theme too.
 - **The fingerprint is decoration** next to the number, hash or address, never instead of it: it is `aria-hidden`, and the text beside it carries the meaning. Two blocks rarely look alike, but someone who cannot tell the colours apart reads the same thing in the number and the hash.
 - **The legend** ("How to read a fingerprint") names the colours in the page's language: cobalt, tangerine, mint, lemon, ink, sky, coral, lilac; cobalto, mandarina, menta, limón, tinta, cielo, coral, lila.
 
