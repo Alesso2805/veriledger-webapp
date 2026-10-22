@@ -23,10 +23,10 @@ const createWallet = async (page: Page) => {
 };
 
 const cases: Case[] = [
-  // No shell: email, password, "Sign in", "Try the demo" and the link to the tower.
+  // No shell: the two switches, email, password, "Sign in", "Try the demo" and the link to the chain.
   { name: 'login', path: '/login', ready: (page) => page.getByRole('heading', { name: 'Sign in' }), controls: 5 },
-  { name: 'tower, visitor', path: '/', ready: (page) => page.getByRole('button', { name: /^Block #11 / }) },
-  { name: 'tower, trader', path: '/?block=11', role: 'trader', ready: (page) => page.getByRole('button', { name: /^Mine block #12/ }) },
+  { name: 'chain, visitor', path: '/', ready: (page) => page.getByRole('button', { name: /^Block #11 / }) },
+  { name: 'chain, trader', path: '/?block=11', role: 'trader', ready: (page) => page.getByRole('button', { name: /^Mine block #12/ }) },
   { name: 'transaction, visitor', path: `/transaction/${TRANSFER_HASH}`, ready: (page) => page.getByRole('heading', { name: 'Details' }) },
   { name: 'transaction, viewer', path: `/transaction/${TRANSFER_HASH}`, role: 'viewer', ready: (page) => page.getByRole('heading', { name: 'Details' }) },
   { name: 'network, visitor', path: '/network', ready: (page) => page.getByRole('heading', { name: 'Registered peers · 2' }) },

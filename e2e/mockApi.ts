@@ -11,7 +11,11 @@ const OTHER: string = transfer.fields.receiver_address;
 const TOP = 11;
 
 const time = (minute: number) => new Date(Date.UTC(2026, 9, 21, 12, minute)).toISOString();
-const blockHash = (n: number) => `0000${n.toString(16).padStart(60, '0')}`;
+// A sealed hash: the proof of work's four zeros, then hex that changes from block to block, as a real chain's does.
+const blockHash = (n: number) =>
+  `0000${Array.from({ length: 60 }, (_, i) => ((n * 2654435761 + i * 40503) >>> (i % 24)) % 16)
+    .map((digit) => digit.toString(16))
+    .join('')}`;
 const rewardHash = (n: number) => `c0${n.toString(16).padStart(62, '0')}`;
 export const TRANSFER_HASH = 'b1'.repeat(32);
 

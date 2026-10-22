@@ -4,7 +4,6 @@ import { useT } from '../useT';
 // Counts in the browser since the last answer. Not a live region: a screen reader would read it every second.
 export function Freshness({ updatedAt, retrying }: { updatedAt: number | null; retrying: boolean }) {
   const words = useT().chain.freshness;
-  const ago = (seconds: number) => (seconds < 60 ? words.secondsAgo(seconds) : words.minutesAgo(Math.floor(seconds / 60)));
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -12,6 +11,7 @@ export function Freshness({ updatedAt, retrying }: { updatedAt: number | null; r
     return () => clearInterval(timer);
   }, []);
 
+  const ago = (seconds: number) => (seconds < 60 ? words.secondsAgo(seconds) : words.minutesAgo(Math.floor(seconds / 60)));
   let text: string;
   if (updatedAt === null) {
     text = retrying ? words.notLoaded : words.loading;
@@ -20,5 +20,5 @@ export function Freshness({ updatedAt, retrying }: { updatedAt: number | null; r
     text = retrying ? words.lastUpdate(ago(seconds)) : words.updated(seconds);
   }
 
-  return <p className="mt-1 font-vl-mono text-xs text-vl-muted">{text}</p>;
+  return <p className="mt-2 font-vl-mono text-[13px] text-vl-muted">{text}</p>;
 }

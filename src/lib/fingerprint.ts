@@ -12,3 +12,9 @@ export function fingerprint(hex: string, bars: number): (string | null)[] {
     return /^[0-9a-f]{2}$/.test(byte) ? PALETTE[parseInt(byte, 16) % 8] : null;
   });
 }
+
+// A block's fingerprint is drawn from the bytes after its leading zeros: the zeros are the proof of work, the same in
+// every block (DESIGN.md › Fingerprints). The genesis block's previous_hash is all zeros, so it links to nothing.
+export function afterProofOfWork(hash: string): string {
+  return hash.replace(/^0+/, '');
+}

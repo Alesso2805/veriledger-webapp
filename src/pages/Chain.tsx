@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { BlockDetail } from '../components/tower/BlockDetail';
-import { BlockList, type OlderState } from '../components/tower/BlockList';
-import { Freshness } from '../components/tower/Freshness';
-import { MineCard } from '../components/tower/MineCard';
-import { TowerDrawing } from '../components/tower/TowerDrawing';
-import { WaitingList } from '../components/tower/WaitingList';
+import { BlockDetail } from '../components/chain/BlockDetail';
+import { BlockList, type OlderState } from '../components/chain/BlockList';
+import { ChainRibbon } from '../components/chain/ChainRibbon';
+import { FingerprintLegend } from '../components/chain/FingerprintLegend';
+import { Freshness } from '../components/chain/Freshness';
+import { MineCard } from '../components/chain/MineCard';
+import { WaitingList } from '../components/chain/WaitingList';
 import { useStartDemo } from '../components/useStartDemo';
 import { useLanguage, useT } from '../components/useT';
 import { mergeBlocks } from '../lib/chain';
-import { formatAmount, formatClock, formatCount } from '../lib/format';
+import { afterProofOfWork } from '../lib/fingerprint';
+import { formatAmount, formatClock, formatCount, formatSeconds } from '../lib/format';
 import type { Messages } from '../lib/i18n';
 import { detailOf } from '../services/api';
 import { getBlock, getBlocks, getPendingTransactions, mineBlock } from '../services/ledger';
@@ -18,7 +20,7 @@ import { useHealthStore } from '../store/useHealthStore';
 import { useToastStore } from '../store/useToastStore';
 import type { Block, Transaction } from '../types/ledger';
 
-const TOWER_SIZE = 10;
+const RIBBON_SIZE = 10;
 const WAITING_SHOWN = 10;
 const POLL_MS = 10_000;
 
@@ -32,14 +34,29 @@ interface Chain {
 
 const blockNumber = (value: string | null) => (value !== null && /^\d+$/.test(value) ? Number(value) : null);
 
-function olderText(tower: Block[], lowest: number | undefined, t: Messages): string {
-  const bottom = tower[tower.length - 1]?.block_number ?? 0;
+function olderText(ribbon: Block[], lowest: number | undefined, t: Messages): string {
+  const bottom = ribbon[ribbon.length - 1]?.block_number ?? 0;
   if (bottom === 0) return '';
-  if (lowest === 0) return t.chain.olderAll;
-  return bottom === 1 ? t.chain.olderOne : t.chain.olderMany(bottom);
+  if (lowest === 0) return t.chain.ribbon.olderAll;
+  return bottom === 1 ? t.chain.ribbon.olderOne : t.chain.ribbon.olderMany(bottom);
 }
 
-export function Tower() {
+// The API answers only when the block is sealed, so the time since the request left is the only progress to show.
+function useElapsed(running: boolean): number {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!running) return;
+    const started = performance.now();
+    setElapsed(0);
+    const timer = setInterval(() => setElapsed(performance.now() - started), 100);
+    return () => clearInterval(timer);
+  }, [running]);
+  return elapsed;
+}
+
+// Artboard "C · La cadena" (VLW-43): the ribbon of fingerprints, the selected block, the list, and beside them
+// mining, what waits for the next block and how to read a fingerprint.
+export function Chain() {
   const t = useT();
   const language = useLanguage();
   // The latest texts for callbacks that outlive a render, such as the poll's toast.
@@ -55,6 +72,7 @@ export function Tower() {
   const [peek, setPeek] = useState<number | null>(null);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [mining, setMining] = useState(false);
+  const elapsed = useElapsed(mining);
   const [params, setParams] = useSearchParams();
   const online = useHealthStore((state) => state.online);
   const databaseDown = useHealthStore((state) => state.databaseDown);
@@ -75,7 +93,7 @@ export function Tower() {
     inFlight.current = true;
     const sent = generation.current;
     try {
-      const [page, waiting] = await Promise.all([getBlocks(0, TOWER_SIZE), getPendingTransactions(0, WAITING_SHOWN)]);
+      const [page, waiting] = await Promise.all([getBlocks(0, RIBBON_SIZE), getPendingTransactions(0, WAITING_SHOWN)]);
       if (!mounted.current || generation.current !== sent) return;
       const previous = chainRef.current;
       const next = {
@@ -87,7 +105,7 @@ export function Tower() {
       chainRef.current = next;
       setChain(next);
       setFailure(null);
-      // The first answer only fills the tower; later ones announce the blocks that joined since.
+      // The first answer only fills the ribbon; later ones announce the blocks that joined since.
       const before = previous?.blocks[0]?.block_number ?? -1;
       const top = page.items[0]?.block_number ?? -1;
       if (previous && top > before) {
@@ -143,7 +161,7 @@ export function Tower() {
     if (!current || lowest === undefined) return;
     setLoadingOlder(true);
     try {
-      const page = await getBlocks(current.blocks[0].block_number - lowest + 1, TOWER_SIZE);
+      const page = await getBlocks(current.blocks[0].block_number - lowest + 1, RIBBON_SIZE);
       const latest = chainRef.current ?? current;
       const next = { ...latest, blocks: mergeBlocks(latest.blocks, page.items, false) };
       chainRef.current = next;
@@ -188,9 +206,10 @@ export function Tower() {
 
   const loading = chain === null;
   const nextNumber = chain === null ? null : (top ?? -1) + 1;
-  const tower = blocks.slice(0, TOWER_SIZE);
+  const ribbon = blocks.slice(0, RIBBON_SIZE);
   const lowest = blocks[blocks.length - 1]?.block_number;
   const older: OlderState = lowest === 0 ? 'all' : loadingOlder ? 'loading' : 'more';
+  const seconds = formatSeconds(elapsed, language);
   const stats = [
     { label: t.chain.stats.height, value: top ?? '—', pops: true },
     { label: t.chain.stats.waiting, value: chain?.waitingTotal ?? '—', pops: true },
@@ -199,21 +218,18 @@ export function Tower() {
 
   return (
     <>
-      <section className="mb-6 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
-        <div>
-          <h1 className="text-[30px] font-bold tracking-[-0.02em]">{t.chain.title}</h1>
+      <section className="mb-[22px] flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+        <div className="min-w-0">
+          <h1 className="text-[56px] leading-none font-extrabold tracking-[-0.035em] max-sm:text-[40px]">{t.chain.title}</h1>
           <Freshness updatedAt={chain?.updatedAt ?? null} retrying={failure !== null} />
         </div>
-        <dl className="flex gap-7">
+        <dl className="grid min-w-[min(420px,100%)] grid-cols-3 gap-2">
           {stats.map((stat) => (
-            <div key={stat.label}>
+            <div key={stat.label} className="flex flex-col justify-between rounded-[18px] bg-vl-surface px-4 py-3">
               <dt className="text-[13px] text-vl-muted">{stat.label}</dt>
-              <dd className="font-vl-mono text-[28px] font-medium">
+              <dd className="text-[34px] leading-[1.15] font-extrabold tracking-[-0.03em] tabular-nums">
                 {/* A new key replays the pop when a block arrives, and only then. */}
-                <span
-                  key={stat.pops ? arrivals : undefined}
-                  className={`inline-block ${stat.pops && arrivals > 0 ? 'animate-vl-pop' : ''}`}
-                >
+                <span key={stat.pops ? arrivals : undefined} className={`inline-block ${stat.pops && arrivals > 0 ? 'animate-vl-pop' : ''}`}>
                   {stat.value}
                 </span>
               </dd>
@@ -226,10 +242,10 @@ export function Tower() {
       {failure !== null && online === true && (
         <div
           role="alert"
-          className="mb-5 flex animate-vl-fade-up flex-wrap items-center justify-between gap-3 rounded-[14px] border border-vl-danger bg-vl-surface px-[18px] py-4"
+          className="mb-5 flex animate-vl-fade-up flex-wrap items-center justify-between gap-3 rounded-[18px] bg-vl-danger-soft px-[18px] py-3.5"
         >
           <span className="flex items-center gap-2.5">
-            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="shrink-0 fill-none stroke-vl-danger" strokeWidth="1.5">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="shrink-0 fill-none stroke-vl-danger" strokeWidth="1.6">
               <path d="M9 2l7.5 13h-15z" />
               <path d="M9 7v3.5M9 12.5v.5" />
             </svg>
@@ -237,35 +253,46 @@ export function Tower() {
               {t.chain.cantLoad(failure.replace(/\.$/, ''))} {chain ? t.chain.keptLast : t.chain.retrying}
             </span>
           </span>
-          <button
-            type="button"
-            onClick={() => void refresh()}
-            className="h-10 rounded-[10px] border border-vl-line px-3.5 text-sm font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
-          >
+          <button type="button" onClick={() => void refresh()} className="h-11 rounded-xl bg-vl-strong px-4 text-sm font-bold text-vl-on-strong">
             {t.shell.offline.retry}
           </button>
         </div>
       )}
 
-      <div className="flex flex-wrap items-start gap-5">
-        <section
-          aria-label={t.chain.drawing}
-          className="flex min-w-0 flex-[1_1_420px] flex-col gap-3.5 rounded-2xl border border-vl-line bg-vl-surface p-4"
-        >
-          <TowerDrawing
-            blocks={tower}
+      <ChainRibbon
+        blocks={ribbon}
+        loading={loading}
+        selected={selectedNumber}
+        focus={peek ?? selectedNumber}
+        fresh={fresh}
+        next={nextNumber === null ? null : { number: nextNumber, mining, seconds }}
+        olderText={olderText(ribbon, lowest, t)}
+        onPick={pick}
+        onPeek={setPeek}
+      />
+
+      <div className="mt-3.5 flex flex-wrap items-start gap-[22px]">
+        <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-[22px]">
+          <section aria-label={t.chain.selected} aria-live="polite" className="rounded-3xl bg-vl-surface p-6 max-sm:p-5">
+            {selected && top !== null ? (
+              <BlockDetail key={selected.block_hash} block={selected} top={top} />
+            ) : (
+              <p className="text-vl-muted">{loading || needsLink ? t.chain.loading : t.chain.choose}</p>
+            )}
+          </section>
+          <BlockList
+            blocks={blocks}
             loading={loading}
-            focus={peek ?? selectedNumber}
+            selected={selectedNumber}
             fresh={fresh}
-            ghost={
-              mining && nextNumber !== null
-                ? { number: nextNumber, floating: true }
-                : chain && blocks.length === 0
-                  ? { number: 0, floating: false }
-                  : null
-            }
-            olderText={olderText(tower, lowest, t)}
+            older={older}
+            onPick={pick}
+            onPeek={setPeek}
+            onLoadOlder={() => void loadOlder()}
           />
+        </div>
+
+        <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-[22px]">
           <MineCard
             next={nextNumber}
             waiting={chain?.waitingTotal ?? null}
@@ -277,35 +304,12 @@ export function Tower() {
             offline={online === false}
             databaseDown={databaseDown}
             mining={mining}
+            seconds={seconds}
             onMine={(minerAddress) => void mine(minerAddress)}
           />
-        </section>
-
-        <section aria-labelledby="list-h" className="flex min-w-0 flex-[1_1_280px] flex-col gap-5">
-          <BlockList
-            blocks={blocks}
-            loading={loading}
-            selected={selectedNumber}
-            fresh={fresh}
-            older={older}
-            onPick={pick}
-            onPeek={setPeek}
-            onLoadOlder={() => void loadOlder()}
-          />
           <WaitingList waiting={chain?.waiting ?? null} total={chain?.waitingTotal ?? null} dimmed={mining} />
-        </section>
-
-        <section
-          aria-label={t.chain.selected}
-          aria-live="polite"
-          className="min-w-0 flex-[1_1_380px] rounded-2xl border border-vl-line bg-vl-surface p-[22px]"
-        >
-          {selected && top !== null ? (
-            <BlockDetail key={selected.block_hash} block={selected} top={top} />
-          ) : (
-            <p className="text-vl-muted">{loading || needsLink ? t.chain.loading : t.chain.choose}</p>
-          )}
-        </section>
+          <FingerprintLegend hex={afterProofOfWork(selected?.block_hash ?? '')} />
+        </aside>
       </div>
     </>
   );
