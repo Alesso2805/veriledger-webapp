@@ -1,6 +1,6 @@
 # ADR-0004: Design direction E ("Network"), with motion that the code can reproduce exactly
 
-- **Status:** Accepted on 2026-10-20 (product owner)
+- **Status:** Accepted on 2026-10-20 (product owner). Superseded on 2026-10-22 by [ADR-0006](0006-design-direction-c.md) for the direction; its rules on tokens, motion and the canvas stay
 - **Date:** 2026-10-20
 - **Related:** [DESIGN.md](../DESIGN.md); ADR-0001; VLW-27 to VLW-33; API VLA-20, VLA-33, VLA-34
 
