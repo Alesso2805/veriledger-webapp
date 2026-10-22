@@ -46,7 +46,7 @@ const tab = (page: Page, name: string) => page.getByRole('navigation', { name: '
 // height (409, VLA-17). The toast says so, and, as a person would, the flow waits for Retry-After and tries again.
 async function mineTo(page: Page, address: string): Promise<number> {
   await tab(page, 'Tower').click();
-  await page.getByLabel('Reward address').fill(address);
+  await page.getByLabel('Reward address', { exact: true }).fill(address);
   for (let attempt = 1; ; attempt++) {
     const [answer] = await Promise.all([
       page.waitForResponse((response) => response.url().endsWith('/blocks/mine') && response.request().method() === 'POST', {
@@ -83,8 +83,8 @@ test('an admin makes a wallet, mines to it, transfers and notarizes, and sees bo
 
   await test.step('sign in', async () => {
     await page.goto('/login');
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
+    await page.getByLabel('Email', { exact: true }).fill(email);
+    await page.getByLabel('Password', { exact: true }).fill(password);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
   });
@@ -106,9 +106,9 @@ test('an admin makes a wallet, mines to it, transfers and notarizes, and sees bo
   await test.step('sign and send a transfer', async () => {
     await tab(page, 'Sign and send').click();
     await expect(page.getByText('Signing as')).toBeVisible();
-    await page.getByLabel('To').fill(RECEIVER);
-    await page.getByLabel('Amount').fill('10');
-    await page.getByLabel('Fee').fill('0.1');
+    await page.getByLabel('To', { exact: true }).fill(RECEIVER);
+    await page.getByLabel('Amount', { exact: true }).fill('10');
+    await page.getByLabel('Fee', { exact: true }).fill('0.1');
     transfer = await signAndSend(page);
   });
 
