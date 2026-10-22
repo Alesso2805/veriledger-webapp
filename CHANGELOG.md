@@ -6,6 +6,9 @@ What changes in the VeriLedger webapp, release by release. The format follows [K
 
 ### Added
 
+- **An MIT license** and **a security policy**: vulnerabilities are reported privately, through GitHub (VLW-49).
+- **A README for visitors**, with the live demo and what to try (VLW-49).
+
 - **Design E** ("Network") on every page: the tokens, the fonts, and the shell with its search, the API's status, the user chip, a skip link and toasts. Routes fade in, and reduced motion is respected (VLW-27, VLW-33).
 - **Sign in.** It says when a session has expired and returns to the page you were on (VLW-17, VLW-33).
 - **The block tower.**
