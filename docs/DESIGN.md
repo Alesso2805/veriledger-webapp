@@ -6,11 +6,11 @@ Oct 22, 2026 · Chosen by the product owner on 2026-10-22 ([ADR-0006](adr/0006-d
 
 - **"C · Vistas finales"** is the specification: every view at 1440, 768 and 360 px, in light, with each view's states as tweaks.
 - **"C · Modo oscuro"** mounts the same views in the dark theme, and **"C · Español"** in Spanish. Every view also has a `theme` and a `lang` tweak, and its navbar switches work.
-- "E · Vistas finales" is what the code draws until epic E6 rebuilds each view (see [Design E in the code until epic E6](#tokens-and-motion-in-the-code-today-design-e-until-vlw-39)). "D · Vistas finales" and "Exploración A–E" are kept for reference only.
+- "E · Vistas finales" is what the code draws until epic E6 rebuilds each view, in C's tokens since VLW-39 (see [E's leftovers](#tokens-and-motion)). "D · Vistas finales" and "Exploración A–E" are kept for reference only.
 
 ## The promise: what the canvas shows is what ships
 
-1. **Same tokens.** Every artboard declares the CSS custom properties of [the tokens block](#design-cs-tokens-and-motion), with the same names and values the webapp declares in Tailwind 4's `@theme`. A colour, font, easing or animation changes in both places in the same PR, or in neither.
+1. **Same tokens.** Every artboard declares the CSS custom properties of [the tokens block](#tokens-and-motion), with the same names and values the webapp declares in Tailwind 4's `@theme`. A colour, font, easing or animation changes in both places in the same PR, or in neither.
 2. **CSS only.** Keyframes and transitions from that block. No animation library, no JavaScript-driven animation.
 3. **Only real events animate.** An animation starts because data arrived, a request started or settled, or the person acted (see [Motion map](#motion-map)). Nothing suggests progress the app cannot measure.
 4. **Replays are remounts.** In the code an animation replays through a React `key` change (`key={selectedBlock}`, `key={height}`). The canvas reaches the same effect by mounting a new element; the visual result is identical.
@@ -20,15 +20,16 @@ Oct 22, 2026 · Chosen by the product owner on 2026-10-22 ([ADR-0006](adr/0006-d
 8. **Both themes.** Every view is drawn light and dark from the same tokens; a component never picks a colour by theme ([Themes](#themes)).
 9. **Both languages.** Every text is drawn in English and Spanish, and the canvas's texts are the dictionaries' texts ([Languages](#languages)).
 
-## Design C's tokens and motion
+## Tokens and motion
 
-VLW-39 puts this block into `src/index.css` as is, renames this section "Tokens and motion" and removes E's block at the end of this document. Until then AR-10 compares the code with E's block, so the checks stay green while the views are rebuilt one by one. The canvas artboard "C · Motion y tokens" shows every token in both themes and replays every animation.
+This block goes into `src/index.css` as is (VLW-39). A test (AR-10) fails if the two differ by a single character, or if the two lists of dark values differ. The canvas artboard "C · Motion y tokens" shows every token in both themes and replays every animation.
 
 - `source("../src")` limits Tailwind's class scan to `src`. Without it, Tailwind also scans `docs/` and builds the class names of this document's examples into the app.
 - **Bricolage Grotesque** is the variable font with its optical-size axis (`opsz.css`), like the canvas's: big titles are drawn tighter than body text, by the font itself. Its family is "Bricolage Grotesque Variable"; the canvas loads the same font from Google Fonts as "Bricolage Grotesque", so the token names both and each place uses the one it has.
-- **The light values** are the theme's defaults, in `@theme`. **The dark values** override the same names, once for a dark choice in the navbar (`data-theme="dark"`) and once for the system's preference when nothing is chosen (ADR-0008). The two dark lists are the same; a test of VLW-39 keeps them so.
+- **The light values** are the theme's defaults, in `@theme`. **The dark values** override the same names, once for a dark choice in the navbar (`data-theme="dark"`) and once for the system's preference when nothing is chosen (ADR-0008). The two dark lists are the same, and AR-10's test keeps them so.
 - Each theme sets `color-scheme`, so the browser's own scrollbars and form controls follow it.
 - Tokens that do not change with the theme (`wait`, `on-wait`, `on-ink`, `on-ink-muted`, `ink-danger`, `logo-tile`) are declared once.
+- **E's leftovers** close the block, marked: the cube colours, `drop` and `float`. The views not yet redrawn in C still use them (the tower, the 404's and the failures' towers, the login's tower, the identity cube and the logo). VLW-48 removes them with the last of those views.
 
 ```css
 @import "tailwindcss" source("../src");
@@ -160,6 +161,20 @@ body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family:
 @keyframes vl-reveal { from { opacity: 0; filter: blur(6px) } to { opacity: 1; filter: none } }
 @keyframes vl-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .45 } }
 @keyframes vl-toast-in { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
+
+/* Design E's leftovers, for the views not yet redrawn in C. VLW-48 removes them. */
+@theme {
+  --color-vl-cube-top: #3A4150;
+  --color-vl-cube-left: #262B35;
+  --color-vl-cube-right: #2F3541;
+  --color-vl-cube-left-on: #4A4F5C;
+  --color-vl-cube-right-on: #3A3F4B;
+  --ease-vl-drop: cubic-bezier(.3, .6, .2, 1);
+  --animate-vl-drop: vl-drop 760ms var(--ease-vl-drop) both;
+  --animate-vl-float: vl-float 900ms ease-in-out infinite;
+}
+@keyframes vl-drop { 0% { opacity: 0; transform: translateY(-140px) } 70% { opacity: 1; transform: translateY(6px) } 85% { transform: translateY(-3px) } 100% { opacity: 1; transform: none } }
+@keyframes vl-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -512,85 +527,7 @@ They exist in the canvas to review the design and are not built:
 - **Language:** `<html lang>` is the page's language, so a screen reader reads each in its own voice.
 - VLW-24 checks all of it with axe-core and Playwright at 360 px, and VLW-48 runs the same pass in both themes and both languages.
 
-## Tokens and motion in the code today (design E, until VLW-39)
-
-The code draws E until epic E6 rebuilds each view. This block is what `src/index.css` holds today, and AR-10 compares them character for character. VLW-39 replaces it with [C's block](#design-cs-tokens-and-motion) and removes this section. Until VLW-48, C's block in the code keeps E's cube tokens and the `drop` and `float` animations at its end, marked, for the views not yet redrawn (the tower, the 404's and failures' towers, the identity cube).
-
-```css
-@import "tailwindcss" source("../src");
-@import "@fontsource/instrument-sans/400.css";
-@import "@fontsource/instrument-sans/500.css";
-@import "@fontsource/instrument-sans/600.css";
-@import "@fontsource/instrument-sans/700.css";
-@import "@fontsource/martian-mono/400.css";
-@import "@fontsource/martian-mono/500.css";
-
-@theme {
-  --color-vl-bg: #0E1014;
-  --color-vl-surface: #161920;
-  --color-vl-raised: #1D212A;
-  --color-vl-line: #2A2F3A;
-  --color-vl-line-soft: #22262F;
-  --color-vl-text: #E8EAEE;
-  --color-vl-muted: #9AA1AD;
-  --color-vl-faint: #6B7280;
-  --color-vl-accent: #FFB547;
-  --color-vl-on-accent: #0E1014;
-  --color-vl-ok: #5AD19A;
-  --color-vl-danger: #FF7A6B;
-  --color-vl-cube-top: #3A4150;
-  --color-vl-cube-left: #262B35;
-  --color-vl-cube-right: #2F3541;
-  --color-vl-cube-left-on: #4A4F5C;
-  --color-vl-cube-right-on: #3A3F4B;
-  --color-vl-shadow: #12151B;
-  --color-vl-danger-soft: #2A1714;
-  --color-vl-inset: #090A0D;
-  --font-vl-sans: "Instrument Sans", system-ui, sans-serif;
-  --font-vl-mono: "Martian Mono", ui-monospace, monospace;
-  --ease-vl-out: cubic-bezier(.2, .7, .2, 1);
-  --ease-vl-in-out: cubic-bezier(.45, 0, .2, 1);
-  --ease-vl-drop: cubic-bezier(.3, .6, .2, 1);
-  --animate-vl-fade-up: vl-fade-up 280ms var(--ease-vl-out) both;
-  --animate-vl-fade-in: vl-fade-in 280ms ease both;
-  --animate-vl-drop: vl-drop 760ms var(--ease-vl-drop) both;
-  --animate-vl-float: vl-float 900ms ease-in-out infinite;
-  --animate-vl-travel: vl-travel 760ms var(--ease-vl-in-out) both;
-  --animate-vl-pop: vl-pop 420ms ease both;
-  --animate-vl-shake: vl-shake 360ms ease both;
-  --animate-vl-reveal: vl-reveal 700ms var(--ease-vl-out) both;
-  --animate-vl-pulse: vl-pulse 1.2s ease-in-out infinite;
-  --animate-vl-toast-in: vl-toast-in 280ms var(--ease-vl-out) both;
-}
-
-:root { color-scheme: dark; --vl-dur-fast: 160ms; --vl-dur-base: 280ms; --vl-dur-slow: 420ms; --vl-dur-drop: 760ms; }
-
-body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family: var(--font-vl-sans); }
-:focus-visible { outline: 2px solid var(--color-vl-accent); outline-offset: 2px; }
-
-@keyframes vl-fade-up { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
-@keyframes vl-fade-in { from { opacity: 0 } to { opacity: 1 } }
-@keyframes vl-drop { 0% { opacity: 0; transform: translateY(-140px) } 70% { opacity: 1; transform: translateY(6px) } 85% { transform: translateY(-3px) } 100% { opacity: 1; transform: none } }
-@keyframes vl-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
-@keyframes vl-travel { 0% { offset-distance: 0%; opacity: 0 } 12% { opacity: 1 } 88% { opacity: 1 } 100% { offset-distance: 100%; opacity: 0 } }
-@keyframes vl-pop { 0% { transform: scale(1) } 40% { transform: scale(1.16) } 100% { transform: scale(1) } }
-@keyframes vl-shake { 0%, 100% { transform: none } 20% { transform: translateX(-6px) } 40% { transform: translateX(6px) } 60% { transform: translateX(-3px) } 80% { transform: translateX(3px) } }
-@keyframes vl-reveal { from { opacity: 0; filter: blur(6px) } to { opacity: 1; filter: none } }
-@keyframes vl-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .45 } }
-@keyframes vl-toast-in { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
-  }
-}
-```
-
-E's views, which the code draws until their stories in E6, are specified on the canvas page "E · Vistas finales" and in this document's history (`git show 815901c:docs/DESIGN.md`).
-
-### Identity cube
+## Identity cube (design E, until VLW-46)
 
 Until VLW-46 and VLW-48 remove it, an address on the wallet and in "Signing as" is drawn as E's isometric cube, whose faces come from its first three bytes. `src/lib/identicon.ts` implements exactly this:
 
