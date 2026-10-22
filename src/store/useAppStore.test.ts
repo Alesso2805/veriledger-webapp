@@ -86,4 +86,15 @@ describe('useAppStore', () => {
 
     expect(useAppStore.getState().token).toBe('from.a.reload');
   });
+
+  it('starts signed out when the stored token is not text, as after someone edits the storage', async () => {
+    for (const state of [{ token: 123 }, { token: { a: 1 } }, { token: ['a.b.c'] }, null]) {
+      useAppStore.setState({ token: 'before.the.reload' });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, version: 0 }));
+
+      await useAppStore.persist.rehydrate();
+
+      expect(useAppStore.getState().token).toBeNull();
+    }
+  });
 });

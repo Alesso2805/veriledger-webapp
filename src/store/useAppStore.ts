@@ -37,6 +37,12 @@ export const useAppStore = create<AppState>()(
       name: 'veriledger-storage',
       // Only the token survives a reload; the reason is for the redirect that follows, not for later visits.
       partialize: (state) => ({ token: state.token }),
+      // Storage edited by hand or by something else can hold anything. Every page reads the token's claims, and only
+      // text has them, so any other value starts the app signed out instead of failing on every page.
+      merge: (persisted, current) => {
+        const token = (persisted as { token?: unknown } | null)?.token;
+        return { ...current, token: typeof token === 'string' ? token : null };
+      },
     }
   )
 );

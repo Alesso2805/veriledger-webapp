@@ -28,6 +28,12 @@ describe('session endpoints', () => {
     await expect(login('a@veriledger.test', 'wrong')).rejects.toBeInstanceOf(InvalidCredentialsError);
   });
 
+  it('login rejects a 200 without a token, so the page says the API did not answer', async () => {
+    vi.spyOn(api, 'post').mockResolvedValue({ data: '<!doctype html><html></html>' });
+
+    await expect(login('a@veriledger.test', 'a password')).rejects.toThrow('did not answer /auth/login');
+  });
+
   it('login passes other failures on unchanged', async () => {
     vi.spyOn(api, 'post').mockRejectedValue(new Error('Network Error'));
 

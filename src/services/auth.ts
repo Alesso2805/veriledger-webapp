@@ -1,16 +1,19 @@
-import type { CurrentUser, Token } from '../types/session';
+import type { CurrentUser } from '../types/session';
 import { api, statusOf } from './api';
 
 export class InvalidCredentialsError extends Error {}
 
 export async function login(email: string, password: string): Promise<string> {
   try {
-    const response = await api.post<Token>(
+    const response = await api.post(
       '/auth/login',
       new URLSearchParams({ username: email, password }),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
     );
-    return response.data.access_token;
+    // A 200 that is not the API's, such as a proxy's page, carries no token; storing nothing would sign in no one.
+    const token: unknown = (response.data as { access_token?: unknown } | undefined)?.access_token;
+    if (typeof token !== 'string') throw new Error('The API did not answer /auth/login');
+    return token;
   } catch (error) {
     if (statusOf(error) === 401) throw new InvalidCredentialsError('Invalid credentials');
     throw error;

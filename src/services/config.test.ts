@@ -44,6 +44,18 @@ describe('loadRuntimeConfig', () => {
     expect(api.defaults.baseURL).toBe(DEVELOPMENT_URL);
   });
 
+  it('keeps the default when apiBaseUrl is not a URL, since the shell parses it on every page', async () => {
+    await loadRuntimeConfig(answering(200, '{"apiBaseUrl": "http://bad host/api"}'));
+
+    expect(api.defaults.baseURL).toBe(DEVELOPMENT_URL);
+  });
+
+  it('takes an API on another origin', async () => {
+    await loadRuntimeConfig(answering(200, '{"apiBaseUrl": "https://api.example.org"}'));
+
+    expect(api.defaults.baseURL).toBe('https://api.example.org');
+  });
+
   it('keeps the default when the request fails', async () => {
     await loadRuntimeConfig(vi.fn<typeof fetch>().mockRejectedValue(new TypeError('Failed to fetch')));
 

@@ -40,17 +40,27 @@ export function transactionRoute(transaction: Described): string {
   return `${shortHash(transaction.sender_address)} → ${shortHash(transaction.receiver_address)}`;
 }
 
+// Intl throws on an invalid date, and a throw while drawing takes the whole page down: a time the browser cannot
+// read is written as a dash instead.
+function readable(iso: string): Date | null {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 // In the reader's own time zone; tests pass one so they do not depend on the machine's.
 export function formatSealed(iso: string, timeZone?: string): string {
-  const date = new Date(iso);
+  const date = readable(iso);
+  if (!date) return '—';
   const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone });
   const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZone });
   return `${day.format(date)} · ${time.format(date)}`;
 }
 
-// The moment a certificate states, always in UTC: "20 October 2026 at 16:21:55 UTC".
-export function formatCertified(iso: string): string {
-  const date = new Date(iso);
+// The moment a certificate states, always in UTC: "20 October 2026 at 16:21:55 UTC". null when the time cannot
+// be read, so the certificate states no moment rather than a dash.
+export function formatCertified(iso: string): string | null {
+  const date = readable(iso);
+  if (!date) return null;
   const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
   const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
   return `${day.format(date)} at ${time.format(date)} UTC`;
@@ -71,5 +81,7 @@ export function formatTimeLeft(ms: number): string {
 }
 
 export function formatClock(iso: string, timeZone?: string): string {
-  return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone }).format(new Date(iso));
+  const date = readable(iso);
+  if (!date) return '—';
+  return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone }).format(date);
 }

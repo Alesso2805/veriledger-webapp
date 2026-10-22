@@ -130,6 +130,15 @@ describe('Tower', () => {
     expect(waiting).toHaveTextContent('fee 0.10');
   });
 
+  it('keeps the tower when the node sends a time it cannot read', async () => {
+    serve([{ ...block(0), timestamp: 'not a date' }]);
+    renderTower();
+
+    expect(await screen.findByRole('heading', { name: '#0' })).toBeInTheDocument();
+    expect(stat('Last block')).toHaveTextContent('—');
+    expect(blockButton(0)).toHaveTextContent('1 tx · —');
+  });
+
   it('says the first block mined becomes the genesis block', async () => {
     serve([]);
     renderTower();

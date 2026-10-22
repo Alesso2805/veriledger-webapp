@@ -42,6 +42,8 @@ export function Certificate({ payload, blockNumber, blockHash }: Props) {
     }
   };
 
+  const certified = sealedAt === null ? null : formatCertified(sealedAt);
+
   return (
     <section
       aria-labelledby="cert-h"
@@ -49,8 +51,8 @@ export function Certificate({ payload, blockNumber, blockHash }: Props) {
     >
       <p className="font-vl-mono text-[11px] text-vl-accent">PROOF OF EXISTENCE</p>
       <h2 id="cert-h" className="mt-1 text-xl leading-[1.25] font-bold">
-        {sealedAt
-          ? `This document existed on ${formatCertified(sealedAt)}.`
+        {certified
+          ? `This document existed on ${certified}.`
           : `This document existed when block #${blockNumber} was sealed.`}
       </h2>
       {/* Four groups a row in the artboard's width; fewer on a phone, where eight characters need their room. */}
