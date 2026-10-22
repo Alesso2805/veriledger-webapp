@@ -1,6 +1,6 @@
 import type { Block, Transaction } from '../types/ledger';
 
-// The blocks the tower has loaded, newest first. A page from the API replaces the blocks it overlaps. If one
+// The blocks the chain has loaded, newest first. A page from the API replaces the blocks it overlaps. If one
 // of its numbers now has another hash, a peer's chain replaced ours, so what was loaded before is dropped. The
 // newest page also drops blocks above its top, which the node no longer has (its database was reset, say).
 export function mergeBlocks(known: Block[], page: Block[], newest: boolean): Block[] {

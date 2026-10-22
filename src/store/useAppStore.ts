@@ -8,7 +8,7 @@ interface AppState {
   endedReason: SessionEndReason | null;
   // GET /auth/me, read once per session by the header's user chip and used by pages for role rules.
   user: CurrentUser | null;
-  // A demo account is being started; the header, the login and the tower's mine button all say so.
+  // A demo account is being started; the header, the login and the chain's mine button all say so.
   startingDemo: boolean;
   setToken: (token: string | null) => void;
   setUser: (user: CurrentUser | null) => void;
