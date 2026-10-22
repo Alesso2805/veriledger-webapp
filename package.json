@@ -15,7 +15,7 @@
     "test:watch": "vitest",
     "preview": "vite preview",
     "types:api": "openapi-typescript src/types/openapi.json -o src/types/api.ts",
-    "test:a11y": "playwright test --project desktop --project phone",
+    "test:a11y": "playwright test --project desktop --project phone --project desktop-dark-es --project phone-dark-es",
     "test:e2e": "playwright test --project flows"
   },
   "dependencies": {

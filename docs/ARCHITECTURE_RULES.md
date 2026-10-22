@@ -40,7 +40,7 @@ They come from the README. They are not rules until they are made concrete; this
 
 | Promise | Why it is not verifiable | Proposal |
 | --- | --- | --- |
-| "Dark Mode Premium UI" | A taste, not a property. | Make it two rules: (a) colors only through the theme tokens of `src/index.css` (`@theme`): a test fails on a hex color inside `className` or CSS outside `index.css` (180 such literals today); (b) every text and status color meets WCAG AA contrast on its background, measured in tests (VLW-24). |
+| "Dark Mode Premium UI" | A taste, not a property. | Make it two rules: (a) colors only through the theme tokens of `src/index.css` (`@theme`): a test fails on a hex color inside `className` or CSS outside `index.css` (180 such literals today); (b) every text and status color meets WCAG AA contrast on its background, measured in tests (VLW-24), in both themes since VLW-48. |
 | "Ensuring absolute security" | No system has it; it cannot be tested. | Replace it in the README with the testable claims: AR-05, the Content Security Policy of VLW-22, and no high or critical `npm audit` finding (VLW-11). |
 | "A fully functional, decentralized Blockchain application" | Describes the API, and "fully functional" is false today (the API rejects every signature). | Back it with the end-to-end flows of VLW-23, and describe decentralization as what the Network page does: register peers and adopt the longest valid chain. |
 
@@ -99,6 +99,7 @@ Alternatives considered:
 | One token changed in `index.css` only, then in DESIGN.md only | AR-10 fails both times |
 | One dark value changed in the system's list only, in both files (2026-10-22) | AR-10's dark-lists test fails |
 | "Copy address" written inline in the wallet's identity card (2026-10-22) | AR-11 fails on the wallet with a key |
+| A dark `muted` of low contrast, in the two dark lists of `index.css` only (2026-10-22) | `npm run test:a11y` fails on `color-contrast` in the `desktop-dark-es` project; the light `desktop` project passes (VLW-48) |
 | A file in `src/types` imports `src/lib` | AR-03-types-import-nothing fails (2026-10-21) |
 | `src/types/api.ts` edited by hand; then `openapi.json` changed without regenerating | AR-09's diff fails both times (2026-10-21) |
 

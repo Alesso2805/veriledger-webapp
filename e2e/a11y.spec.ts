@@ -1,61 +1,82 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { before, expect, startsWith, test, type Messages } from './i18n';
 import { mockApi, NOTARIZATION_HASH, TRANSFER_HASH, type Role } from './mockApi';
 
-// VLW-24 on every page and state, in both projects (1280 and 360 px): no serious or critical axe violation, no
-// sideways scroll, and a visible focus on every control the keyboard reaches.
+// VLW-24 on every page and state, at 1280 and 360 px, in the light theme in English and the dark theme in Spanish
+// (VLW-48): no serious or critical axe violation, no sideways scroll, and a visible focus on every control the
+// keyboard reaches.
 interface Case {
   name: string;
   path: string;
   role?: Role;
   // What shows once the page has its data.
-  ready: (page: Page) => ReturnType<Page['getByRole']>;
+  ready: (page: Page, t: Messages) => ReturnType<Page['getByRole']>;
   // Steps that bring the page to the state being checked.
-  then?: (page: Page) => Promise<void>;
+  then?: (page: Page, t: Messages) => Promise<void>;
   // The fewest controls the keyboard must reach, so the focus walk cannot pass by reaching none. The shell alone
   // has seven: the skip link, the search, the header's two buttons and the four tabs.
   controls?: number;
 }
 
-const createWallet = async (page: Page) => {
-  await page.getByRole('button', { name: 'Create a wallet' }).click();
-  await expect(page.getByText('Your address')).toBeVisible();
+const createWallet = async (page: Page, t: Messages) => {
+  await page.getByRole('button', { name: t.wallet.create }).click();
+  await expect(page.getByRole('heading', { name: t.wallet.address })).toBeVisible();
 };
 
 const cases: Case[] = [
   // No shell: the two switches, email, password, "Sign in", "Try the demo" and the link to the chain.
-  { name: 'login', path: '/login', ready: (page) => page.getByRole('heading', { name: 'Sign in' }), controls: 5 },
-  { name: 'chain, visitor', path: '/', ready: (page) => page.getByRole('button', { name: /^Block #11 / }) },
-  { name: 'chain, trader', path: '/?block=11', role: 'trader', ready: (page) => page.getByRole('button', { name: /^Mine block #12/ }) },
-  { name: 'transaction, visitor', path: `/transaction/${TRANSFER_HASH}`, ready: (page) => page.getByRole('heading', { name: 'Details' }) },
-  { name: 'transaction, viewer', path: `/transaction/${TRANSFER_HASH}`, role: 'viewer', ready: (page) => page.getByRole('heading', { name: 'Details' }) },
+  { name: 'login', path: '/login', ready: (page, t) => page.getByRole('heading', { name: t.login.title }), controls: 5 },
+  { name: 'chain, visitor', path: '/', ready: (page, t) => page.getByRole('button', { name: startsWith(`${t.chain.list.block(11)} `) }) },
+  {
+    name: 'chain, trader',
+    path: '/?block=11',
+    role: 'trader',
+    ready: (page, t) => page.getByRole('button', { name: startsWith(t.chain.mine.mineBlock(12)) }),
+  },
+  {
+    name: 'transaction, visitor',
+    path: `/transaction/${TRANSFER_HASH}`,
+    ready: (page, t) => page.getByRole('heading', { name: t.transaction.details.title }),
+  },
+  {
+    name: 'transaction, viewer',
+    path: `/transaction/${TRANSFER_HASH}`,
+    role: 'viewer',
+    ready: (page, t) => page.getByRole('heading', { name: t.transaction.details.title }),
+  },
   {
     name: 'notarization and its certificate',
     path: `/transaction/${NOTARIZATION_HASH}`,
-    ready: (page) => page.getByRole('heading', { name: /^This document existed on / }),
+    ready: (page, t) => page.getByRole('heading', { name: startsWith(before(t.transaction.certificate.existed)) }),
   },
-  { name: 'network, visitor', path: '/network', ready: (page) => page.getByRole('heading', { name: 'Registered peers · 2' }) },
-  { name: 'network, admin', path: '/network', role: 'admin', ready: (page) => page.getByRole('button', { name: 'Add peer' }) },
-  { name: 'not found', path: '/no/such/page', ready: (page) => page.getByRole('heading', { name: 'This page is not on the chain' }) },
-  { name: 'wallet, no key', path: '/wallet', role: 'trader', ready: (page) => page.getByRole('button', { name: 'Create a wallet' }) },
+  { name: 'network, visitor', path: '/network', ready: (page, t) => page.getByRole('heading', { name: t.network.list.title('2') }) },
+  { name: 'network, admin', path: '/network', role: 'admin', ready: (page, t) => page.getByRole('button', { name: t.network.add.button }) },
+  { name: 'not found', path: '/no/such/page', ready: (page, t) => page.getByRole('heading', { name: t.notFound.title }) },
+  { name: 'wallet, no key', path: '/wallet', role: 'trader', ready: (page, t) => page.getByRole('button', { name: t.wallet.create }) },
   {
     name: 'wallet, new key',
     path: '/wallet',
     role: 'trader',
-    ready: (page) => page.getByRole('button', { name: 'Create a wallet' }),
+    ready: (page, t) => page.getByRole('button', { name: t.wallet.create }),
     then: createWallet,
   },
-  { name: 'sign and send, no key', path: '/transact', role: 'trader', ready: (page) => page.getByRole('heading', { name: 'No key in this tab' }) },
+  {
+    name: 'sign and send, no key',
+    path: '/transact',
+    role: 'trader',
+    ready: (page, t) => page.getByRole('heading', { name: t.transact.noKeyTitle }),
+  },
   {
     name: 'sign and send, with a key',
     path: '/wallet',
     role: 'trader',
-    ready: (page) => page.getByRole('button', { name: 'Create a wallet' }),
+    ready: (page, t) => page.getByRole('button', { name: t.wallet.create }),
     // The key lives only in the tab's memory, so the page is reached through the app, not a reload.
-    then: async (page) => {
-      await createWallet(page);
-      await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Sign and send' }).click();
-      await expect(page.getByText('Signing as')).toBeVisible();
+    then: async (page, t) => {
+      await createWallet(page, t);
+      await page.getByRole('navigation', { name: t.shell.mainNav }).getByRole('link', { name: t.shell.tabs.transact }).click();
+      await expect(page.getByText(t.transact.signingAs)).toBeVisible();
     },
   },
 ];
@@ -95,11 +116,14 @@ async function tabThrough(page: Page): Promise<{ reached: number; missing: strin
 }
 
 for (const item of cases) {
-  test(item.name, async ({ page }) => {
+  test(item.name, async ({ page, t, locale, colorScheme }) => {
     await mockApi(page, item.role);
     await page.goto(item.path);
-    await expect(item.ready(page)).toBeVisible();
-    await item.then?.(page);
+    await expect(item.ready(page, t)).toBeVisible();
+    // The project's language and theme reached the page, so what follows checks them.
+    await expect(page.locator('html')).toHaveAttribute('lang', locale?.slice(0, 2) ?? 'en');
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe(colorScheme);
+    await item.then?.(page, t);
     await page.waitForLoadState('networkidle');
 
     const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();

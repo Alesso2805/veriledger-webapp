@@ -19,9 +19,9 @@ A visitor should be able to see, in a few minutes and without installing anythin
 
 Status: **Built** (exists on `main`, see the audit for its defects), **Planned** (a story in the backlog).
 
-The pages keep their routes in design E ([DESIGN.md](DESIGN.md), ADR-0004). The Explorer became the **Tower** (VLW-28) and every page gets the new shell (VLW-27, VLW-33); the "Status" column describes what exists today.
+The pages kept their routes through design E (ADR-0004), when the Explorer became the **Tower** (VLW-28) and every page got the shell (VLW-27, VLW-33). The "Status" column describes what exists today.
 
-Epic E6 rebuilds every page in design C (ADR-0006), in English and Spanish (ADR-0007) and in light and dark themes (ADR-0008), with no change of route. The Tower becomes **The chain** (VLW-43).
+Epic E6 rebuilt every page in design C ([DESIGN.md](DESIGN.md), ADR-0006), in English and Spanish (ADR-0007) and in light and dark themes (ADR-0008), with no change of route. The Tower became **The chain** (VLW-43).
 
 | Page | Route | What it does | Status |
 | --- | --- | --- | --- |
@@ -51,7 +51,7 @@ A single-page app built by Vite into static files (ADR-0001).
 
 `src/Router.tsx` exports the route table as data (`routes`), so that AR-08 can walk it.
 - The pages whose data the API serves to anyone (`/`, `/transaction/:hash`, `/network` and the 404) are wrapped in `OpenRoute`; `/wallet` and `/transact` in `ProtectedRoute` (`src/components/RouteGuards.tsx`), which redirects to `/login` without a token (ADR-0005).
-  - Without a session the header's "Sign in", the tower's "Sign in to mine" and `ProtectedRoute` keep the page in the router state (`LoginRedirectState`), so `PublicRoute` returns there after signing in.
+  - Without a session the header's "Sign in", the chain's "Sign in to mine" and `ProtectedRoute` keep the page in the router state (`LoginRedirectState`), so `PublicRoute` returns there after signing in.
   - A 401 on a request that carried the session, or a stored token whose `exp` has passed (`src/lib/jwt.ts`), ends the session. Both guards then send the person to the login with `reason: 'expired'` (VLW-17), or `'demo-ended'` when the token carried the `demo` claim (VLW-34). The store reads no tokens, so whoever ends the session (the 401 handler, `useSessionToken`) passes the reason. The login takes the reason from its router state and the store forgets it, so a visitor can go back to an open page.
 - `src/App.tsx` renders the table with `useRoutes`, and `src/main.tsx` mounts it inside `BrowserRouter`.
 - A throw while drawing never blanks the app (VLW-35). `Layout` wraps each page in an `ErrorBoundary` inside `<main>`, so a page fails alone and the next route starts clean. `App` wraps everything in another, for the shell and the login.
@@ -59,7 +59,7 @@ A single-page app built by Vite into static files (ADR-0001).
 
 ## Design
 
-Design direction C ("Fingerprint", ADR-0006) replaces E ("Network", ADR-0004), in light and dark themes that follow the system (ADR-0008) and in English and Spanish (ADR-0007). DESIGN.md describes C since VLW-38, and `src/index.css` holds C's tokens since VLW-39. The views keep E's layout until epic E6 rebuilds each one, with E's cube tokens at the end of the block until VLW-48. [DESIGN.md](DESIGN.md) is the specification of the look and behaviour of every page. It covers:
+Design direction C ("Fingerprint", ADR-0006) replaces E ("Network", ADR-0004), in light and dark themes that follow the system (ADR-0008) and in English and Spanish (ADR-0007). DESIGN.md describes C since VLW-38, and `src/index.css` holds C's tokens since VLW-39. Every view is drawn in C since VLW-47, and E's last tokens left the block with VLW-48. [DESIGN.md](DESIGN.md) is the specification of the look and behaviour of every page. It covers:
 
 - the CSS tokens and animations that go into `src/index.css`, unchanged;
 - which real event triggers each animation;
@@ -135,8 +135,8 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 | Correctness | Response types match the API | Types generated from the API's OpenAPI document, regenerated and diffed in CI (AR-09, VLW-19) |
 | Deployment | One image for any hostname; deep links survive a reload | `docker/smoke-test.sh` on the built image (VLW-21, VLW-22); the image published to GHCR for the API's Compose (VLW-25a); the end-to-end flows (VLW-23). The `rehearsal` job (VLW-25b) runs the API's production Compose (`deploy/docker-compose.prod.yml`) with the pull request's own image on `https://localhost`, and runs the flows through its Caddy: one origin, the image's `/config.json`, and its Content Security Policy, any violation of which fails the run |
 | Reproducibility | `npm ci && npm run build` from a clean clone | CI (VLW-10, VLW-11) |
-| Accessibility | Every input has a label; visible focus; usable at 360 px with no horizontal scroll; no serious or critical axe-core violation | `npm run test:a11y` (VLW-24): Playwright in Chromium against the built app, with the API answered from fixtures (`e2e/mockApi.ts`), on every page and state at 1280 and 360 px: no serious or critical axe violation, no sideways scroll, and a visible focus on every control the keyboard reaches. axe-core also runs in the component tests for refusals, empty lists and not-found states (`toPassAxe`). Both run in CI. From VLW-48, the pass runs in both themes and both languages |
-| Robustness | A throw while drawing shows a fallback, never a blank page; nothing a person types, opens or navigates to, and no malformed answer from the API or `config.json`, makes a page throw | Component tests of both boundaries (VLW-35). `npm run test:a11y` also runs `e2e/robustness.spec.ts` (VLW-36), the audit of 2026-10-21 as a spec, in CI. It runs in Chromium at 1280 and 360 px against the mocked API, and covers odd routes, odd text in every field, files that are not key files, stored sessions the app did not write, and malformed answers. A step fails on an uncaught error or when a fallback shows |
+| Accessibility | Every input has a label; visible focus; usable at 360 px with no horizontal scroll; no serious or critical axe-core violation | `npm run test:a11y` (VLW-24): Playwright in Chromium against the built app, with the API answered from fixtures (`e2e/mockApi.ts`), on every page and state at 1280 and 360 px: no serious or critical axe violation, no sideways scroll, and a visible focus on every control the keyboard reaches. Each width runs twice (VLW-48): light in English, and dark in Spanish, both from the browser (`colorScheme`, `locale`), as a first visit's would be. The specs find every control by the words of the project's dictionary (`e2e/i18n.ts`), and check that the page took the project's language and theme. axe-core also runs in the component tests for refusals, empty lists and not-found states (`toPassAxe`). Both run in CI |
+| Robustness | A throw while drawing shows a fallback, never a blank page; nothing a person types, opens or navigates to, and no malformed answer from the API or `config.json`, makes a page throw | Component tests of both boundaries (VLW-35). `npm run test:a11y` also runs `e2e/robustness.spec.ts` (VLW-36), the audit of 2026-10-21 as a spec, in CI. It runs in Chromium at 1280 and 360 px, light in English and dark in Spanish (VLW-48), against the mocked API, and covers odd routes, odd text in every field, files that are not key files, stored sessions the app did not write, and malformed answers. A step fails on an uncaught error or when a fallback shows |
 | Quality | `tsc` strict, oxlint without warnings, architecture tests and Vitest green | GitHub Actions (VLW-10, VLW-13) |
 
 ## Engineering rules
@@ -182,7 +182,7 @@ veriledger-webapp/
 │   └── index.css                 # design C tokens, light and dark: the CSS block of DESIGN.md (AR-10)
 ├── public/favicon.svg            # the logo's tile, four bars of the palette (VLW-41)
 ├── public/theme.js               # the stored theme before the first paint (VLW-39, ADR-0008)
-├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); robustness.spec.ts on the same fixtures (VLW-36); flows.spec.ts against the API's stack (VLW-23)
+├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); robustness.spec.ts on the same fixtures (VLW-36); flows.spec.ts against the API's stack (VLW-23); i18n.ts, the dictionaries' words for all three (VLW-48)
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh
 ├── docs/
 │   ├── SPEC.md                   # this document

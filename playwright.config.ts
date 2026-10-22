@@ -3,7 +3,10 @@ import { defineConfig, devices } from '@playwright/test';
 // Two kinds of browser checks against the built app:
 // - `npm run test:a11y` (VLW-24): every page with a keyboard and on a phone, the API answered from fixtures
 //   (e2e/mockApi.ts), so no API runs. The same projects run e2e/robustness.spec.ts (VLW-36): odd routes, input, files,
-//   storage and answers never make a page throw.
+//   storage and answers never make a page throw. Each width runs twice (VLW-48): light in English, and dark in
+//   Spanish. A theme changes only colours and a language only words, so the two pairs reach every colour of both
+//   themes and every text of both languages. Both come from the browser, as a first visit's would: the system's
+//   colour scheme and the browser's language.
 // - `npm run test:e2e` (VLW-23): the main flows against the API's real Compose stack (e2e/flows.spec.ts).
 // With E2E_BASE_URL set, such as https://localhost, the flows run against a deployed stack instead of the preview
 // (VLW-25): the webapp's image behind the API's Caddy, one origin, its own /config.json and Content Security Policy.
@@ -21,8 +24,17 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
-    { name: 'desktop', testMatch: /(a11y|robustness)\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } } },
-    { name: 'phone', testMatch: /(a11y|robustness)\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 360, height: 740 } } },
+    ...[
+      { name: 'desktop', viewport: { width: 1280, height: 800 } },
+      { name: 'phone', viewport: { width: 360, height: 740 } },
+    ].flatMap(({ name, viewport }) => [
+      { name, use: { colorScheme: 'light' as const, locale: 'en-US' } },
+      { name: `${name}-dark-es`, use: { colorScheme: 'dark' as const, locale: 'es-ES' } },
+    ].map((project) => ({
+      name: project.name,
+      testMatch: /(a11y|robustness)\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport, ...project.use },
+    }))),
     {
       name: 'flows',
       testMatch: 'flows.spec.ts',
