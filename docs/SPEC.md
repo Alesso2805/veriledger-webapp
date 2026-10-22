@@ -101,7 +101,7 @@ The webapp adopts the API's ADR-0004 through its own ADR-0002.
 
 ## Deployment
 
-Static files served behind the same Caddy and hostname as the API (API ADR-0005, webapp ADR-0003): `/` serves the app, `/api` the API, so the browser sees one origin. Until there is a server, the deployment is prepared and rehearsed locally, like the API's VLA-27; the real one waits for the product owner (VLW-25, 2026-10-21).
+Static files served behind the same Caddy and hostname as the API (API ADR-0005, webapp ADR-0003): `/` serves the app, `/api` the API, so the browser sees one origin. It runs at https://veriledger.duckdns.org, on the product owner's Google Cloud VM, deployed with the API's runbook (`veriledger-api/docs/runbooks/deploy.md`) on 2026-10-22: the API's release 1.0.0 and this image at a `sha-` tag of `main` (VLW-25). Updating the webapp is the runbook's step 6 with a new `WEBAPP_IMAGE_TAG`.
 
 - One image for any hostname (VLW-21):
   - The container runs `docker/write-config.sh`, which writes `{"apiBaseUrl": "<API_BASE_URL>"}` to `/config.json`. `API_BASE_URL` defaults to `/api`.
