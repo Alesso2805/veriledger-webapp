@@ -17,15 +17,22 @@ export function signedFieldsOf(transaction: Transaction): SignedFields | null {
   };
 }
 
-export type SignatureCheck = 'valid' | 'invalid' | 'reward' | 'no-nonce';
+export type SignatureCheck = 'valid' | 'invalid' | 'reward' | 'no-nonce' | 'cannot-rebuild';
 
 // Checked in the browser, so the page does not take the node's word for it.
 export function checkSignature(transaction: Transaction): SignatureCheck {
   if (transaction.sender_address === 'SYSTEM') return 'reward';
   const fields = signedFieldsOf(transaction);
   if (!fields) return 'no-nonce';
-  const valid = verifySignature(buildSignedMessage(fields), transaction.signature ?? '', transaction.sender_address);
-  return valid ? 'valid' : 'invalid';
+  // Near 10^10 a float cannot spell the amount back with 8 decimals, and the message cannot be rebuilt. That says
+  // nothing about the signature, so it is not called invalid, and nothing is thrown while the page draws.
+  let message: string;
+  try {
+    message = buildSignedMessage(fields);
+  } catch {
+    return 'cannot-rebuild';
+  }
+  return verifySignature(message, transaction.signature ?? '', transaction.sender_address) ? 'valid' : 'invalid';
 }
 
 export interface Journey {

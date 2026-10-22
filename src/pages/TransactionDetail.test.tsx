@@ -119,6 +119,19 @@ describe('TransactionDetail', () => {
     await expect(document.body).toPassAxe();
   });
 
+  it('keeps the page when the node sends a time or an amount it cannot read', async () => {
+    vi.mocked(getTransaction).mockResolvedValue(stored('notarization', { timestamp: 'not a date', fee: 9999999999.99999999 }));
+    vi.mocked(getBlock).mockResolvedValue({ timestamp: 'soon' } as FullBlock);
+    renderPage();
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'A document notarized by fc51…8025' })).toBeInTheDocument();
+    expect(screen.getByText('— UTC')).toBeInTheDocument();
+    expect(
+      screen.getByText('This browser cannot spell the amounts back as they were signed, so it cannot check it'),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'This document existed when block #3 was sealed.' })).toBeInTheDocument();
+  });
+
   it('says that a mining reward has no signature to check, and that the miner’s node created it', async () => {
     vi.mocked(getTransaction).mockResolvedValue(stored('transfer', { sender_address: 'SYSTEM', signature: 'COINBASE', amount: 50 }));
     renderPage();

@@ -93,6 +93,16 @@ describe('times', () => {
     expect(formatClock('2026-10-21T00:05:00Z', 'America/Lima')).toBe('19:05');
   });
 
+  it('reads the API’s microseconds', () => {
+    expect(formatSealed('2026-10-22T00:02:52.161089Z', 'UTC')).toBe('22 Oct 2026 · 00:02:52');
+  });
+
+  it('writes a dash for a time it cannot read, where Intl would throw, and states no certified moment', () => {
+    expect(formatSealed('not a date', 'UTC')).toBe('—');
+    expect(formatClock('', 'UTC')).toBe('—');
+    expect(formatCertified('soon')).toBeNull();
+  });
+
   it('says how the API is, and never "offline" when only its database is down', () => {
     expect(healthWord(null, false)).toBe('checking');
     expect(healthWord(true, false)).toBe('online');

@@ -8,6 +8,7 @@ const SIGNATURE_LINE: Record<SignatureCheck, string> = {
   invalid: 'The signature does not match this transaction and the sender’s address',
   reward: 'A mining reward has no signature: the block’s proof of work seals it',
   'no-nonce': 'Signed before nonces existed, so this browser cannot check it',
+  'cannot-rebuild': 'This browser cannot spell the amounts back as they were signed, so it cannot check it',
 };
 
 function signatureIcon(check: SignatureCheck) {
