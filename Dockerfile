@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1
 # Node builds the static files; Caddy serves them (ADR-0003). Base images are pinned by digest.
 
-FROM node:22.22-alpine@sha256:e58326d0d441090181ac150dc2078d3e2cf6a0d42e809aebba3ef5880935ffdd AS build
+# The static files are the same for every architecture, so they are built on the machine's own one: an arm64 image
+# then needs no npm under QEMU emulation, which is slow and sometimes hangs. Only the Caddy stage runs per target.
+FROM --platform=$BUILDPLATFORM node:22.22-alpine@sha256:e58326d0d441090181ac150dc2078d3e2cf6a0d42e809aebba3ef5880935ffdd AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
