@@ -44,6 +44,10 @@ export function statusOf(error: unknown): number | undefined {
 // language when it is a message the webapp knows (ADR-0007).
 export function detailOf(error: unknown, fallback: string): string {
   const detail: unknown = isAxiosError(error) ? error.response?.data?.detail : undefined;
-  if (typeof detail === 'string') return translateApiMessage(detail, usePreferencesStore.getState().language);
+  const { language } = usePreferencesStore.getState();
+  if (typeof detail === 'string') return translateApiMessage(detail, language);
+  // Without the API's words, an error's own message is English and technical ("Network Error"), so Spanish shows
+  // the caller's text instead, which comes from the dictionary.
+  if (language !== 'en') return fallback;
   return error instanceof Error ? error.message : fallback;
 }

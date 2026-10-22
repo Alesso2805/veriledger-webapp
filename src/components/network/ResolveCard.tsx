@@ -1,3 +1,6 @@
+import type { Messages } from '../../lib/i18n';
+import { useT } from '../useT';
+
 export type ResolvePhase = 'idle' | 'resolving' | 'replied';
 
 export type ResolveResult =
@@ -13,33 +16,31 @@ interface Props {
   onResolve: () => void;
 }
 
-function outcome(result: ResolveResult): { title: string; text: string } {
+function outcome(result: ResolveResult, words: Messages['network']['resolve']): { title: string; text: string } {
   switch (result.kind) {
     case 'kept':
-      return { title: 'Our chain is already the longest valid one', text: 'No peer had a longer valid chain. Nothing changed.' };
+      return { title: words.keptTitle, text: words.keptText };
     case 'replaced':
-      return {
-        title: 'Adopted a longer valid chain',
-        text: `Height went from ${result.before ?? '—'} to ${result.after ?? '—'}. Every block was checked before replacing ours.`,
-      };
+      return { title: words.replacedTitle, text: words.replacedText(String(result.before ?? '—'), String(result.after ?? '—')) };
     case 'failed':
-      return { title: 'Could not finish resolving', text: `${result.detail.replace(/\.$/, '')}. Nothing changed; try again.` };
+      return { title: words.failedTitle, text: words.failedText(result.detail.replace(/\.$/, '')) };
   }
 }
 
 // Resolving asks every peer for its chain (VLA-19). While it runs, pulses travel to the peers on the map.
 export function ResolveCard({ admin, peerCount, phase, result, onResolve }: Props) {
+  const words = useT().network.resolve;
   const ready = admin && peerCount > 0 && phase !== 'resolving';
-  const shown = result ? outcome(result) : null;
+  const shown = result ? outcome(result, words) : null;
   const failed = result?.kind === 'failed';
 
   return (
     <section aria-labelledby="resolve-h" className="rounded-2xl border border-vl-line bg-vl-surface p-5">
       <h2 id="resolve-h" className="text-[17px] font-bold">
-        Resolve conflicts
+        {words.title}
       </h2>
       <p className="mt-1.5 mb-3.5 text-sm text-vl-muted">
-        Asks every peer for its chain. If one is longer and fully valid, this node adopts it.
+        {words.text}
       </p>
       <button
         type="button"
@@ -49,7 +50,7 @@ export function ResolveCard({ admin, peerCount, phase, result, onResolve }: Prop
           ready ? 'bg-vl-accent text-vl-on-accent' : 'bg-vl-line text-vl-muted'
         }`}
       >
-        {phase === 'resolving' ? `Asking ${peerCount} ${peerCount === 1 ? 'peer' : 'peers'}…` : 'Resolve conflicts'}
+        {phase === 'resolving' ? words.asking(peerCount) : words.button}
       </button>
       <div aria-live="polite">
         {shown && (

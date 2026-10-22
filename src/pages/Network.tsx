@@ -3,6 +3,7 @@ import { AddPeer } from '../components/network/AddPeer';
 import { PeerList } from '../components/network/PeerList';
 import { PeerMap } from '../components/network/PeerMap';
 import { ResolveCard, type ResolvePhase, type ResolveResult } from '../components/network/ResolveCard';
+import { useT } from '../components/useT';
 import { detailOf } from '../services/api';
 import { getBlocks } from '../services/ledger';
 import { getPeers, resolveConflicts } from '../services/nodes';
@@ -17,6 +18,7 @@ const topNumber = () =>
 
 // Artboard "E · Red" (VLW-32).
 export function Network() {
+  const t = useT();
   const [peers, setPeers] = useState<Peer[] | 'unknown' | null>(null);
   const [height, setHeight] = useState<number | null>(null);
   const [fresh, setFresh] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export function Network() {
       setHeight(after);
       setResult(replaced ? { kind: 'replaced', before, after } : { kind: 'kept' });
     } catch (error) {
-      setResult({ kind: 'failed', detail: detailOf(error, 'The node did not answer') });
+      setResult({ kind: 'failed', detail: detailOf(error, t.network.resolve.noAnswer) });
     } finally {
       setRound((count) => count + 1);
       setPhase('replied');
@@ -66,11 +68,8 @@ export function Network() {
 
   return (
     <>
-      <h1 className="text-[30px] font-bold tracking-[-0.02em]">Network</h1>
-      <p className="mt-1 max-w-[720px] text-vl-muted">
-        The peers this node knows. Resolving asks each of them for its chain and keeps the longest one that passes every
-        check.
-      </p>
+      <h1 className="text-[30px] font-bold tracking-[-0.02em]">{t.network.title}</h1>
+      <p className="mt-1 max-w-[720px] text-vl-muted">{t.network.lead}</p>
       <div className="mt-5 flex flex-wrap items-start gap-5">
         <PeerMap peers={list} height={height} fresh={fresh} phase={phase} round={round} />
         <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-4">

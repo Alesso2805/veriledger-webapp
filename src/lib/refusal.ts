@@ -1,9 +1,12 @@
-// The heading of a refused transaction, taken from what the API says; its own words are shown under it as they are.
+export type RefusalKind = 'noAnswer' | 'nonce' | 'signature' | 'funds' | 'other';
+
+// What kind of refusal a transaction met, taken from what the API says; the dictionary titles it, and the API's own
+// words are shown under the title. The detail may already be in Spanish (ADR-0007), so both languages are read.
 // status is undefined when no answer arrived at all.
-export function refusalTitle(status: number | undefined, detail: string): string {
-  if (status === undefined) return 'The node did not answer';
-  if (status === 409) return 'This nonce was already used';
-  if (/signature/i.test(detail)) return 'The node refused the signature';
-  if (/funds/i.test(detail)) return 'Not enough funds';
-  return 'The node refused the transaction';
+export function refusalKind(status: number | undefined, detail: string): RefusalKind {
+  if (status === undefined) return 'noAnswer';
+  if (status === 409) return 'nonce';
+  if (/signature|firma/i.test(detail)) return 'signature';
+  if (/funds|fondos/i.test(detail)) return 'funds';
+  return 'other';
 }

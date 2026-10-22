@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { keyFileText } from '../../lib/keyFile';
 import { useKeyStore } from '../../store/useKeyStore';
 import type { Wallet } from '../../types/ledger';
+import { useT } from '../useT';
 
 // The key's two saving steps, and forgetting it. Both panels open and close with grid-template-rows
 // (DESIGN.md › Motion map), and the confirmation is inline: a browser dialog would stop the page.
 export function KeyCard({ pair }: { pair: Wallet }) {
+  const words = useT().wallet.key;
   const saved = useKeyStore((state) => state.saved);
   const markSaved = useKeyStore((state) => state.markSaved);
   const forget = useKeyStore((state) => state.forget);
@@ -34,24 +36,22 @@ export function KeyCard({ pair }: { pair: Wallet }) {
       }`}
     >
       <h2 id="key-h" className="text-lg font-bold">
-        {saved ? 'Your key is saved' : 'Save your key now'}
+        {saved ? words.savedTitle : words.unsavedTitle}
       </h2>
       <p className="text-sm text-vl-muted">
-        {saved
-          ? 'Keep the file where only you can reach it. Anyone who has it can spend from this wallet.'
-          : 'It exists only in this tab. If you close it without saving the file, this wallet is lost for good.'}
+        {saved ? words.savedText : words.unsavedText}
       </p>
       <div className={panel(!saved)}>
         <div className="min-h-0 overflow-hidden" inert={saved} aria-hidden={saved}>
           <ol className="flex flex-col gap-2 p-0.5">
             <li className="flex flex-wrap items-center gap-2.5 rounded-[10px] bg-vl-bg px-3 py-2.5">
-              <span className="flex-auto">1 · Save the key file</span>
+              <span className="flex-auto">{words.step1}</span>
               {downloaded ? (
                 <span className="flex animate-vl-pop items-center gap-1.5 text-[13px] text-vl-ok">
                   <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
                     <path d="M2.5 7.5l3 3L11.5 4" fill="none" strokeWidth="2" className="stroke-vl-ok" />
                   </svg>
-                  Saved
+                  {words.saved}
                 </span>
               ) : (
                 <button
@@ -59,7 +59,7 @@ export function KeyCard({ pair }: { pair: Wallet }) {
                   onClick={download}
                   className="h-9 rounded-lg bg-vl-accent px-3 text-[13px] font-semibold text-vl-on-accent"
                 >
-                  Download .json
+                  {words.download}
                 </button>
               )}
             </li>
@@ -76,7 +76,7 @@ export function KeyCard({ pair }: { pair: Wallet }) {
                 onChange={(event) => event.target.checked && markSaved()}
                 className="size-5 accent-vl-accent"
               />
-              <label htmlFor="kept">2 · I stored it somewhere safe</label>
+              <label htmlFor="kept">{words.step2}</label>
             </li>
           </ol>
         </div>
@@ -84,21 +84,21 @@ export function KeyCard({ pair }: { pair: Wallet }) {
       <div className={panel(asking)}>
         <div className="min-h-0 overflow-hidden" inert={!asking} aria-hidden={!asking}>
           <div className="flex flex-col gap-2.5 rounded-[10px] border border-vl-danger p-3">
-            <p className="text-sm">Forget this key in this tab? You will need the key file to sign with this wallet again.</p>
+            <p className="text-sm">{words.ask}</p>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={forget}
                 className="h-9 rounded-lg bg-vl-danger px-3 text-[13px] font-semibold text-vl-on-accent"
               >
-                Forget it
+                {words.forget}
               </button>
               <button
                 type="button"
                 onClick={() => setAsking(false)}
                 className="h-9 rounded-lg border border-vl-line px-3 text-[13px] font-semibold"
               >
-                Keep it
+                {words.keep}
               </button>
             </div>
           </div>
@@ -109,7 +109,7 @@ export function KeyCard({ pair }: { pair: Wallet }) {
         onClick={() => setAsking(true)}
         className="h-9 self-start text-[13px] font-medium text-vl-muted underline"
       >
-        Forget this key in this tab
+        {words.forgetLink}
       </button>
     </section>
   );

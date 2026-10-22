@@ -1,21 +1,22 @@
 import type { Kind } from '../../lib/compose';
-
-const OPTIONS: [Kind, string][] = [
-  ['transfer', 'Transfer'],
-  ['notarize', 'Notarize a document'],
-];
+import { useT } from '../useT';
 
 // The pill slides with transform when the kind changes (DESIGN.md › Motion map).
 export function KindSwitch({ kind, onChange }: { kind: Kind; onChange: (kind: Kind) => void }) {
+  const t = useT();
+  const options: [Kind, string][] = [
+    ['transfer', t.transact.transfer],
+    ['notarize', t.transact.notarize],
+  ];
   return (
-    <div role="group" aria-label="Kind" className="relative grid grid-cols-2 rounded-[10px] border border-vl-line bg-vl-bg p-1">
+    <div role="group" aria-label={t.transact.kind} className="relative grid grid-cols-2 rounded-[10px] border border-vl-line bg-vl-bg p-1">
       <span
         aria-hidden="true"
         className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-[7px] bg-vl-raised transition-transform duration-300 ease-vl-out ${
           kind === 'notarize' ? 'translate-x-full' : ''
         }`}
       />
-      {OPTIONS.map(([value, label]) => (
+      {options.map(([value, label]) => (
         <button
           key={value}
           type="button"

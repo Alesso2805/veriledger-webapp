@@ -2,9 +2,11 @@ import { useState, type ChangeEvent } from 'react';
 import { KeyFileError, parseKeyFile } from '../../lib/keyFile';
 import { generateKeyPair } from '../../lib/keys';
 import { useKeyStore } from '../../store/useKeyStore';
+import { useT } from '../useT';
 
 // No key in this tab yet: make a new pair here, or open the file of one made before.
 export function CreateOrOpen({ onReady }: { onReady: () => void }) {
+  const t = useT();
   const hold = useKeyStore((state) => state.hold);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +24,7 @@ export function CreateOrOpen({ onReady }: { onReady: () => void }) {
       hold(parseKeyFile(await file.text()), true);
       onReady();
     } catch (failure) {
-      setError(failure instanceof KeyFileError ? failure.message : 'This file could not be read.');
+      setError(failure instanceof KeyFileError ? t.keyFile[failure.reason] : t.keyFile.unreadable);
     }
   };
 
@@ -32,28 +34,24 @@ export function CreateOrOpen({ onReady }: { onReady: () => void }) {
     <div className="mt-6 flex animate-vl-fade-up flex-wrap gap-4">
       <section aria-labelledby="create-h" className={card}>
         <h2 id="create-h" className="text-xl font-bold">
-          Create a wallet
+          {t.wallet.createTitle}
         </h2>
-        <p className="mt-1.5 mb-[18px] text-vl-muted">
-          A new Ed25519 key pair, generated here. The public key becomes your address.
-        </p>
+        <p className="mt-1.5 mb-[18px] text-vl-muted">{t.wallet.createText}</p>
         <button
           type="button"
           onClick={create}
           className="h-[46px] rounded-[10px] bg-vl-accent px-[18px] font-semibold text-vl-on-accent"
         >
-          Create a wallet
+          {t.wallet.create}
         </button>
       </section>
       <section aria-labelledby="open-h" className={card}>
         <h2 id="open-h" className="text-xl font-bold">
-          Open a key file
+          {t.wallet.openTitle}
         </h2>
-        <p className="mt-1.5 mb-[18px] text-vl-muted">
-          Use a wallet you created before. The file is read here and kept only in memory.
-        </p>
+        <p className="mt-1.5 mb-[18px] text-vl-muted">{t.wallet.openText}</p>
         <label className="relative inline-flex h-[46px] cursor-pointer items-center rounded-[10px] border border-vl-line px-[18px] font-semibold has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-vl-accent">
-          Choose a key file
+          {t.wallet.open}
           <input type="file" accept="application/json" onChange={(event) => void open(event)} className="absolute size-px opacity-0" />
         </label>
         {error && (
