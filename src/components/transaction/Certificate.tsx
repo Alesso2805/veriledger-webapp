@@ -2,7 +2,7 @@ import { useEffect, useState, type ChangeEvent } from 'react';
 import { sha256Hex } from '../../lib/digest';
 import { ON_INK } from '../../lib/fingerprint';
 import { certifiedParts } from '../../lib/format';
-import { fingerprintGroups } from '../../lib/transaction';
+import { hashGroups } from '../../lib/transaction';
 import { getBlock } from '../../services/ledger';
 import { Fingerprint } from '../Fingerprint';
 import { useLanguage, useT } from '../useT';
@@ -69,7 +69,7 @@ export function Certificate({ payload, blockNumber, blockHash }: Props) {
         aria-label={words.groups}
         className="mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-1 font-vl-mono text-xs"
       >
-        {fingerprintGroups(payload).map((group, index) => (
+        {hashGroups(payload).map((group, index) => (
           <li key={index} className="rounded-lg bg-vl-ink-raised p-1.5 text-center">
             {group}
           </li>

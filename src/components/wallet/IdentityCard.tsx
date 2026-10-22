@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { formatAmount } from '../../lib/format';
-import { fingerprintGroups } from '../../lib/transaction';
+import { hashGroups } from '../../lib/transaction';
 import { Fingerprint } from '../Fingerprint';
 import { useT } from '../useT';
 
@@ -43,7 +43,7 @@ export function IdentityCard({ address, fresh, balance, note }: Props) {
         </h2>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
           <p className="flex min-w-0 flex-[1_1_380px] flex-wrap gap-x-3 gap-y-1 font-vl-mono">
-            {fingerprintGroups(address).map((group, index) => (
+            {hashGroups(address).map((group, index) => (
               <span key={index}>{group}</span>
             ))}
           </p>

@@ -38,9 +38,8 @@ export function transactionKind(transaction: Described): TransactionKind {
   return 'Transfer';
 }
 
-// `document` is the word in the page's language.
-export function transactionRoute(transaction: Described, document = 'document'): string {
-  if (transactionKind(transaction) === 'Notarization') return `${document} ${shortHash(transaction.payload ?? '')}`;
+export function transactionRoute(transaction: Described, documentWord = 'document'): string {
+  if (transactionKind(transaction) === 'Notarization') return `${documentWord} ${shortHash(transaction.payload ?? '')}`;
   return `${shortHash(transaction.sender_address)} → ${shortHash(transaction.receiver_address)}`;
 }
 
