@@ -62,7 +62,7 @@ describe('Login', () => {
     expect(screen.getByLabelText('Correo electrónico')).toBeInTheDocument();
     expect(screen.getByLabelText('Contraseña')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Probar la demo · sin cuenta' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Explorar la torre sin cuenta →' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Explorar la cadena sin cuenta →' })).toHaveAttribute('href', '/');
   });
 
   it('starts a demo with one click and returns to the page the visitor was on', async () => {
@@ -92,11 +92,11 @@ describe('Login', () => {
     expect(useAppStore.getState().token).toBeNull();
   });
 
-  it('offers no demo on a node without demo mode, but still the tower', () => {
+  it('offers no demo on a node without demo mode, but still the chain', () => {
     renderLogin();
 
     expect(screen.queryByRole('heading', { name: 'Just looking around?' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Browse the tower without an account →' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Browse the chain without an account →' })).toHaveAttribute('href', '/');
   });
 
   it('starts with an empty form, never pre-filled', () => {

@@ -31,8 +31,8 @@ Epic E6 rebuilds every page in design C (ADR-0006), in English and Spanish (ADR-
 | Wallet | `/wallet` | Create a key pair or open a key file; the address, its identity cube and its balance; save the key file and confirm it; forget the key; the address's activity and a look-up of any address (VLW-31b) | Built (VLW-31, design E), replacing the page of VLW-02; the key is created in the browser (VLW-16) and is the one Sign and send uses |
 | Sign and send | `/transact` | Signs with the key held in the tab: open a key file or use the wallet's. Composes a transfer or a notarization (the document is hashed in the browser) and shows the message being signed. Signs it, sends the message and the signature, and shows the node's answer | Built (VLW-30, design E), replacing the page of VLW-03. It signs the API's canonical message (VLW-15) with the sender's next nonce (VLW-18) |
 | Network | `/network` | This node and its peers on a ring map; the peer list; adding a peer (admin); resolving conflicts (admin). Open without a session, read-only | Built (VLW-32, design E), replacing the page of VLW-06; open to visitors since VLW-34a |
-| Not found | any other path | The 404 tower with "Back to the tower", inside the shell. Open without a session | Built (VLW-33); open to visitors since VLW-34a |
-| Failure | any page | A page that throws while drawing shows "This page ran into a problem" inside the shell, with "Try again" (no reload, so the key held in the tab stays) and "Back to the tower". The shell or the login throwing shows one full-screen card with "Reload" | Built (VLW-35) |
+| Not found | any other path | "This page is not on the chain": a link of the chain with its middle tile missing, and "Back to the chain", inside the shell. Open without a session | Built (VLW-33); open to visitors since VLW-34a; design C since VLW-41 |
+| Failure | any page | A page that throws while drawing shows "This page ran into a problem" inside the shell, with "Try again" (no reload, so the key held in the tab stays) and "Back to the chain". The shell or the login throwing shows one full-screen card with "Reload" | Built (VLW-35); design C since VLW-41 |
 
 **Out of scope for this plan:** storing private keys (encrypted or not) beyond the session, hardware wallets, a block explorer for other networks, languages other than English and Spanish.
 
@@ -180,7 +180,7 @@ veriledger-webapp/
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css                 # design C tokens, light and dark: the CSS block of DESIGN.md (AR-10)
-├── public/favicon.svg            # the logo on the background colour (VLW-26)
+├── public/favicon.svg            # the logo's tile, four bars of the palette (VLW-41)
 ├── public/theme.js               # the stored theme before the first paint (VLW-39, ADR-0008)
 ├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); robustness.spec.ts on the same fixtures (VLW-36); flows.spec.ts against the API's stack (VLW-23)
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh

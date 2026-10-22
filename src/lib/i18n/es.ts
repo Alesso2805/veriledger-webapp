@@ -12,7 +12,7 @@ export const es: Messages = {
   shell: {
     skip: 'Saltar al contenido',
     mainNav: 'Principal',
-    tabs: { tower: 'Torre', transact: 'Firmar y enviar', wallet: 'Billetera', network: 'Red' },
+    tabs: { chain: 'Cadena', transact: 'Firmar y enviar', wallet: 'Billetera', network: 'Red' },
     signIn: 'Iniciar sesión',
     signOut: 'Cerrar sesión',
     tryDemo: 'Probar la demo',
@@ -55,7 +55,7 @@ export const es: Messages = {
     pageTitle: 'Esta página tuvo un problema',
     pageText: 'Algo falló al dibujarla. Las demás páginas siguen funcionando, y la clave que tengas en esta pestaña se conserva.',
     tryAgain: 'Intentar de nuevo',
-    backToTower: 'Volver a la torre',
+    backToChain: 'Volver a la cadena',
     appTitle: 'VeriLedger tuvo un problema',
     appText: 'Recargar suele arreglarlo. Al recargar se olvida la clave de esta pestaña, así que después vuelve a abrir su archivo de clave.',
     reload: 'Recargar',
@@ -78,7 +78,7 @@ export const es: Messages = {
     demoButton: 'Probar la demo · sin cuenta',
     demoCreating: 'Creando una cuenta demo…',
     regular: 'Las cuentas normales las crea un administrador.',
-    browse: 'Explorar la torre sin cuenta →',
+    browse: 'Explorar la cadena sin cuenta →',
     tagline: 'Un registro que cualquiera puede verificar.',
     lines: [
       'Cada entrada la firma su autor.',
@@ -169,7 +169,7 @@ export const es: Messages = {
 
   transaction: {
     breadcrumb: 'Ruta de navegación',
-    tower: 'Torre',
+    chain: 'Cadena',
     block: (number) => `Bloque #${number}`,
     transaction: 'Transacción',
     loading: 'Cargando la transacción',
@@ -178,7 +178,7 @@ export const es: Messages = {
     notFoundTitle: 'Ninguna transacción con este hash en este nodo',
     notFoundText:
       'Puede que aún venga en camino desde otro nodo, o que se rechazara al enviarla y nunca se registrara. Las transacciones rechazadas no dejan rastro.',
-    back: 'Volver a la torre',
+    back: 'Volver a la cadena',
     utc: 'UTC',
     chips: { sealed: (number) => `En el bloque #${number}`, failed: 'Fallida', waiting: 'En espera' },
     titles: {
@@ -349,7 +349,7 @@ export const es: Messages = {
       title: 'Actividad',
       noAnswer: 'El nodo no respondió. No se muestra su actividad.',
       empty: 'Aún no hay transacciones. Mina un bloque con esta dirección como dirección de recompensa, o pide a alguien que te envíe VL.',
-      goToChain: 'Ir a la torre',
+      goToChain: 'Ir a la cadena',
       newest: (shown, total) => `Las ${shown} más nuevas de ${total}.`,
       waiting: 'En espera',
       failed: 'Fallida',
@@ -414,8 +414,8 @@ export const es: Messages = {
   },
 
   notFound: {
-    title: 'Esta página no está en la torre',
+    title: 'Esta página no está en la cadena',
     text: 'Puede que la dirección esté mal escrita o que el enlace sea de una versión anterior de la app.',
-    back: 'Volver a la torre',
+    back: 'Volver a la cadena',
   },
 };

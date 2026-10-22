@@ -59,7 +59,7 @@ describe('Layout (the shell)', () => {
     renderShell('/wallet');
 
     expect(screen.getByRole('link', { name: 'Wallet' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Tower' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Chain' })).not.toHaveAttribute('aria-current');
     await apiStatus('api · online');
   });
 
@@ -203,7 +203,7 @@ describe('Layout (the shell)', () => {
     await apiStatus('api · online');
     await expect(document.body).toPassAxe();
 
-    fireEvent.click(screen.getByRole('link', { name: 'Back to the tower' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Back to the chain' }));
 
     expect(await screen.findByText('tower page')).toBeInTheDocument();
     expect(screen.queryByText('This page ran into a problem')).not.toBeInTheDocument();
@@ -224,7 +224,7 @@ describe('Layout (the shell)', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'This page ran into a problem' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Back to the tower' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Back to the chain' })).not.toBeInTheDocument();
     await apiStatus('api · online');
     vi.mocked(console.error).mockRestore();
   });
@@ -240,7 +240,7 @@ describe('Layout (the shell)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'EN, English. Switch to español' }));
     expect(screen.getByRole('link', { name: 'Billetera' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Torre' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Cadena' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Tema: Sistema. Cambiar a Claro' })).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('en línea');

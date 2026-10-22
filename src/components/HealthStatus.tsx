@@ -6,14 +6,12 @@ export function HealthStatus() {
   const t = useT();
   const online = useHealthStore((state) => state.online);
   const databaseDown = useHealthStore((state) => state.databaseDown);
-  const dot = online === null ? 'fill-vl-faint' : online ? 'fill-vl-ok' : 'fill-vl-danger';
+  const dot = online === null ? 'bg-vl-faint' : online ? 'bg-vl-ok' : 'bg-vl-danger';
 
   return (
-    <span role="status" className="flex items-center gap-1.5 font-vl-mono text-[11px] text-vl-muted sm:gap-2 sm:text-xs">
-      <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true">
-        <circle cx="4" cy="4" r="4" className={`${dot} transition-colors duration-(--vl-dur-base)`} />
-      </svg>
-      <span className="hidden sm:inline">{t.shell.api}</span>
+    <span role="status" className="flex items-center gap-2 font-vl-mono text-[13px] whitespace-nowrap text-vl-muted">
+      <span aria-hidden="true" className={`size-[9px] rounded-full transition-colors duration-(--vl-dur-base) ${dot}`} />
+      <span className="max-sm:hidden">{t.shell.api}</span>
       {t.shell.health[healthWord(online, databaseDown)]}
     </span>
   );

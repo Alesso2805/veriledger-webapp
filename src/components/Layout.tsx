@@ -18,20 +18,22 @@ import { useStartDemo } from './useStartDemo';
 import { useT } from './useT';
 
 const TABS = [
-  { tab: 'tower', to: '/', end: true },
+  { tab: 'chain', to: '/', end: true },
   { tab: 'transact', to: '/transact', end: false },
   { tab: 'wallet', to: '/wallet', end: false },
   { tab: 'network', to: '/network', end: false },
 ] as const;
 
 const pillClass =
-  'inline-flex h-9 items-center rounded-full border border-vl-line px-3 text-[13px] font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised';
+  'inline-flex h-10 items-center rounded-full border-[1.5px] border-vl-line px-3.5 text-sm font-bold whitespace-nowrap transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised';
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
-  `whitespace-nowrap border-b-2 px-3 py-2.5 transition-colors duration-(--vl-dur-fast) ${
-    isActive ? 'border-vl-accent font-semibold text-vl-text' : 'border-transparent text-vl-muted hover:text-vl-text'
+  `inline-flex h-10 items-center rounded-full px-[18px] font-medium whitespace-nowrap transition-colors duration-(--vl-dur-fast) ${
+    isActive ? 'bg-vl-strong text-vl-on-strong' : 'text-vl-muted hover:bg-vl-raised hover:text-vl-text'
   }`;
 
+// The shell of design C (DESIGN.md › Shell). Below 640 px the switches and the account share the logo's row, the
+// search takes the next one and the tabs the last, scrolling sideways.
 export function Layout() {
   const t = useT();
   const { pathname, search } = useLocation();
@@ -50,23 +52,22 @@ export function Layout() {
   };
 
   return (
-    <div className="relative min-h-screen text-[15px] leading-normal">
+    <div className="relative min-h-screen text-base leading-normal">
       {/* Moved with transform, not top: only transform, opacity and colours animate (DESIGN.md › Motion map). */}
       <a
         href="#main"
-        className="absolute top-3 left-3 z-60 -translate-y-[72px] rounded-[10px] bg-vl-accent px-3.5 py-2.5 font-semibold text-vl-on-accent transition-transform duration-(--vl-dur-fast) focus:translate-y-0"
+        className="absolute top-3 left-3 z-60 -translate-y-20 rounded-[14px] bg-vl-accent px-4 py-3 font-bold text-vl-on-accent transition-transform duration-(--vl-dur-fast) focus:translate-y-0"
       >
         {t.shell.skip}
       </a>
-      <header className="sticky top-0 z-30 border-b border-vl-line bg-vl-bg">
-        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-3 gap-y-2.5 px-3 pt-2.5 sm:gap-x-5 sm:px-6">
+      <header className="sticky top-0 z-30 bg-vl-bg">
+        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-5 gap-y-3 px-6 pt-3.5 pb-2.5 max-sm:gap-x-3 max-sm:gap-y-2.5 max-sm:px-3 max-sm:py-2.5">
           <Link to="/" className="flex items-center gap-2.5">
-            <LogoMark className="size-[22px] sm:size-[26px]" />
-            <span className="font-bold sm:text-lg">veriledger</span>
+            <LogoMark />
+            <span className="text-xl font-extrabold tracking-[-0.02em] max-sm:sr-only">VeriLedger</span>
           </Link>
           <HeaderSearch />
-          {/* Below sm the status and Sign out share the logo's row and the search drops below, as in "E · Estados del shell". */}
-          <div className="order-1 ml-auto flex items-center gap-2.5 sm:order-none sm:gap-3.5">
+          <div className="ml-auto flex items-center gap-3 max-sm:order-1 max-sm:flex-wrap max-sm:justify-end max-sm:gap-2">
             <LanguageSwitch />
             <ThemeSwitch />
             <HealthStatus />
@@ -86,7 +87,7 @@ export function Layout() {
                     type="button"
                     onClick={() => void demo.start()}
                     disabled={demo.starting}
-                    className={`inline-flex h-9 items-center rounded-full bg-vl-accent px-3 text-[13px] font-semibold whitespace-nowrap text-vl-on-accent ${
+                    className={`inline-flex h-10 items-center rounded-full bg-vl-accent px-4 text-sm font-bold whitespace-nowrap text-vl-on-accent ${
                       demo.starting ? 'animate-vl-pulse' : ''
                     }`}
                   >
@@ -96,12 +97,14 @@ export function Layout() {
               </>
             )}
           </div>
-          <nav aria-label={t.shell.mainNav} className="order-3 flex basis-full gap-0.5 overflow-x-auto sm:order-none">
-            {TABS.map((tab) => (
-              <NavLink key={tab.to} to={tab.to} end={tab.end} className={tabClass}>
-                {t.shell.tabs[tab.tab]}
-              </NavLink>
-            ))}
+          <nav aria-label={t.shell.mainNav} className="flex basis-full overflow-x-auto max-sm:order-3">
+            <span className="inline-flex gap-1 rounded-full bg-vl-surface p-1">
+              {TABS.map((tab) => (
+                <NavLink key={tab.to} to={tab.to} end={tab.end} className={tabClass}>
+                  {t.shell.tabs[tab.tab]}
+                </NavLink>
+              ))}
+            </span>
           </nav>
         </div>
         <OfflineBanner />
@@ -110,7 +113,7 @@ export function Layout() {
         id="main"
         tabIndex={-1}
         key={pathname}
-        className="mx-auto max-w-[1320px] animate-vl-fade-up px-3 pt-7 pb-16 focus:outline-none sm:px-6"
+        className="mx-auto max-w-[1320px] animate-vl-fade-up px-6 pt-5 pb-[72px] focus:outline-none max-sm:px-3"
       >
         {/* A page that throws while drawing fails alone, inside the shell; the key above clears it on another route. */}
         <ErrorBoundary fallback={(retry) => <PageFailed onRetry={retry} />}>

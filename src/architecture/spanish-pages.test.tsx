@@ -125,7 +125,7 @@ const CASES: Case[] = [
   { name: 'the wallet without a key', path: '/wallet', signedIn: true, ready: 'Abrir un archivo de clave' },
   { name: 'sign and send with a key', path: '/transact', signedIn: true, key: true, ready: 'Lo que estás firmando' },
   { name: 'sign and send without a key', path: '/transact', signedIn: true, ready: 'No hay clave en esta pestaña' },
-  { name: 'a page that does not exist', path: '/no/such/page', ready: 'Esta página no está en la torre' },
+  { name: 'a page that does not exist', path: '/no/such/page', ready: 'Esta página no está en la cadena' },
 ];
 
 describe('AR-11 every page in Spanish', () => {
@@ -141,7 +141,7 @@ describe('AR-11 every page in Spanish', () => {
   });
 
   it('knows the English texts it looks for', () => {
-    expect(ENGLISH).toEqual(expect.arrayContaining(['Sign and send', 'Back to the tower', 'Copy address']));
+    expect(ENGLISH).toEqual(expect.arrayContaining(['Sign and send', 'Back to the chain', 'Copy address']));
   });
 
   it.each(CASES)('$name shows no English text', async ({ path, signedIn, key, ready }) => {

@@ -41,9 +41,9 @@ export function UserChip() {
   const left = expiresAt ? timeLeft(Date.parse(expiresAt) - now) : null;
 
   return (
-    <span className="hidden h-9 animate-vl-fade-in items-center gap-2 rounded-full border border-vl-line px-3 text-[13px] sm:flex">
+    <span className="hidden h-10 animate-vl-fade-in items-center gap-2 rounded-full bg-vl-surface px-3.5 text-sm font-medium sm:flex">
       <span>{user.display_name}</span>
-      <span className="font-vl-mono text-[11px] text-vl-accent">
+      <span className="font-vl-mono text-xs text-vl-accent">
         {left ? t.shell.demoChip('hours' in left ? t.shell.hoursLeft(left.hours) : t.shell.minutesLeft(left.minutes)) : user.role}
       </span>
     </span>

@@ -97,7 +97,7 @@ export function HeaderSearch() {
       onSubmit={submit}
       onBlur={leave}
       onKeyDown={(event) => event.key === 'Escape' && setOpen(false)}
-      className="relative order-2 max-w-[520px] flex-[1_1_280px] sm:order-none"
+      className="relative max-w-[480px] flex-[1_1_280px] max-sm:order-2"
     >
       <label htmlFor="header-search" className="sr-only">
         {t.shell.search.label}
@@ -114,21 +114,21 @@ export function HeaderSearch() {
         placeholder={t.shell.search.placeholder}
         autoComplete="off"
         spellCheck={false}
-        className="h-10 w-full rounded-[10px] border border-vl-line bg-vl-surface px-3 text-sm text-vl-text placeholder:text-vl-faint"
+        className="h-11 w-full rounded-[14px] border-[1.5px] border-vl-line bg-vl-surface px-4 text-[15px] text-vl-text placeholder:text-vl-muted"
       />
       {open && results.phase !== 'idle' && (
         <div
           role="listbox"
           aria-label={t.shell.search.results}
-          className="absolute top-[46px] right-0 left-0 z-40 animate-vl-fade-up rounded-xl border border-vl-line bg-vl-raised p-1.5"
+          className="absolute top-[52px] right-0 left-0 z-40 animate-vl-fade-up rounded-[18px] bg-vl-surface p-1.5 shadow-[0_12px_32px_var(--color-vl-shadow)]"
         >
           {results.phase === 'searching' && (
-            <p aria-live="polite" className="animate-vl-pulse p-2.5 text-sm text-vl-muted">
+            <p aria-live="polite" className="animate-vl-pulse p-3 text-[15px] text-vl-muted">
               {t.shell.search.lookingUp}
             </p>
           )}
           {results.phase === 'message' && (
-            <p aria-live="polite" className="p-2.5 text-sm text-vl-muted">
+            <p aria-live="polite" className="p-3 text-[15px] text-vl-muted">
               {results.text}
             </p>
           )}
@@ -140,9 +140,9 @@ export function HeaderSearch() {
                   <button
                     type="button"
                     onClick={() => go(item)}
-                    className="flex w-full justify-between gap-3 rounded-lg p-2.5 text-left text-sm font-medium transition-colors duration-(--vl-dur-fast) hover:bg-vl-surface"
+                    className="flex w-full justify-between gap-3 rounded-xl p-3 text-left text-[15px] font-bold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
                   >
-                    <span>{label}</span> <span className="font-vl-mono text-[11px] text-vl-muted">{meta}</span>
+                    <span>{label}</span> <span className="font-vl-mono text-xs font-normal text-vl-muted">{meta}</span>
                   </button>
                 </div>
               );
