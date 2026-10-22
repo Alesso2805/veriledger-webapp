@@ -1,5 +1,8 @@
+import { useT } from '../useT';
+
 // The signature appears with animate-vl-reveal when it is made; an edit after signing discards it.
 export function SignaturePanel({ signature, stale }: { signature: string | null; stale: boolean }) {
+  const words = useT().transact.signature;
   return (
     <div
       aria-live="polite"
@@ -8,8 +11,8 @@ export function SignaturePanel({ signature, stale }: { signature: string | null;
       }`}
     >
       <div className="flex justify-between gap-3 text-[13px] text-vl-muted">
-        <span>Ed25519 signature</span>
-        <span className="font-vl-mono">64 bytes</span>
+        <span>{words.title}</span>
+        <span className="font-vl-mono">{words.size}</span>
       </div>
       {signature ? (
         <div key={signature} className="mt-1.5 animate-vl-reveal font-vl-mono text-xs [overflow-wrap:anywhere]">
@@ -17,7 +20,7 @@ export function SignaturePanel({ signature, stale }: { signature: string | null;
         </div>
       ) : (
         <div className={`mt-1.5 text-sm ${stale ? 'text-vl-accent' : 'text-vl-muted'}`}>
-          {stale ? 'You changed the message, so the old signature no longer matches. Sign again.' : 'Not signed yet.'}
+          {stale ? words.stale : words.none}
         </div>
       )}
     </div>

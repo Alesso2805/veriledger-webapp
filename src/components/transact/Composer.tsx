@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { checkDraft, messageLines, type Draft } from '../../lib/compose';
-import { refusalTitle } from '../../lib/refusal';
+import { refusalKind } from '../../lib/refusal';
 import { buildSignedMessage, signMessage } from '../../lib/signing';
 import { detailOf, statusOf } from '../../services/api';
 import { sendTransaction } from '../../services/ledger';
@@ -12,6 +12,7 @@ import { KindSwitch } from './KindSwitch';
 import { SignaturePanel } from './SignaturePanel';
 import { SignedMessage } from './SignedMessage';
 import { SigningAs } from './SigningAs';
+import { useT } from '../useT';
 
 const EMPTY: Draft = { kind: 'transfer', to: '', amount: '', fee: '0', payload: null };
 
@@ -29,6 +30,8 @@ const input = (invalid: boolean) =>
 
 // Remounted for each key (key={public_key}), so a new key starts from an empty draft and reads its own nonce.
 export function Composer({ pair }: { pair: Wallet }) {
+  const t = useT();
+  const words = t.transact;
   const address = pair.public_key;
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [nonce, setNonce] = useState<number | 'unknown' | null>(null);
@@ -87,17 +90,17 @@ export function Composer({ pair }: { pair: Wallet }) {
       setSent(await sendTransaction(checked.fields, signature));
     } catch (error) {
       const status = statusOf(error);
-      const detail = detailOf(error, 'The node did not answer');
+      const detail = detailOf(error, words.noAnswer);
       let text = detail;
       // Another transaction from this address took the nonce first: read the next one and ask to sign again.
       if (status === 409) {
         const next = await getNextNonce(address).catch(() => null);
         if (next !== null) {
           setNonce(next);
-          text = `${detail}. We read the next one, ${next}, from the node. Sign again.`;
+          text = words.nextNonce(detail, next);
         }
       }
-      setRefusal((previous) => ({ title: refusalTitle(status, detail), text, id: (previous?.id ?? 0) + 1 }));
+      setRefusal((previous) => ({ title: words.refusals[refusalKind(status, detail)], text, id: (previous?.id ?? 0) + 1 }));
       setSignature(null);
     } finally {
       setSending(false);
@@ -128,7 +131,7 @@ export function Composer({ pair }: { pair: Wallet }) {
         {transfer ? (
           <div key="to" className="animate-vl-fade-up">
             <label htmlFor="to" className="mb-1.5 block text-[13px] font-medium">
-              To
+              {words.to}
             </label>
             <input
               id="to"
@@ -141,7 +144,7 @@ export function Composer({ pair }: { pair: Wallet }) {
               className={`${input(toInvalid)} text-xs`}
             />
             <p id="to-help" className={`mt-1.5 text-[13px] ${toInvalid ? 'text-vl-danger' : 'text-vl-muted'}`}>
-              {toInvalid ? 'An address has 64 characters from 0–9 and a–f.' : 'A 64-character address.'}
+              {toInvalid ? words.toInvalid : words.toHelp}
             </p>
           </div>
         ) : (
@@ -150,7 +153,7 @@ export function Composer({ pair }: { pair: Wallet }) {
         <div className="grid grid-cols-3 gap-2.5">
           <div>
             <label htmlFor="amount" className="mb-1.5 block text-[13px] font-medium">
-              Amount
+              {words.amount}
             </label>
             {transfer ? (
               <input
@@ -167,7 +170,7 @@ export function Composer({ pair }: { pair: Wallet }) {
           </div>
           <div>
             <label htmlFor="fee" className="mb-1.5 block text-[13px] font-medium">
-              Fee
+              {words.fee}
             </label>
             <input
               id="fee"
@@ -180,13 +183,13 @@ export function Composer({ pair }: { pair: Wallet }) {
           </div>
           <div>
             <label htmlFor="nonce" className="mb-1.5 block text-[13px] font-medium">
-              Nonce
+              {words.nonce}
             </label>
             <input id="nonce" readOnly value={nonce ?? '…'} className={`${input(false)} text-sm`} />
           </div>
         </div>
         <p className="-mt-1.5 text-[13px] text-vl-muted">
-          The nonce is this address’s next number, read from the node. A signed message works only once.
+          {words.nonceHelp}
         </p>
       </form>
 
@@ -198,13 +201,13 @@ export function Composer({ pair }: { pair: Wallet }) {
         <SignaturePanel signature={signature} stale={stale} />
         <ul className="grid grid-cols-3 gap-2 text-[13px]">
           <li className="rounded-xl border border-vl-line bg-vl-surface px-3 py-2.5">
-            <span className="block text-vl-muted">Sent</span> The message
+            <span className="block text-vl-muted">{words.sent}</span> {words.theMessage}
           </li>
           <li className="rounded-xl border border-vl-line bg-vl-surface px-3 py-2.5">
-            <span className="block text-vl-muted">Sent</span> The signature
+            <span className="block text-vl-muted">{words.sent}</span> {words.theSignature}
           </li>
           <li className="rounded-xl border border-vl-accent bg-vl-surface px-3 py-2.5">
-            <span className="block text-vl-accent">Never sent</span> Your private key
+            <span className="block text-vl-accent">{words.neverSent}</span> {words.yourKey}
           </li>
         </ul>
 
@@ -231,7 +234,7 @@ export function Composer({ pair }: { pair: Wallet }) {
                 canSign ? 'bg-vl-accent text-vl-on-accent' : 'bg-vl-line text-vl-muted'
               }`}
             >
-              {signature ? 'Signed' : 'Sign with this key'}
+              {signature ? words.signed : words.sign}
             </button>
             <button
               type="button"
@@ -241,7 +244,7 @@ export function Composer({ pair }: { pair: Wallet }) {
                 canSend ? 'border-vl-text bg-vl-text text-vl-on-accent' : 'border-vl-line bg-transparent text-vl-faint'
               }`}
             >
-              {sending ? 'Sending…' : 'Send to the node'}
+              {sending ? words.sending : words.send}
             </button>
           </div>
         )}

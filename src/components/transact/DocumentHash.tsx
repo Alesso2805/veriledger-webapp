@@ -1,6 +1,8 @@
 import { useState, type ChangeEvent } from 'react';
 import { sha256Hex } from '../../lib/digest';
 import { shortHash } from '../../lib/format';
+import type { Messages } from '../../lib/i18n';
+import { useT } from '../useT';
 
 type Hashing =
   | { phase: 'idle' }
@@ -8,21 +10,22 @@ type Hashing =
   | { phase: 'done'; name: string; hash: string }
   | { phase: 'failed'; name: string };
 
-function noteFor(state: Hashing): string {
+function noteFor(state: Hashing, words: Messages['transact']['document']): string {
   switch (state.phase) {
     case 'idle':
-      return 'No document chosen yet.';
+      return words.none;
     case 'hashing':
-      return `Hashing ${state.name}…`;
+      return words.hashing(state.name);
     case 'done':
       return `${state.name} · SHA-256 ${shortHash(state.hash, 8)}`;
     case 'failed':
-      return `${state.name} could not be read.`;
+      return words.unreadable(state.name);
   }
 }
 
 // The document is hashed here and never sent; only its fingerprint becomes the payload.
 export function DocumentHash({ onHashed }: { onHashed: (payload: string | null) => void }) {
+  const words = useT().transact.document;
   const [state, setState] = useState<Hashing>({ phase: 'idle' });
 
   const choose = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -43,10 +46,8 @@ export function DocumentHash({ onHashed }: { onHashed: (payload: string | null) 
   return (
     <div className="animate-vl-fade-up">
       <label className="relative flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-dashed border-vl-line p-4 text-center transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-vl-accent">
-        <span className="font-semibold">Choose the document</span>
-        <span className="text-[13px] text-vl-muted">
-          Its SHA-256 fingerprint is computed here. The file never leaves this device.
-        </span>
+        <span className="font-semibold">{words.choose}</span>
+        <span className="text-[13px] text-vl-muted">{words.private}</span>
         <input type="file" onChange={(event) => void choose(event)} className="absolute size-px opacity-0" />
       </label>
       {/* No percentage while hashing: crypto.subtle.digest gives none (DESIGN.md › What the design does not show). */}
@@ -57,7 +58,7 @@ export function DocumentHash({ onHashed }: { onHashed: (payload: string | null) 
           state.phase === 'hashing' ? 'animate-vl-pulse' : state.phase === 'done' ? 'animate-vl-fade-up' : ''
         }`}
       >
-        {noteFor(state)}
+        {noteFor(state, words)}
       </p>
     </div>
   );

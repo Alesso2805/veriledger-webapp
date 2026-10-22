@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { MAP, peerLabel, ringPoints } from '../../lib/peers';
 import type { Peer } from '../../types/network';
 import type { ResolvePhase } from './ResolveCard';
+import { useT } from '../useT';
 
 const NODE = 84;
 
@@ -22,8 +23,9 @@ const pulse = 'absolute top-0 left-0 size-3 rounded-full animate-vl-travel';
 // carries the same information as text, so the map is one image to a screen reader. On a phone the map scrolls
 // sideways inside its box, which takes the focus so the arrow keys can scroll it too (VLW-24).
 export function PeerMap({ peers, height, fresh, phase, round }: Props) {
+  const t = useT();
   const points = ringPoints(peers.length);
-  const label = `This node${height === null ? '' : ` at height ${height}`}, with ${peers.length} ${peers.length === 1 ? 'peer' : 'peers'}`;
+  const label = t.network.mapLabel(height, peers.length);
   const box = useRef<HTMLElement>(null);
 
   // A narrow box opens on this node, in the middle of the map, rather than on the map's empty left edge.
@@ -35,7 +37,7 @@ export function PeerMap({ peers, height, fresh, phase, round }: Props) {
   return (
     <section
       ref={box}
-      aria-label="Peer map"
+      aria-label={t.network.map}
       tabIndex={0}
       className="min-w-0 flex-[999_1_640px] overflow-x-auto rounded-2xl border border-vl-line bg-vl-surface"
     >
@@ -81,8 +83,8 @@ export function PeerMap({ peers, height, fresh, phase, round }: Props) {
           ))}
         <div className="absolute top-0 left-0" style={{ transform: `translate(${MAP.cx - 50}px, ${MAP.cy - 50}px)` }}>
           <div className="flex size-[100px] flex-col items-center justify-center rounded-full border-2 border-vl-accent bg-vl-raised text-center">
-            <span className="text-[13px] font-semibold">This node</span>
-            <span className="font-vl-mono text-[10px] text-vl-muted">height {height ?? '—'}</span>
+            <span className="text-[13px] font-semibold">{t.network.thisNode}</span>
+            <span className="font-vl-mono text-[10px] text-vl-muted">{t.network.height(height === null ? '—' : String(height))}</span>
           </div>
         </div>
         {peers.map((peer, index) => {

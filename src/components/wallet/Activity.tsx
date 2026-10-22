@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { activityRow } from '../../lib/activity';
 import type { Transaction } from '../../types/ledger';
+import { useT } from '../useT';
 
 interface Props {
   address: string;
@@ -11,13 +12,14 @@ interface Props {
 
 // The address's newest transactions (VLA-34), each linked to its page.
 export function Activity({ address, transactions, total }: Props) {
+  const words = useT().wallet.activity;
   return (
     <section
       aria-labelledby="act-h"
       className="min-w-0 flex-[999_1_560px] rounded-2xl border border-vl-line bg-vl-surface p-[22px]"
     >
       <h2 id="act-h" className="mb-2 text-[15px] font-semibold">
-        Activity
+        {words.title}
       </h2>
       {transactions === null && (
         <div className="flex flex-col gap-1.5">
@@ -26,17 +28,17 @@ export function Activity({ address, transactions, total }: Props) {
           ))}
         </div>
       )}
-      {transactions === 'unknown' && <p className="text-vl-muted">The node did not answer. Its activity is not shown.</p>}
+      {transactions === 'unknown' && <p className="text-vl-muted">{words.noAnswer}</p>}
       {Array.isArray(transactions) && transactions.length === 0 && (
         <div className="animate-vl-fade-in">
           <p className="text-vl-muted">
-            No transactions yet. Mine a block with this address as the reward address, or ask someone to send you VL.
+            {words.empty}
           </p>
           <Link
             to="/"
             className="mt-3 inline-flex h-10 items-center rounded-[10px] border border-vl-line px-3.5 font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
           >
-            Go to the tower
+            {words.goToChain}
           </Link>
         </div>
       )}
@@ -44,7 +46,7 @@ export function Activity({ address, transactions, total }: Props) {
         <>
           <ul>
             {transactions.map((transaction, index) => {
-              const row = activityRow(address, transaction);
+              const row = activityRow(address, transaction, words);
               const content = (
                 <>
                   <span>
@@ -81,7 +83,7 @@ export function Activity({ address, transactions, total }: Props) {
           </ul>
           {total > transactions.length && (
             <p className="mt-2 text-[13px] text-vl-muted">
-              The {transactions.length} newest of {total}.
+              {words.newest(transactions.length, total)}
             </p>
           )}
         </>

@@ -3,6 +3,7 @@ import { formatAmount } from '../../lib/format';
 import { partialCube } from '../../lib/identicon';
 import { detailOf } from '../../services/api';
 import { getBalance } from '../../services/wallets';
+import { useT } from '../useT';
 
 type Result =
   | { phase: 'idle' }
@@ -14,6 +15,7 @@ const HEX64 = /^[0-9a-f]{64}$/;
 
 // Any address's balance. Its cube is built as the person types, a face for each complete byte.
 export function AddressLookup() {
+  const words = useT().wallet.lookup;
   const [typed, setTyped] = useState('');
   const [result, setResult] = useState<Result>({ phase: 'idle' });
   const address = typed.trim().toLowerCase();
@@ -30,7 +32,7 @@ export function AddressLookup() {
     try {
       setResult({ phase: 'balance', balance: await getBalance(address) });
     } catch (error) {
-      setResult({ phase: 'failed', detail: detailOf(error, 'The node did not answer') });
+      setResult({ phase: 'failed', detail: detailOf(error, words.noAnswer) });
     }
   };
 
@@ -45,7 +47,7 @@ export function AddressLookup() {
       className="min-w-0 flex-[1_1_340px] rounded-2xl border border-vl-line bg-vl-surface p-[22px]"
     >
       <h2 id="look-h" className="text-[15px] font-semibold">
-        Look up any address
+        {words.title}
       </h2>
       <form onSubmit={(event) => void submit(event)} className="mt-3 flex flex-col gap-2.5">
         <div className="flex items-center gap-3">
@@ -57,7 +59,7 @@ export function AddressLookup() {
           <span className="font-vl-mono text-xs text-vl-muted">{address.length} / 64</span>
         </div>
         <label htmlFor="other" className="text-[13px] font-medium">
-          Address
+          {words.address}
         </label>
         <input
           id="other"
@@ -66,7 +68,7 @@ export function AddressLookup() {
             setTyped(event.target.value);
             setResult({ phase: 'idle' });
           }}
-          placeholder="64 characters"
+          placeholder={words.placeholder}
           autoComplete="off"
           spellCheck={false}
           className={`h-11 rounded-[10px] border bg-vl-bg px-3 font-vl-mono text-xs transition-colors duration-(--vl-dur-fast) ${
@@ -75,7 +77,7 @@ export function AddressLookup() {
         />
         <div>
           <button type="submit" className="h-[42px] rounded-[10px] bg-vl-text px-3.5 text-sm font-semibold text-vl-on-accent">
-            Show balance
+            {words.show}
           </button>
         </div>
       </form>
@@ -85,7 +87,7 @@ export function AddressLookup() {
         )}
         {result.phase === 'bad' && (
           <p key={result.id} className="mt-3.5 animate-vl-shake text-sm text-vl-danger">
-            An address has 64 characters from 0–9 and a–f.
+            {words.invalid}
           </p>
         )}
         {result.phase === 'failed' && <p className="mt-3.5 text-sm text-vl-danger">{result.detail}</p>}

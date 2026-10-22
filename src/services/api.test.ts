@@ -1,6 +1,7 @@
 import { AxiosError, type AxiosAdapter, type AxiosResponse } from 'axios';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useAppStore } from '../store/useAppStore';
+import { usePreferencesStore } from '../store/usePreferencesStore';
 import { api, detailOf } from './api';
 
 // Answers in-process so the test sees the headers the interceptors produced without touching the network.
@@ -95,5 +96,19 @@ describe('detailOf', () => {
 
   it('uses the fallback for anything else', () => {
     expect(detailOf('nope', 'fallback')).toBe('fallback');
+  });
+
+  it("gives a known detail in Spanish, and the caller's Spanish text when the API sent none", async () => {
+    usePreferencesStore.setState({ language: 'es' });
+    try {
+      const refused = new AxiosError('Request failed with status code 400', 'ERR_BAD_REQUEST', undefined, null, {
+        data: { detail: 'Node already registered' },
+        status: 400,
+      } as AxiosResponse);
+      expect(detailOf(refused, 'el nodo no respondió')).toBe('El nodo ya está registrado');
+      expect(detailOf(new Error('Network Error'), 'el nodo no respondió')).toBe('el nodo no respondió');
+    } finally {
+      usePreferencesStore.setState({ language: 'en' });
+    }
   });
 });
