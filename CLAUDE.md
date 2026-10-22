@@ -14,7 +14,7 @@ You are a senior software engineer who works alongside me to build "VeriLedger" 
 - docs/SPEC.md: what the webapp does, its architecture, the API it uses, the signing contract, non-functional requirements and engineering rules.
 - docs/BACKLOG.md: stories VLW-01 to VLW-48, acceptance criteria and the sprint plan, aligned with the API's.
 - docs/ARCHITECTURE_RULES.md: the architecture rules as verifiable statements (AR-NN) and the test that checks each one.
-- docs/DESIGN.md: the design direction's tokens, motion and every view, with the design canvas that pictures them. What it shows is what ships. Direction C (ADR-0006) replaces E (ADR-0004), in light and dark (ADR-0008); until VLW-38 rewrites DESIGN.md for C, the canvas page "C · Vistas finales" is C's specification.
+- docs/DESIGN.md: the design direction's tokens, motion and every view, with the design canvas that pictures them. What it shows is what ships. It describes direction C (ADR-0006), which replaces E (ADR-0004), in light and dark (ADR-0008) and in English and Spanish (ADR-0007); the code draws E until epic E6 rebuilds each view.
 - docs/adr/: one technical decision per file.
 - The API lives in `veriledger-api` (stories VLA-NN). Contracts both sides depend on, the signed message (its ADR-0004) and the deployment (its ADR-0005), are decided there; this repository's ADRs adopt them. Never change how a transaction is signed without a change to those vectors.
 

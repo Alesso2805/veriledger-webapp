@@ -59,7 +59,7 @@ A single-page app built by Vite into static files (ADR-0001).
 
 ## Design
 
-Design direction C ("Fingerprint", ADR-0006) replaces E ("Network", ADR-0004), in light and dark themes that follow the system (ADR-0008) and in English and Spanish (ADR-0007). Until VLW-38 rewrites DESIGN.md for C, it describes E, which is what is built today. [DESIGN.md](DESIGN.md) is the specification of the look and behaviour of every page. It covers:
+Design direction C ("Fingerprint", ADR-0006) replaces E ("Network", ADR-0004), in light and dark themes that follow the system (ADR-0008) and in English and Spanish (ADR-0007). DESIGN.md describes C since VLW-38. The code draws E until epic E6 rebuilds each view, and `src/index.css` holds E's tokens until VLW-39, kept at the end of DESIGN.md so that AR-10 holds. [DESIGN.md](DESIGN.md) is the specification of the look and behaviour of every page. It covers:
 
 - the CSS tokens and animations that go into `src/index.css`, unchanged;
 - which real event triggers each animation;
@@ -184,7 +184,7 @@ veriledger-webapp/
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh
 ├── docs/
 │   ├── SPEC.md                   # this document
-│   ├── DESIGN.md                 # design E: tokens, motion, views
+│   ├── DESIGN.md                 # design C: tokens for both themes, motion, languages, views; E's tokens until VLW-39
 │   ├── BACKLOG.md
 │   ├── ARCHITECTURE_RULES.md
 │   ├── AUDIT.md
