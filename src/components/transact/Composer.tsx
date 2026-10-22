@@ -24,9 +24,12 @@ interface Refusal {
 }
 
 const input = (invalid: boolean) =>
-  `h-11 w-full rounded-[10px] border bg-vl-bg px-3 font-vl-mono transition-colors duration-(--vl-dur-fast) ${
+  `h-[50px] w-full rounded-[14px] border-[1.5px] bg-vl-surface px-3.5 font-vl-mono transition-colors duration-(--vl-dur-fast) ${
     invalid ? 'border-vl-danger' : 'border-vl-line'
   }`;
+// What the node fills in: read-only, on the raised ground.
+const filled = 'h-[50px] w-full rounded-[14px] border-[1.5px] border-vl-line-soft bg-vl-raised px-3.5 font-vl-mono text-[15px]';
+const labelClass = 'mb-1.5 block text-sm font-medium';
 
 // Remounted for each key (key={public_key}), so a new key starts from an empty draft and reads its own nonce.
 export function Composer({ pair }: { pair: Wallet }) {
@@ -120,17 +123,17 @@ export function Composer({ pair }: { pair: Wallet }) {
   const canSend = signature !== null && !sending;
 
   return (
-    <div className="mt-6 flex flex-wrap items-start gap-5">
+    <div className="mt-6 flex flex-wrap items-start gap-[22px]">
       <form
         onSubmit={(event) => event.preventDefault()}
-        className="flex min-w-0 flex-[1_1_420px] flex-col gap-4 rounded-2xl border border-vl-line bg-vl-surface p-5"
+        className="flex min-w-0 flex-[1_1_420px] flex-col gap-[18px] rounded-3xl bg-vl-surface p-6 max-sm:p-[18px]"
       >
         <SigningAs address={address} balance={balance} />
         {/* A new kind starts without a document, so the note and the payload always agree. */}
         <KindSwitch kind={draft.kind} onChange={(kind) => edit({ kind, payload: null })} />
         {transfer ? (
           <div key="to" className="animate-vl-fade-up">
-            <label htmlFor="to" className="mb-1.5 block text-[13px] font-medium">
+            <label htmlFor="to" className={labelClass}>
               {words.to}
             </label>
             <input
@@ -141,18 +144,18 @@ export function Composer({ pair }: { pair: Wallet }) {
               aria-describedby="to-help"
               autoComplete="off"
               spellCheck={false}
-              className={`${input(toInvalid)} text-xs`}
+              className={`${input(toInvalid)} text-[13px]`}
             />
-            <p id="to-help" className={`mt-1.5 text-[13px] ${toInvalid ? 'text-vl-danger' : 'text-vl-muted'}`}>
+            <p id="to-help" className={`mt-1.5 text-sm ${toInvalid ? 'text-vl-danger' : 'text-vl-muted'}`}>
               {toInvalid ? words.toInvalid : words.toHelp}
             </p>
           </div>
         ) : (
           <DocumentHash key={`doc-${round}`} onHashed={(payload) => edit({ payload })} />
         )}
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100px,100%),1fr))] gap-2.5">
           <div>
-            <label htmlFor="amount" className="mb-1.5 block text-[13px] font-medium">
+            <label htmlFor="amount" className={labelClass}>
               {words.amount}
             </label>
             {transfer ? (
@@ -162,14 +165,14 @@ export function Composer({ pair }: { pair: Wallet }) {
                 value={draft.amount}
                 onChange={(event) => edit({ amount: event.target.value })}
                 aria-invalid={amountInvalid}
-                className={`${input(amountInvalid)} text-sm`}
+                className={`${input(amountInvalid)} text-[15px] ${checked.covered ? '' : 'text-vl-danger'}`}
               />
             ) : (
-              <input id="amount" readOnly value="0.00" className={`${input(false)} text-sm text-vl-muted`} />
+              <input id="amount" readOnly value="0.00" className={`${filled} text-vl-muted`} />
             )}
           </div>
           <div>
-            <label htmlFor="fee" className="mb-1.5 block text-[13px] font-medium">
+            <label htmlFor="fee" className={labelClass}>
               {words.fee}
             </label>
             <input
@@ -178,19 +181,17 @@ export function Composer({ pair }: { pair: Wallet }) {
               value={draft.fee}
               onChange={(event) => edit({ fee: event.target.value })}
               aria-invalid={!checked.feeOk}
-              className={`${input(!checked.feeOk)} text-sm`}
+              className={`${input(!checked.feeOk)} text-[15px]`}
             />
           </div>
           <div>
-            <label htmlFor="nonce" className="mb-1.5 block text-[13px] font-medium">
+            <label htmlFor="nonce" className={labelClass}>
               {words.nonce}
             </label>
-            <input id="nonce" readOnly value={nonce ?? '…'} className={`${input(false)} text-sm`} />
+            <input id="nonce" readOnly value={nonce ?? '…'} className={`${filled} font-medium text-vl-accent`} />
           </div>
         </div>
-        <p className="-mt-1.5 text-[13px] text-vl-muted">
-          {words.nonceHelp}
-        </p>
+        <p className="-mt-2 text-sm text-vl-muted">{words.nonceHelp}</p>
       </form>
 
       <section aria-labelledby="msg-h" className="flex min-w-0 flex-[999_1_520px] flex-col gap-3.5">
@@ -199,15 +200,15 @@ export function Composer({ pair }: { pair: Wallet }) {
           bytes={message === null ? null : new TextEncoder().encode(message).length}
         />
         <SignaturePanel signature={signature} stale={stale} />
-        <ul className="grid grid-cols-3 gap-2 text-[13px]">
-          <li className="rounded-xl border border-vl-line bg-vl-surface px-3 py-2.5">
-            <span className="block text-vl-muted">{words.sent}</span> {words.theMessage}
+        <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(150px,100%),1fr))] gap-2 text-[15px]">
+          <li className="rounded-2xl bg-vl-surface px-3.5 py-3">
+            <span className="block text-[13px] text-vl-muted">{words.sent}</span> {words.theMessage}
           </li>
-          <li className="rounded-xl border border-vl-line bg-vl-surface px-3 py-2.5">
-            <span className="block text-vl-muted">{words.sent}</span> {words.theSignature}
+          <li className="rounded-2xl bg-vl-surface px-3.5 py-3">
+            <span className="block text-[13px] text-vl-muted">{words.sent}</span> {words.theSignature}
           </li>
-          <li className="rounded-xl border border-vl-accent bg-vl-surface px-3 py-2.5">
-            <span className="block text-vl-accent">{words.neverSent}</span> {words.yourKey}
+          <li className="rounded-2xl bg-vl-surface px-3.5 py-3 shadow-[inset_0_0_0_2px_var(--color-vl-accent)]">
+            <span className="block text-[13px] text-vl-accent">{words.neverSent}</span> {words.yourKey}
           </li>
         </ul>
 
@@ -215,10 +216,10 @@ export function Composer({ pair }: { pair: Wallet }) {
           <div
             key={refusal.id}
             role="alert"
-            className="animate-vl-shake rounded-[14px] border border-vl-danger bg-vl-surface px-4 py-3.5"
+            className="animate-vl-shake rounded-[18px] bg-vl-danger-soft px-[18px] py-4"
           >
-            <p className="font-semibold text-vl-danger">{refusal.title}</p>
-            <p className="mt-1 text-sm">{refusal.text}</p>
+            <p className="font-bold text-vl-danger">{refusal.title}</p>
+            <p className="mt-1 text-[15px]">{refusal.text}</p>
           </div>
         )}
 
@@ -230,8 +231,8 @@ export function Composer({ pair }: { pair: Wallet }) {
               type="button"
               onClick={sign}
               disabled={!canSign}
-              className={`h-[46px] rounded-[10px] px-[18px] font-semibold transition-colors duration-(--vl-dur-base) ${
-                canSign ? 'bg-vl-accent text-vl-on-accent' : 'bg-vl-line text-vl-muted'
+              className={`h-[52px] rounded-[14px] px-[22px] font-bold transition-colors duration-(--vl-dur-base) ${
+                canSign ? 'bg-vl-accent text-vl-on-accent' : 'bg-vl-skeleton text-vl-muted'
               }`}
             >
               {signature ? words.signed : words.sign}
@@ -240,8 +241,8 @@ export function Composer({ pair }: { pair: Wallet }) {
               type="button"
               onClick={() => void send()}
               disabled={!canSend}
-              className={`h-[46px] rounded-[10px] border px-[18px] font-semibold transition-colors duration-(--vl-dur-base) ${
-                canSend ? 'border-vl-text bg-vl-text text-vl-on-accent' : 'border-vl-line bg-transparent text-vl-faint'
+              className={`h-[52px] rounded-[14px] px-[22px] font-bold transition-colors duration-(--vl-dur-base) ${
+                canSend ? 'bg-vl-strong text-vl-on-strong' : 'bg-vl-skeleton text-vl-muted'
               }`}
             >
               {sending ? words.sending : words.send}

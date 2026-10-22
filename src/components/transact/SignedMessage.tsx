@@ -10,14 +10,14 @@ const shown = (key: string, json: string) =>
 export function SignedMessage({ lines, bytes }: { lines: [string, string][]; bytes: number | null }) {
   const words = useT().transact.message;
   return (
-    <div className="rounded-2xl border border-vl-ink-line bg-vl-inset text-vl-on-ink">
-      <div className="flex flex-wrap justify-between gap-2 border-b border-vl-ink-line px-4 py-3">
-        <h2 id="msg-h" className="text-[15px] font-semibold">
+    <div className="rounded-3xl bg-vl-inset text-vl-on-ink">
+      <div className="flex flex-wrap justify-between gap-x-3 gap-y-1.5 border-b border-vl-ink-line px-5 py-4">
+        <h2 id="msg-h" className="text-lg font-bold">
           {words.title}
         </h2>
-        <span className="font-vl-mono text-[11px] text-vl-on-ink-muted">{words.bytes(bytes === null ? '—' : String(bytes))}</span>
+        <span className="font-vl-mono text-xs text-vl-on-ink-muted">{words.bytes(bytes === null ? '—' : String(bytes))}</span>
       </div>
-      <div className="px-4 py-3.5 font-vl-mono text-[13px] leading-[1.8] [overflow-wrap:anywhere]">
+      <div className="px-5 pt-4 pb-5 font-vl-mono text-sm leading-[1.8] [overflow-wrap:anywhere]">
         <div className="text-vl-on-ink-muted">{'{'}</div>
         {lines.map(([key, json], index) => (
           <div key={key} className="pl-4">

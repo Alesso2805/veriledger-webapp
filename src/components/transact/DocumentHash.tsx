@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { sha256Hex } from '../../lib/digest';
 import { shortHash } from '../../lib/format';
 import type { Messages } from '../../lib/i18n';
+import { Fingerprint } from '../Fingerprint';
 import { useT } from '../useT';
 
 type Hashing =
@@ -45,16 +46,19 @@ export function DocumentHash({ onHashed }: { onHashed: (payload: string | null) 
 
   return (
     <div className="animate-vl-fade-up">
-      <label className="relative flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-dashed border-vl-line p-4 text-center transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-vl-accent">
-        <span className="font-semibold">{words.choose}</span>
-        <span className="text-[13px] text-vl-muted">{words.private}</span>
+      <label className="relative flex cursor-pointer flex-col items-center gap-1 rounded-2xl border-[1.5px] border-dashed border-vl-line p-[18px] text-center transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-vl-accent">
+        <span className="font-bold">{words.choose}</span>
+        <span className="text-sm text-vl-muted">{words.private}</span>
         <input type="file" onChange={(event) => void choose(event)} className="absolute size-px opacity-0" />
       </label>
+      {state.phase === 'done' && (
+        <Fingerprint key={state.hash} hex={state.hash} bars={8} className="mt-2.5 h-3.5 max-w-[220px] gap-[2px]" radius={3} grow />
+      )}
       {/* No percentage while hashing: crypto.subtle.digest gives none (DESIGN.md › What the design does not show). */}
       <p
         key={state.phase}
         aria-live="polite"
-        className={`mt-2 font-vl-mono text-xs [overflow-wrap:anywhere] ${state.phase === 'failed' ? 'text-vl-danger' : 'text-vl-muted'} ${
+        className={`mt-2 font-vl-mono text-[13px] [overflow-wrap:anywhere] ${state.phase === 'failed' ? 'text-vl-danger' : 'text-vl-muted'} ${
           state.phase === 'hashing' ? 'animate-vl-pulse' : state.phase === 'done' ? 'animate-vl-fade-up' : ''
         }`}
       >

@@ -26,20 +26,21 @@ export function NoKey() {
   return (
     <section
       aria-labelledby="no-key-h"
-      className="mt-6 max-w-[640px] animate-vl-fade-up rounded-2xl border border-vl-line bg-vl-surface p-6"
+      className="mt-6 max-w-[660px] animate-vl-fade-up rounded-[28px] bg-vl-surface p-7 max-sm:p-[18px]"
     >
-      <h2 id="no-key-h" className="text-xl font-bold">
+      <h2 id="no-key-h" className="text-[26px] font-extrabold tracking-[-0.02em]">
         {t.transact.noKeyTitle}
       </h2>
-      <p className="mt-1.5 mb-4 text-vl-muted">
-        {t.transact.noKeyText}
-      </p>
+      <p className="mt-1.5 mb-[18px] text-vl-muted">{t.transact.noKeyText}</p>
       <div className="flex flex-wrap gap-2.5">
-        <label className="relative inline-flex h-11 cursor-pointer items-center rounded-[10px] bg-vl-accent px-4 font-semibold text-vl-on-accent has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-vl-accent">
+        <label className="relative inline-flex h-[50px] cursor-pointer items-center rounded-[14px] bg-vl-accent px-[22px] font-bold text-vl-on-accent has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-vl-accent">
           {t.transact.openKeyFile}
           <input type="file" accept="application/json" onChange={(event) => void open(event)} className="absolute size-px opacity-0" />
         </label>
-        <Link to="/wallet" className="inline-flex h-11 items-center rounded-[10px] border border-vl-line px-4 font-semibold">
+        <Link
+          to="/wallet"
+          className="inline-flex h-[50px] items-center rounded-[14px] border-[1.5px] border-vl-line px-[22px] font-bold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
+        >
           {t.transact.createWallet}
         </Link>
       </div>
