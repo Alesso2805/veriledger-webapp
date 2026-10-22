@@ -1,5 +1,6 @@
 import type { Transaction } from '../types/ledger';
 import { formatAmount, shortHash, transactionKind } from './format';
+import { en, type Messages } from './i18n/en';
 import { buildSignedMessage, verifySignature, type SignedFields } from './signing';
 
 // The fields the sender signed, rebuilt from what the API stored. Responses carry amounts as numbers; with at
@@ -51,17 +52,16 @@ export function journeyOf(transaction: Transaction, top: number | null): Journey
 
 const title4 = (address: string) => shortHash(address, 4, 4);
 
-export function transactionTitle(transaction: Transaction): string {
+// In the page's language: `titles` is that dictionary's.
+export function transactionTitle(transaction: Transaction, titles: Messages['transaction']['titles'] = en.transaction.titles): string {
   const amount = `${formatAmount(transaction.amount)} VL`;
   switch (transactionKind(transaction)) {
     case 'Mining reward':
-      return `A mining reward of ${amount} to ${title4(transaction.receiver_address)}`;
+      return titles.reward(amount, title4(transaction.receiver_address));
     case 'Notarization':
-      return transaction.status === 'PENDING'
-        ? 'A document waiting to be sealed'
-        : `A document notarized by ${title4(transaction.sender_address)}`;
+      return transaction.status === 'PENDING' ? titles.waitingDocument : titles.notarized(title4(transaction.sender_address));
     case 'Transfer':
-      return `${amount} from ${title4(transaction.sender_address)} to ${title4(transaction.receiver_address)}`;
+      return titles.transfer(amount, title4(transaction.sender_address), title4(transaction.receiver_address));
   }
 }
 
@@ -70,5 +70,3 @@ export function fingerprintGroups(hash: string): string[] {
   return Array.from({ length: Math.ceil(hash.length / 8) }, (_, index) => hash.slice(index * 8, index * 8 + 8));
 }
 
-export const blocksOnTop = (above: number) =>
-  above === 0 ? 'nothing on top yet' : `${above} ${above === 1 ? 'block' : 'blocks'} on top`;
