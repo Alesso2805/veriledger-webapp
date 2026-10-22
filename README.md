@@ -70,13 +70,13 @@ It is a portfolio project, so every one of these claims is backed by a test.
 
 ```mermaid
 flowchart LR
-  P[Person] --> B[Browser: React app]
-  B ---|signs here| K[(Key pair, in the tab's memory)]
-  B -->|"/" static files · "/api" REST + JWT| C[Caddy, one hostname]
-  C --> W[veriledger-webapp image]
-  C --> A[veriledger-api: FastAPI]
-  A --> D[(PostgreSQL)]
-  A <-->|longest valid chain| N[Peer nodes]
+  P["Person"] --> B["Browser: the React app"]
+  B ---|"signs here"| K[("Key pair, in the tab's memory")]
+  B -->|"/ static files · /api REST + JWT"| C["Caddy, one hostname"]
+  C --> W["veriledger-webapp image"]
+  C --> A["veriledger-api: FastAPI"]
+  A --> D[("PostgreSQL")]
+  A <-->|"longest valid chain"| N["Peer nodes"]
 ```
 
 **Stack:**
