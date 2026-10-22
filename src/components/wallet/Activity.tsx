@@ -13,7 +13,6 @@ interface Props {
   total: number;
 }
 
-// The address's newest transactions (VLA-34), each linked to its page.
 export function Activity({ address, transactions, total }: Props) {
   const words = useT().wallet.activity;
   return (

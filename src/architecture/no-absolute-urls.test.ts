@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 // AR-07: no module under src hard-codes an absolute URL; the API base URL comes from runtime configuration.
 const ALLOWED_URLS = ['http://www.w3.org/2000/svg'];
 
-// Debt that exists today, each entry removed by the story that fixes it. A fixed entry fails until removed.
+// Known violations, by file. An entry whose file no longer violates fails until it is removed.
 const KNOWN_VIOLATIONS: Record<string, string> = {};
 
 const sources = import.meta.glob<string>(['../**/*.{ts,tsx}', '!../**/*.test.{ts,tsx}'], {

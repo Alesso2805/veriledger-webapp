@@ -38,9 +38,8 @@ export function transactionKind(transaction: Described): TransactionKind {
   return 'Transfer';
 }
 
-// `document` is the word in the page's language.
-export function transactionRoute(transaction: Described, document = 'document'): string {
-  if (transactionKind(transaction) === 'Notarization') return `${document} ${shortHash(transaction.payload ?? '')}`;
+export function transactionRoute(transaction: Described, documentWord = 'document'): string {
+  if (transactionKind(transaction) === 'Notarization') return `${documentWord} ${shortHash(transaction.payload ?? '')}`;
   return `${shortHash(transaction.sender_address)} → ${shortHash(transaction.receiver_address)}`;
 }
 
@@ -51,7 +50,7 @@ function readable(iso: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-// In the reader's own time zone; tests pass one so they do not depend on the machine's. "20 Oct 2026", "20 oct 2026".
+// In the reader's time zone unless one is given (the transaction page passes UTC). "20 Oct 2026", "20 oct 2026".
 export function formatSealed(iso: string, timeZone?: string, language: Language = 'en'): string {
   const date = readable(iso);
   if (!date) return '—';
@@ -76,15 +75,15 @@ export function formatSeconds(ms: number, language: Language = 'en'): string {
   return new Intl.NumberFormat(NUMBER_LOCALE[language], { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(ms / 1000);
 }
 
-// What the header and the login say about the API. "no database" when it answers but its database does not
-// (VLA-26), so the screen never claims the API is unreachable when it is not.
+// What the header and the login say about the API. "no database" when it answers but its database does not,
+// so the screen never claims the API is unreachable when it is not.
 export function healthWord(online: boolean | null, databaseDown: boolean): 'checking' | 'online' | 'offline' | 'no database' {
   if (online === null) return 'checking';
   if (online) return 'online';
   return databaseDown ? 'no database' : 'offline';
 }
 
-// What is left of a demo account: hours, then minutes in its last hour (VLW-34). The words are the dictionary's.
+// What is left of a demo account: hours, then minutes in its last hour. The words are the dictionary's.
 export function timeLeft(ms: number): { hours: number } | { minutes: number } {
   if (ms >= 3_600_000) return { hours: Math.floor(ms / 3_600_000) };
   return { minutes: Math.max(1, Math.ceil(ms / 60_000)) };

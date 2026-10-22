@@ -14,8 +14,8 @@ interface Case {
   ready: (page: Page, t: Messages) => ReturnType<Page['getByRole']>;
   // Steps that bring the page to the state being checked.
   then?: (page: Page, t: Messages) => Promise<void>;
-  // The fewest controls the keyboard must reach, so the focus walk cannot pass by reaching none. The shell alone
-  // has seven: the skip link, the search, the header's two buttons and the four tabs.
+  // The fewest controls the keyboard must reach, so the focus walk cannot pass by reaching none. A floor: the shell
+  // alone has more (the skip link, the logo, the search, the two switches, the header's buttons and the four tabs).
   controls?: number;
 }
 
@@ -25,7 +25,8 @@ const createWallet = async (page: Page, t: Messages) => {
 };
 
 const cases: Case[] = [
-  // No shell: the two switches, email, password, "Sign in", "Try the demo" and the link to the chain.
+  // No shell. A floor below its seven controls: the two switches, email, password, "Sign in", "Try the demo" and
+  // the link to the chain.
   { name: 'login', path: '/login', ready: (page, t) => page.getByRole('heading', { name: t.login.title }), controls: 5 },
   { name: 'chain, visitor', path: '/', ready: (page, t) => page.getByRole('button', { name: startsWith(`${t.chain.list.block(11)} `) }) },
   {

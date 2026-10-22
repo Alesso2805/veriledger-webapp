@@ -23,7 +23,7 @@ const pulse = 'absolute top-0 left-0 size-3 rounded-full animate-vl-travel';
 
 // Positions and edges move with transform only, so adding a peer glides (DESIGN.md › Motion map). The peer list
 // carries the same information as text, so the map is one image to a screen reader. On a phone the map scrolls
-// sideways inside its box, which takes the focus so the arrow keys can scroll it too (VLW-24).
+// sideways inside its box, which takes the focus so the arrow keys can scroll it too.
 export function PeerMap({ peers, height, fresh, phase, round }: Props) {
   const t = useT();
   const points = ringPoints(peers.length);

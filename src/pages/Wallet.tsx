@@ -12,7 +12,7 @@ import type { Transaction } from '../types/ledger';
 
 const ACTIVITY_SHOWN = 20;
 
-// Artboard "C · Wallet" (VLW-46; before it VLW-31). The key it creates or opens is the one Sign and send signs with.
+// Artboard "C · Wallet". The key it creates or opens is the one Sign and send signs with.
 export function Wallet() {
   const t = useT();
   const pair = useKeyStore((state) => state.pair);

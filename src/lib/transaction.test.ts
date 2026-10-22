@@ -3,7 +3,7 @@ import type { Transaction } from '../types/ledger';
 import vectors from './__fixtures__/signing-vectors.json';
 import { en } from './i18n/en';
 import { es } from './i18n/es';
-import { checkSignature, fingerprintGroups, journeyOf, signedFieldsOf, transactionTitle } from './transaction';
+import { checkSignature, hashGroups, journeyOf, signedFieldsOf, transactionTitle } from './transaction';
 
 const vector = (name: string) => vectors.vectors.find((candidate) => candidate.name === name)!;
 
@@ -71,11 +71,11 @@ describe('journeyOf', () => {
   });
 });
 
-describe('fingerprintGroups', () => {
+describe('hashGroups', () => {
   it('splits a SHA-256 into 8 groups of 8', () => {
     const hash = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
 
-    expect(fingerprintGroups(hash)).toEqual(['ba7816bf', '8f01cfea', '414140de', '5dae2223', 'b00361a3', '96177a9c', 'b410ff61', 'f20015ad']);
+    expect(hashGroups(hash)).toEqual(['ba7816bf', '8f01cfea', '414140de', '5dae2223', 'b00361a3', '96177a9c', 'b410ff61', 'f20015ad']);
   });
 });
 

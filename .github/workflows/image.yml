@@ -1,7 +1,7 @@
 name: Image
 
 # Builds and smoke-tests the image on every pull request. On main and on a release tag it also publishes it to
-# GHCR for amd64 and arm64, so the API's Compose can run it behind Caddy (VLW-25, the API's VLA-27).
+# GHCR for amd64 and arm64, so the API's Compose can run it behind Caddy.
 on:
   pull_request:
   push:
@@ -54,7 +54,7 @@ jobs:
         with:
           # Lower case: GHCR refuses the owner's capital letter
           images: ghcr.io/alesso2805/veriledger-webapp
-          # main and sha-<commit> on every push to main; the version (1.0.0, 1.0) on a release tag (VLW-26)
+          # main and sha-<commit> on every push to main; the version (1.0.0, 1.0) on a release tag
           tags: |
             type=ref,event=branch
             type=sha,prefix=sha-

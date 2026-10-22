@@ -2,7 +2,7 @@ import { useEffect, useState, type ChangeEvent } from 'react';
 import { sha256Hex } from '../../lib/digest';
 import { ON_INK } from '../../lib/fingerprint';
 import { certifiedParts } from '../../lib/format';
-import { fingerprintGroups } from '../../lib/transaction';
+import { hashGroups } from '../../lib/transaction';
 import { getBlock } from '../../services/ledger';
 import { Fingerprint } from '../Fingerprint';
 import { useLanguage, useT } from '../useT';
@@ -18,9 +18,8 @@ interface Props {
   blockHash: string;
 }
 
-// A sealed notarization's proof of existence, on ink in both themes. The moment it states is the block's seal, which
-// the chain backs, not the time the node received the transaction. A file checked here is hashed in the browser and
-// never sent; its fingerprint sits under the certified one, so a mismatch shows bar by bar.
+// The moment a certificate states is the block's seal, which the chain backs, not the time the node received the
+// transaction. A file checked here is hashed in the browser and never sent.
 export function Certificate({ payload, blockNumber, blockHash }: Props) {
   const words = useT().transaction.certificate;
   const language = useLanguage();
@@ -69,7 +68,7 @@ export function Certificate({ payload, blockNumber, blockHash }: Props) {
         aria-label={words.groups}
         className="mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-1 font-vl-mono text-xs"
       >
-        {fingerprintGroups(payload).map((group, index) => (
+        {hashGroups(payload).map((group, index) => (
           <li key={index} className="rounded-lg bg-vl-ink-raised p-1.5 text-center">
             {group}
           </li>

@@ -29,7 +29,7 @@ describe('HeaderSearch', () => {
     vi.clearAllMocks();
   });
 
-  it('finds a block by its number and opens it in the tower', async () => {
+  it('finds a block by its number and opens it on the chain', async () => {
     vi.mocked(findBlockNumber).mockResolvedValue([{ kind: 'block', number: 3, hash: '0000b0d1e67c' + 'ab'.repeat(26) }]);
     const input = renderSearch();
 

@@ -6,7 +6,7 @@ import { useToastStore } from '../store/useToastStore';
 
 export const HEALTH_POLL_MS = 10_000;
 
-// Asks /health once. Only the change from offline to online raises the toast, not the first answer.
+// Only the change from offline to online raises the toast, not the first answer.
 export async function checkHealth() {
   const { online, setOnline, setDatabaseDown, setDemoMode } = useHealthStore.getState();
   try {

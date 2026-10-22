@@ -28,8 +28,7 @@ export function KeyCard({ pair }: { pair: Wallet }) {
 
   const panel = (open: boolean) =>
     `grid transition-[grid-template-rows] duration-(--vl-dur-slow) ease-vl-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`;
-  // The step waiting for the person has a ring of the waiting yellow.
-  const current = 'shadow-[inset_0_0_0_2px_var(--color-vl-wait)]';
+  const waitingRing = 'shadow-[inset_0_0_0_2px_var(--color-vl-wait)]';
 
   return (
     <section
@@ -43,7 +42,7 @@ export function KeyCard({ pair }: { pair: Wallet }) {
       <div className={panel(!saved)}>
         <div className="min-h-0 overflow-hidden" inert={saved} aria-hidden={saved}>
           <ol className="flex flex-col gap-2.5 p-0.5">
-            <li className={`flex flex-wrap items-center gap-2.5 rounded-2xl bg-vl-ink-raised px-3.5 py-3 ${downloaded ? '' : current}`}>
+            <li className={`flex flex-wrap items-center gap-2.5 rounded-2xl bg-vl-ink-raised px-3.5 py-3 ${downloaded ? '' : waitingRing}`}>
               <span className="flex-auto">{words.step1}</span>
               {downloaded ? (
                 <span className="flex animate-vl-pop items-center gap-1.5 text-[15px]" style={{ color: ON_INK.ok }}>
@@ -65,7 +64,7 @@ export function KeyCard({ pair }: { pair: Wallet }) {
             </li>
             <li
               className={`flex items-center gap-3 rounded-2xl bg-vl-ink-raised px-3.5 py-3 transition-opacity duration-(--vl-dur-base) ${
-                downloaded ? current : 'opacity-55'
+                downloaded ? waitingRing : 'opacity-55'
               }`}
             >
               <input

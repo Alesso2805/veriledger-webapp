@@ -16,7 +16,7 @@ const topNumber = () =>
     () => null,
   );
 
-// Artboard "C · Red" (VLW-47; before it VLW-32).
+// Artboard "C · Red".
 export function Network() {
   const t = useT();
   const [peers, setPeers] = useState<Peer[] | 'unknown' | null>(null);

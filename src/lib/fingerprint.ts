@@ -13,8 +13,9 @@ export function fingerprint(hex: string, bars: number): (string | null)[] {
   });
 }
 
-// A block's fingerprint is drawn from the bytes after its leading zeros: the zeros are the proof of work, the same in
-// every block (DESIGN.md › Fingerprints). The genesis block's previous_hash is all zeros, so it links to nothing.
+// A block's fingerprint is drawn from the bytes after its leading zeros: the proof of work, at least MINING_DIFFICULTY
+// of them and sometimes more (DESIGN.md › Fingerprints). The genesis block's previous_hash is all zeros, so it links
+// to nothing.
 export function afterProofOfWork(hash: string): string {
   return hash.replace(/^0+/, '');
 }

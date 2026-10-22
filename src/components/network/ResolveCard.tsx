@@ -27,7 +27,7 @@ function outcome(result: ResolveResult, words: Messages['network']['resolve']): 
   }
 }
 
-// Resolving asks every peer for its chain (VLA-19). While it runs, pulses travel to the peers on the map.
+// Resolving asks every peer for its chain. While it runs, pulses travel to the peers on the map.
 export function ResolveCard({ admin, peerCount, phase, result, onResolve }: Props) {
   const words = useT().network.resolve;
   const ready = admin && peerCount > 0 && phase !== 'resolving';

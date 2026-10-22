@@ -22,7 +22,7 @@ api.interceptors.request.use((config) => {
 
 // A 401 on a request that carried the session means the API no longer accepts it: end the session, and the
 // route guards take the person to the login with "Your session expired", or "Your demo ended" when the token
-// was a demo account's (VLW-34). The login's own 401 is a wrong password.
+// was a demo account's. The login's own 401 is a wrong password.
 api.interceptors.response.use(undefined, (error: unknown) => {
   const authorization: unknown = isAxiosError(error) ? error.config?.headers?.Authorization : undefined;
   if (isAxiosError(error) && error.response?.status === 401 && typeof authorization === 'string') {

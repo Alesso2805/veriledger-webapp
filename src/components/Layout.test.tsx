@@ -36,7 +36,7 @@ function renderShell(path = '/wallet') {
       <Routes>
         <Route path="/login" element={<LoginProbe />} />
         <Route element={<Layout />}>
-          <Route path="/" element={<p>tower page</p>} />
+          <Route path="/" element={<p>chain page</p>} />
           <Route path="/wallet" element={<p>wallet page</p>} />
           <Route path="/transaction/:hash" element={<p>transaction page</p>} />
           <Route path="/broken" element={<Broken />} />
@@ -126,7 +126,7 @@ describe('Layout (the shell)', () => {
       useAppStore.setState({ token: null, user: null });
       renderShell('/');
       await apiStatus('api · online');
-      // The visitor looks around for half an hour before starting the demo (found in the browser).
+      // The visitor looks around for half an hour before starting the demo.
       vi.setSystemTime(Date.now() + 30 * 60_000);
       const expires = new Date(Date.now() + 24 * 3_600_000 - 1_000).toISOString();
       vi.mocked(getMe).mockResolvedValue({ ...ME, email: null, display_name: 'Guest 4F2A', expires_at: expires });
@@ -194,7 +194,7 @@ describe('Layout (the shell)', () => {
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main');
   });
 
-  it('keeps the shell when a page throws while drawing, and leaves that page for the tower (VLW-35)', async () => {
+  it('keeps the shell when a page throws while drawing, and leaves that page for the chain (VLW-35)', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     renderShell('/broken');
 
@@ -205,12 +205,12 @@ describe('Layout (the shell)', () => {
 
     fireEvent.click(screen.getByRole('link', { name: 'Back to the chain' }));
 
-    expect(await screen.findByText('tower page')).toBeInTheDocument();
+    expect(await screen.findByText('chain page')).toBeInTheDocument();
     expect(screen.queryByText('This page ran into a problem')).not.toBeInTheDocument();
     vi.mocked(console.error).mockRestore();
   });
 
-  it('offers only "Try again" when the page that failed is the tower', async () => {
+  it('offers only "Try again" when the page that failed is the chain', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     render(
       <MemoryRouter initialEntries={['/']}>

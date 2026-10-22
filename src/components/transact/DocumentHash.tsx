@@ -24,7 +24,7 @@ function noteFor(state: Hashing, words: Messages['transact']['document']): strin
   }
 }
 
-// The document is hashed here and never sent; only its fingerprint becomes the payload.
+// The document is hashed here and never sent; only its SHA-256 becomes the payload.
 export function DocumentHash({ onHashed }: { onHashed: (payload: string | null) => void }) {
   const words = useT().transact.document;
   const [state, setState] = useState<Hashing>({ phase: 'idle' });

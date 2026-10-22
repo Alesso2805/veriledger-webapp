@@ -153,6 +153,34 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 - **Check it in the browser.** Each screen is checked at 1280 and 360 px against a running API, with the demo's own data. From epic E6, at 1440, 768 and 360 px, in both themes and both languages.
 - **Cross-repository contracts.** Signing and endpoints are decided in the API's ADRs; a VLW story that depends on a VLA story says so and merges after it.
 
+**Comments in the code** (product owner, 2026-10-22; VLW-50). This file holds the rule, because `CLAUDE.md` stays on each workstation (VLW-49); the coding agent's `CLAUDE.md` points here. The API's SPEC holds the same rule.
+
+- **No comment by default.** A comment exists only when it holds what the code cannot say, and losing it would make a competent reader misunderstand the code, break something, or dig through git or outside documents.
+- **The code says it first.** Before writing a comment, try a better name, a named constant, an extracted function, a type or an assert. History and the reasons for a change go in the commit or the PR, never in the code.
+- **Allowed:**
+  - the why of something that looks like a mistake but is intended;
+  - outside constraints: a browser's or a library's quirk, a spec, a workaround with its issue link, a business or legal rule;
+  - warnings and invariants: an order that matters, accessibility, security;
+  - a non-obvious algorithm with its source, and units a name does not carry;
+  - a pointer to the artboard or the DESIGN.md section a view must match;
+  - a TODO with a story or an owner and a concrete action.
+- **Never:**
+  - comments that repeat the code;
+  - history or a changelog;
+  - commented-out code;
+  - separators, banners or decorative headings;
+  - JSDoc that repeats parameter names or types TypeScript already has;
+  - comments addressed to the reviewer, or about instructions.
+- **Story IDs** (VLW-NN, VLA-NN) stay in only three places, and git holds the rest:
+  - where they mark a data boundary ("rows from before VLA-16");
+  - where they name the requirement a test, a spec, a CI step or the smoke test proves;
+  - where they point at the story that will fix a known limit.
+
+  ADR, SPEC, AR and DESIGN.md references stay, since those documents state the current rules.
+- **Kept current.** A change to the code, the design or the environment a comment describes updates or deletes that comment in the same change.
+- **Never deleted:** tool directives (`eslint-disable`, `oxlint-disable`, `@ts-expect-error`, `# syntax=`), shebangs, license headers, and JSDoc that types a JavaScript file.
+- **Form:** one line where possible, in the present tense, next to the code it explains, in English.
+
 **Definition of done**
 
 - The acceptance criteria are met and demonstrable in the browser.

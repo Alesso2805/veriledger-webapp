@@ -6,7 +6,7 @@ interface Props {
   children: ReactNode;
 }
 
-// Without a boundary, a throw while drawing unmounts the whole app and leaves a blank page (VLW-35). Only a class
+// Without a boundary, a throw while drawing unmounts the whole app and leaves a blank page. Only a class
 // can catch one: React has no hook for it. React itself still logs the error to the console.
 export class ErrorBoundary extends Component<Props, { failed: boolean }> {
   state = { failed: false };

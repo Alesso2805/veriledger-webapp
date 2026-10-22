@@ -12,7 +12,7 @@ function Pages() {
   return useRoutes(routes);
 }
 
-// Each page has its own boundary in the shell (Layout); this one catches what throws in the shell or the login (VLW-35).
+// Each page has its own boundary in the shell (Layout); this one catches what throws in the shell or the login.
 export function App() {
   useThemeAttribute();
   useLanguageAttribute();

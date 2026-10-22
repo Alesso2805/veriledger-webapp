@@ -25,7 +25,7 @@ const fieldClass = (refused: boolean) =>
     refused ? 'border-vl-danger' : 'border-vl-line'
   }`;
 
-// Artboard "C · Login y demo con un clic" (VLW-42). The form comes first in the page and is drawn on the right on wide
+// Artboard "C · Login y demo con un clic". The form comes first in the page and is drawn on the right on wide
 // screens, so a phone opens on it and the keyboard reaches it first (DESIGN.md › Login).
 export function Login() {
   const t = useT();

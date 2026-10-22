@@ -5,7 +5,7 @@ import { registerPeer } from '../../services/nodes';
 import { useT } from '../useT';
 
 interface Props {
-  // Registering needs the admin role (VLA-19); the others are told so and can still look.
+  // Registering needs the admin role; the others are told so and can still look.
   admin: boolean;
   onAdded: (url: string) => void;
 }

@@ -52,7 +52,6 @@ export function journeyOf(transaction: Transaction, top: number | null): Journey
 
 const title4 = (address: string) => shortHash(address, 4, 4);
 
-// In the page's language: `titles` is that dictionary's.
 export function transactionTitle(transaction: Transaction, titles: Messages['transaction']['titles'] = en.transaction.titles): string {
   const amount = `${formatAmount(transaction.amount)} VL`;
   switch (transactionKind(transaction)) {
@@ -65,8 +64,8 @@ export function transactionTitle(transaction: Transaction, titles: Messages['tra
   }
 }
 
-// A document's fingerprint in 8 groups of 8 characters, easier to read aloud and compare than one long line.
-export function fingerprintGroups(hash: string): string[] {
+// A hash or an address in groups of 8 characters, easier to read aloud and compare than one long line.
+export function hashGroups(hash: string): string[] {
   return Array.from({ length: Math.ceil(hash.length / 8) }, (_, index) => hash.slice(index * 8, index * 8 + 8));
 }
 

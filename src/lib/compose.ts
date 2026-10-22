@@ -2,7 +2,6 @@ import { AmountError, toAmount, type SignedFields } from './signing';
 
 export type Kind = 'transfer' | 'notarize';
 
-// What the person has typed or chosen so far on Sign and send.
 export interface Draft {
   kind: Kind;
   to: string;

@@ -54,7 +54,7 @@ function useElapsed(running: boolean): number {
   return elapsed;
 }
 
-// Artboard "C · La cadena" (VLW-43): the ribbon of fingerprints, the selected block, the list, and beside them
+// Artboard "C · La cadena": the ribbon of fingerprints, the selected block, the list, and beside them
 // mining, what waits for the next block and how to read a fingerprint.
 export function Chain() {
   const t = useT();

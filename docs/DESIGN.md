@@ -442,7 +442,7 @@ Each view lists its artboard, its data and the stories that build it. Its texts 
 - **Artboard:** "C · Estados del shell, toasts y errores".
 - **Why:** a throw while drawing unmounts the whole React app and leaves a blank page. A boundary catches it instead (product owner, 2026-10-21).
 - **A page that throws** is replaced by a card inside the shell, which keeps working:
-  - a `danger` ring; a tile, a broken connector and an empty dashed tile, all in the danger colour: nothing is missing this time, something broke;
+  - a `danger` ring; a tile of palette bars, a broken connector and an empty dashed tile, the last two in the danger colour: nothing is missing this time, something broke;
   - "Error", "This page ran into a problem", and "Something failed while it was drawn. The other pages still work, and a key held in this tab is kept.";
   - "Try again" draws the page again without a reload, which would forget the key held in the tab. "Back to the chain" opens `/`, and on the chain itself only "Try again" is offered;
   - another route starts without the failure, because `<main>` is keyed by pathname.
@@ -469,7 +469,7 @@ export function fingerprint(hex: string, bars: number): (string | null)[] {
 }
 ```
 
-- **A block** shows 8 bytes of its hash: the bytes that follow its leading zeros, which are the proof of work and the same in every block (`MINING_DIFFICULTY`, 4 by default). Its "links to" strip is the same 8 bytes of `previous_hash`. The genesis block links to nothing, so its strip is all skeleton.
+- **A block** shows 8 bytes of its hash: the bytes that follow its leading zeros, which are the proof of work: at least `MINING_DIFFICULTY` of them (4 by default), and sometimes more. Its "links to" strip is the same 8 bytes of `previous_hash`. The genesis block links to nothing, so its strip is all skeleton.
 - **An address** shows its first 12 bytes in the wallet, its first 8 in "Signing as", and its first 4 as a 2×2 avatar in lists.
 - **A signature** shows its first 16 bytes, and **a document** its first 8.
 - **A peer** has no key; its 2×2 avatar comes from a hash of its URL ([Network](#network--network)).
