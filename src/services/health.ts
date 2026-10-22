@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 import type { Health } from '../types/session';
 import { api } from './api';
 
-// The API answers, but its database does not: /health's 503 says so in its body (VLA-26).
+// The API answers, but its database does not: /health's 503 says so in its body.
 export class DatabaseDownError extends Error {}
 
 // Only the API's own answer counts: a misrouted /api can get index.html with a 200 from the static server.

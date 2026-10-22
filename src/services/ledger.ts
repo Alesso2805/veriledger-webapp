@@ -5,7 +5,7 @@ import { api, statusOf } from './api';
 export type Found = { kind: 'block'; number: number; hash: string } | { kind: 'transaction'; transaction: Transaction };
 
 // Every answer is checked before a page draws it: a misrouted /api gets index.html with a 200 from the static
-// server, and the old explorer went blank on it.
+// server.
 function asPage<T>(data: unknown, path: string): Paginated<T> {
   const page = data as Paginated<T> | undefined;
   if (!Array.isArray(page?.items) || typeof page.total !== 'number') throw new Error(`The API did not answer ${path}`);
@@ -66,7 +66,7 @@ export async function getPendingTransactions(skip: number, limit: number): Promi
 }
 
 // The fields exactly as they were signed, and the signature; never the key (AR-05). A byte-identical retry gets
-// a 200 with the stored transaction, so sending again after a timeout cannot record it twice (VLA-16).
+// a 200 with the stored transaction, so sending again after a timeout cannot record it twice.
 export async function sendTransaction(fields: SignedFields, signature: string): Promise<Transaction> {
   const response = await api.post('/transactions', { ...fields, signature });
   if (typeof (response.data as Transaction | undefined)?.tx_hash !== 'string') {

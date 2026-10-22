@@ -29,7 +29,7 @@ function present(item: Found, t: Messages): { label: string; meta: string; to: s
 }
 
 // Finds a block by its number, or a block or a transaction by its full hash. The API cannot search by prefix,
-// so part of a hash is not looked up (VLW-19).
+// so part of a hash is not looked up.
 export function HeaderSearch() {
   const t = useT();
   const navigate = useNavigate();

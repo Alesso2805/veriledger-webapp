@@ -16,7 +16,7 @@ export function UserChip() {
   useEffect(() => {
     if (!token) return;
     let active = true;
-    // A failed /auth/me leaves the chip out; an expired session is VLW-17's 401 handling.
+    // A failed /auth/me leaves the chip out; an expired session is the 401 handler's (services/api.ts).
     getMe().then(
       (me) => active && setUser(me),
       () => active && setUser(null),

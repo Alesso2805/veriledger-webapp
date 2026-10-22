@@ -18,9 +18,8 @@ interface Props {
   blockHash: string;
 }
 
-// A sealed notarization's proof of existence, on ink in both themes. The moment it states is the block's seal, which
-// the chain backs, not the time the node received the transaction. A file checked here is hashed in the browser and
-// never sent; its fingerprint sits under the certified one, so a mismatch shows bar by bar.
+// The moment a certificate states is the block's seal, which the chain backs, not the time the node received the
+// transaction. A file checked here is hashed in the browser and never sent.
 export function Certificate({ payload, blockNumber, blockHash }: Props) {
   const words = useT().transaction.certificate;
   const language = useLanguage();

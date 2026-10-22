@@ -4,7 +4,7 @@ import { startDemo } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
 import { usePreferencesStore } from '../store/usePreferencesStore';
 
-// Starts a demo account and signs this tab in with it, so the visitor carries on where they are (VLW-34).
+// Starts a demo account and signs this tab in with it, so the visitor carries on where they are.
 // `onRefused` gets the API's words, such as its 429 limits.
 export function useStartDemo(onRefused: (text: string) => void) {
   const starting = useAppStore((state) => state.startingDemo);

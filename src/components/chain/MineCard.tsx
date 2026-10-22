@@ -9,15 +9,15 @@ interface Props {
   next: number | null;
   waiting: number | null;
   // Anyone can look at the chain; mining needs a session (ADR-0005). A node in demo mode offers a demo account
-  // in place, which signs the visitor in without leaving the page (VLW-34); otherwise the login.
+  // in place, which signs the visitor in without leaving the page; otherwise the login.
   signedIn: boolean;
   demoMode: boolean;
   startingDemo: boolean;
   onTryDemo: () => void;
-  // null until /auth/me answers; the API has the last word on roles (VLA-19).
+  // null until /auth/me answers; the API has the last word on roles.
   role: UserRole | null;
   offline: boolean;
-  // Offline because the API's database does not answer, while the API does (VLA-26).
+  // Offline because the API's database does not answer, while the API does.
   databaseDown: boolean;
   mining: boolean;
   // The elapsed time while mining, measured in the browser: the API answers only when the block is sealed.

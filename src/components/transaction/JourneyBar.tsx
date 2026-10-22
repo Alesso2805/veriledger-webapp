@@ -10,7 +10,6 @@ interface Props {
   reward: boolean;
 }
 
-// Signed → Accepted → Sealed → Buried, from the status, the block number and the height.
 export function JourneyBar({ journey, blockNumber, waiting, reward }: Props) {
   const words = useT().transaction.journey;
   const [filled, setFilled] = useState(false);

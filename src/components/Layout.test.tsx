@@ -126,7 +126,7 @@ describe('Layout (the shell)', () => {
       useAppStore.setState({ token: null, user: null });
       renderShell('/');
       await apiStatus('api · online');
-      // The visitor looks around for half an hour before starting the demo (found in the browser).
+      // The visitor looks around for half an hour before starting the demo.
       vi.setSystemTime(Date.now() + 30 * 60_000);
       const expires = new Date(Date.now() + 24 * 3_600_000 - 1_000).toISOString();
       vi.mocked(getMe).mockResolvedValue({ ...ME, email: null, display_name: 'Guest 4F2A', expires_at: expires });

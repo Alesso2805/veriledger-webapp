@@ -10,6 +10,6 @@ export function messages(language: Language): Messages {
   return DICTIONARIES[language] ?? en;
 }
 
-// The locales Intl formats with. English keeps the day-month dates the pages have always shown.
+// The locales Intl formats with. English keeps day-month dates, as the artboards draw them.
 export const DATE_LOCALE: Record<Language, string> = { en: 'en-GB', es: 'es' };
 export const NUMBER_LOCALE: Record<Language, string> = { en: 'en-US', es: 'es' };

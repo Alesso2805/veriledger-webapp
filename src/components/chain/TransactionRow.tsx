@@ -4,7 +4,7 @@ import type { Transaction } from '../../types/ledger';
 import { Avatar } from '../Avatar';
 import { useT } from '../useT';
 
-// One transaction in the chain's lists, linked to its page by the hash that page looks up (VLA-20). The avatar is its
+// One transaction in the chain's lists, linked to its page by the hash that page looks up. The avatar is its
 // sender's, or the miner's for a reward, which SYSTEM sends.
 export function TransactionRow({ transaction, waiting = false }: { transaction: Transaction; waiting?: boolean }) {
   const t = useT();

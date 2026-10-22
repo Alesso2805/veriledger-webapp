@@ -3,7 +3,7 @@ import { NoKey } from '../components/transact/NoKey';
 import { useT } from '../components/useT';
 import { useKeyStore } from '../store/useKeyStore';
 
-// Artboard "C · Firmar y enviar" (VLW-45; before it VLW-30).
+// Artboard "C · Firmar y enviar".
 export function SignAndSend() {
   const t = useT();
   const pair = useKeyStore((state) => state.pair);

@@ -4,7 +4,7 @@ import { expect, literal, numbered, startsWith, test, type Messages } from './i1
 // VLW-23: the main flows against the API's real Compose stack (`npm run test:e2e`). They read the page in English,
 // with the dictionary's own words (VLW-48), so a text changed in the app is changed here too. The stack runs with
 // DEMO_MODE=true, a low MINING_DIFFICULTY, the demo limits off and CORS_ORIGINS set to this preview's origin.
-// E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD are the admin it seeded (VLA-24); nothing here hard-codes them.
+// E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD are the admin it seeded; nothing here hard-codes them.
 const API = process.env.E2E_API_URL ?? 'http://127.0.0.1:8000';
 // Any well-formed address; nobody needs its key.
 const RECEIVER = '3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c';
@@ -26,7 +26,7 @@ async function pointAtApi(page: Page) {
 }
 
 // Any Content Security Policy violation the browser reports fails the flow, even one the page survives, such as a
-// blocked font. Only a deployed image sends the policy (VLW-22), so this bites in the rehearsal (VLW-25).
+// blocked font. Only a deployed image sends the policy, so this bites in the rehearsal.
 const violations = new WeakMap<Page, string[]>();
 test.beforeEach(({ page }) => {
   const seen: string[] = [];
@@ -45,8 +45,8 @@ const tab = (page: Page, t: Messages, name: keyof Messages['shell']['tabs']) =>
 
 // Mines and waits for the toast of the block this click sealed. Its number comes from the API's answer, not
 // from the button: another miner on the same node (here, the other flow) can take the number shown first.
-// That miner can also be busy, since a node mines one block at a time (429, VLA-29), or have just sealed the same
-// height (409, VLA-17). The toast says so, and, as a person would, the flow waits for Retry-After and tries again.
+// That miner can also be busy, since a node mines one block at a time (429), or have just sealed the same
+// height (409). The toast says so, and, as a person would, the flow waits for Retry-After and tries again.
 async function mineTo(page: Page, t: Messages, address: string): Promise<number> {
   const mine = new RegExp(`^(?:${numbered(t.chain.mine.mineBlock(9999), 9999)}|${literal(t.chain.mine.mineGenesis)})$`);
   await tab(page, t, 'chain').click();

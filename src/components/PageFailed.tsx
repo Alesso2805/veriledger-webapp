@@ -2,9 +2,8 @@ import { Link, useLocation } from 'react-router';
 import { BrokenLink } from './BrokenLink';
 import { useT } from './useT';
 
-// A page that threw while drawing (VLW-35). The shell around it still works. "Try again" draws the page again
-// without a reload, which would forget a key held in this tab. "Back to the chain" leaves for another route, whose
-// new <main> starts without the failure; on the chain itself only "Try again" is offered.
+// "Try again" draws the page again without a reload, which would forget a key held in this tab. "Back to the
+// chain" leaves for another route, whose new <main> starts clean; on the chain itself only "Try again" shows.
 export function PageFailed({ onRetry }: { onRetry: () => void }) {
   const t = useT();
   const onChain = useLocation().pathname === '/';

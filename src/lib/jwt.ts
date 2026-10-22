@@ -24,7 +24,7 @@ export function isExpired(token: string, now: number = Date.now()): boolean {
   return expiry !== null && expiry <= now;
 }
 
-// A demo account's token carries "demo": true (VLA-35). It is the only trace of the demo after a reload, because
+// A demo account's token carries "demo": true. It is the only trace of the demo after a reload, because
 // the user from /auth/me is not kept.
 export function isDemo(token: string): boolean {
   return claimsOf(token)?.demo === true;

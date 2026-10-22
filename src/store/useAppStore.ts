@@ -4,7 +4,7 @@ import type { CurrentUser, SessionEndReason } from '../types/session';
 
 interface AppState {
   token: string | null;
-  // Why the last session ended without a sign-out, for the login's notice (VLW-17, VLW-34).
+  // Why the last session ended without a sign-out, for the login's notice.
   endedReason: SessionEndReason | null;
   // GET /auth/me, read once per session by the header's user chip and used by pages for role rules.
   user: CurrentUser | null;

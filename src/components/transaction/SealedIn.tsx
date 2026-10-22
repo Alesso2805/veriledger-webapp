@@ -3,7 +3,6 @@ import { afterProofOfWork } from '../../lib/fingerprint';
 import { Fingerprint } from '../Fingerprint';
 import { useT } from '../useT';
 
-// The block that holds the transaction, with its fingerprint, linked to its place on the chain.
 export function SealedIn({ blockNumber, blockHash, above }: { blockNumber: number; blockHash: string; above: number }) {
   const t = useT();
   return (

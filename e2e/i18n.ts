@@ -14,10 +14,8 @@ export const test = base.extend<{ t: Messages }>({
 export { expect } from '@playwright/test';
 export type { Messages };
 
-// A dictionary's text as a pattern that matches it literally.
 export const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-// A pattern for a text at the start of a name.
 export const startsWith = (text: string) => new RegExp(`^${literal(text)}`);
 
 // A text with any number where the sample number stands: `numbered(t.chain.mine.mineBlock(9999), 9999)`.

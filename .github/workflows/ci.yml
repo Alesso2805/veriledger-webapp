@@ -24,7 +24,6 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # AR-09: the API's types are generated from its OpenAPI document, never edited by hand.
       - name: Types match the API's OpenAPI document (AR-09)
         run: npm run types:api && git diff --exit-code -- src/types/api.ts
       - run: npm run lint
@@ -39,7 +38,7 @@ jobs:
       - run: npm run test:a11y
       - run: npm audit --audit-level=high
 
-  # VLW-23: the main flows against the API's real stack: its published image at the commit below (VLA-38).
+  # VLW-23: the main flows against the API's real stack: its published image at the commit below.
   e2e:
     name: e2e
     runs-on: ubuntu-latest
@@ -82,7 +81,7 @@ jobs:
         working-directory: api
         run: docker compose -f docker-compose.ghcr.yml logs --no-color migrate backend | tail -n 200
 
-  # VLW-25: the deploy rehearsed as the API's runbook does it (VLA-27): this pull request's own image behind the
+  # VLW-25: the deploy rehearsed as the API's runbook does it: this pull request's own image behind the
   # API's Caddy on https://localhost, one origin with the real Content Security Policy, and the flows through it.
   rehearsal:
     name: rehearsal

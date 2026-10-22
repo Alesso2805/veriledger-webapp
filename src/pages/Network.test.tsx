@@ -120,7 +120,7 @@ describe('Network', () => {
     input.focus();
     fireEvent.change(input, { target: { value: 'h' } });
 
-    // Remounting the form here would drop the focus after the first character (found in the browser).
+    // Remounting the form here would drop the focus after the first character.
     expect(screen.getByLabelText('Peer address')).toHaveFocus();
     expect(screen.getByText('The peer’s public address, starting with http:// or https://.')).toBeInTheDocument();
   });

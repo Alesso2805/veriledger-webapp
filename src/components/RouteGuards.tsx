@@ -16,7 +16,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 // A page anyone can read (ADR-0005). A visitor who never signed in stays; a session that ends here still goes to
-// the login, which says why (VLW-17, VLW-34).
+// the login, which says why.
 export function OpenRoute({ children }: { children: React.ReactNode }) {
   const { ended } = useSessionToken();
   const endedReason = useAppStore((state) => state.endedReason);

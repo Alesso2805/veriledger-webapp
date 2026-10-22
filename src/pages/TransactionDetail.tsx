@@ -20,7 +20,7 @@ type View =
   | { phase: 'not-found' }
   | { phase: 'failed'; detail: string };
 
-// Artboard "C · Transacción y certificado" (VLW-44). Times are UTC, so the page says the same in every country.
+// Artboard "C · Transacción y certificado". Times are UTC, so the page says the same in every country.
 export function TransactionDetail() {
   const t = useT();
   const language = useLanguage();

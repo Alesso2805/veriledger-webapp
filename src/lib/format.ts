@@ -75,15 +75,15 @@ export function formatSeconds(ms: number, language: Language = 'en'): string {
   return new Intl.NumberFormat(NUMBER_LOCALE[language], { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(ms / 1000);
 }
 
-// What the header and the login say about the API. "no database" when it answers but its database does not
-// (VLA-26), so the screen never claims the API is unreachable when it is not.
+// What the header and the login say about the API. "no database" when it answers but its database does not,
+// so the screen never claims the API is unreachable when it is not.
 export function healthWord(online: boolean | null, databaseDown: boolean): 'checking' | 'online' | 'offline' | 'no database' {
   if (online === null) return 'checking';
   if (online) return 'online';
   return databaseDown ? 'no database' : 'offline';
 }
 
-// What is left of a demo account: hours, then minutes in its last hour (VLW-34). The words are the dictionary's.
+// What is left of a demo account: hours, then minutes in its last hour. The words are the dictionary's.
 export function timeLeft(ms: number): { hours: number } | { minutes: number } {
   if (ms >= 3_600_000) return { hours: Math.floor(ms / 3_600_000) };
   return { minutes: Math.max(1, Math.ceil(ms / 60_000)) };

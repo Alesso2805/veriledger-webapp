@@ -1,7 +1,6 @@
 import { Link } from 'react-router';
 import { useT } from '../useT';
 
-// The node accepted the transaction: it waits in the mempool, and its page follows it into a block.
 export function Accepted({ txHash, onAgain }: { txHash: string; onAgain: () => void }) {
   const words = useT().transact.accepted;
   return (

@@ -8,7 +8,7 @@ export async function getPeers(): Promise<Peer[]> {
   return response.data as Peer[];
 }
 
-// Admin only (VLA-19). The API refuses an address that is not http(s), has no host, does not resolve or is
+// Admin only. The API refuses an address that is not http(s), has no host, does not resolve or is
 // not public, and a duplicate, each with a 400 whose detail says why.
 export async function registerPeer(url: string): Promise<Peer> {
   const response = await api.post('/nodes/register', { url });

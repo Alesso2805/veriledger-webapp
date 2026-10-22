@@ -4,7 +4,6 @@ import { generateKeyPair } from '../../lib/keys';
 import { useKeyStore } from '../../store/useKeyStore';
 import { useT } from '../useT';
 
-// No key in this tab yet: make a new pair here, or open the file of one made before.
 export function CreateOrOpen({ onReady }: { onReady: () => void }) {
   const t = useT();
   const hold = useKeyStore((state) => state.hold);

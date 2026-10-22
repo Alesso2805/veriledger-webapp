@@ -52,7 +52,6 @@ export function journeyOf(transaction: Transaction, top: number | null): Journey
 
 const title4 = (address: string) => shortHash(address, 4, 4);
 
-// In the page's language: `titles` is that dictionary's.
 export function transactionTitle(transaction: Transaction, titles: Messages['transaction']['titles'] = en.transaction.titles): string {
   const amount = `${formatAmount(transaction.amount)} VL`;
   switch (transactionKind(transaction)) {
