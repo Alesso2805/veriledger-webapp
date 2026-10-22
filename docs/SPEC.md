@@ -107,6 +107,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
   - No URL is built into the production bundle (AR-07).
 - **The image** (VLW-22, `Dockerfile`):
   - Node 22 builds the files, and Caddy serves them as a non-root user on port 8080. Both bases are pinned by digest.
+  - The files are the same for every architecture, so Node builds them on the build machine's own architecture: an arm64 image runs no npm under emulation.
   - At start the container runs `write-config.sh`.
   - It is built for amd64 and arm64 by the Image workflow. On every push to `main` the workflow also publishes it, public, as `ghcr.io/alesso2805/veriledger-webapp` with the tags `main` and `sha-<commit>`, and a release tag adds the version (`1.0.0`, `1.0`) (VLW-25). Pull requests build and smoke-test it without publishing.
 - **`docker/Caddyfile`:**
