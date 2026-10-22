@@ -6,6 +6,8 @@ Blockchains are usually explained, not shown. VeriLedger shows one in a few minu
 
 This repository is the web app. Its engine is [veriledger-api](https://github.com/Alesso2805/veriledger-api), and both are deployed on one hostname.
 
+![The chain: the newest blocks as a ribbon of fingerprints, each linked to the one before, with block #5 selected](docs/images/chain.png)
+
 ## Try it
 
 **Live demo: [veriledger.duckdns.org](https://veriledger.duckdns.org)**
@@ -19,6 +21,8 @@ What to try:
 3. **Sign and send.** Transfer to any address, or notarize a document: the document is hashed in your browser, and only its fingerprint is sent. The page shows the exact message you sign.
 4. **Mine again, then open your transaction.** Its journey from signed to buried, its signature checked in your browser and, for a notarization, its certificate. Check a file against it: the same file matches, and one changed character changes every bar of its fingerprint.
 5. **Look around:** English or Spanish, light or dark, and a 360 px phone screen.
+
+<img src="docs/images/phone.png" alt="The chain on a 360 px phone, in Spanish and in the dark theme" width="300">
 
 ## Why it exists
 
@@ -88,6 +92,11 @@ flowchart LR
 - [docs/BACKLOG.md](docs/BACKLOG.md): the stories and the sprint plan. [docs/sprints/](docs/sprints/): what each sprint delivered.
 - [docs/adr/](docs/adr/): one decision per file.
 - [CHANGELOG.md](CHANGELOG.md): what changes, release by release.
+
+| | |
+| --- | --- |
+| ![A notarization's certificate: the document's fingerprint, and a file checked against it in the browser](docs/images/certificate.png) | ![A transfer's page in Spanish and in the dark theme: its journey, its details and the block that seals it](docs/images/transfer-dark-es.png) |
+| ![The wallet: the address's fingerprint, its balance and its activity](docs/images/wallet.png) | ![Sign and send in the dark theme: the message being signed, and the signature's fingerprint](docs/images/sign-and-send-dark.png) |
 
 ## Run it locally
 
