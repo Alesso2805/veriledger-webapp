@@ -48,8 +48,8 @@ describe('signedFieldsOf and checkSignature', () => {
   });
 
   it('cannot check an amount a float cannot spell back with 8 decimals, and does not call it invalid', () => {
-    // 9999999999.99999999 arrives as 10000000000, whose 11 integer digits no signed message has.
-    expect(checkSignature(stored('transfer', { amount: 9999999999.99999999 }))).toBe('cannot-rebuild');
+    // The API's JSON turns 9999999999.99999999 into 10000000000, whose 11 integer digits no signed message has.
+    expect(checkSignature(stored('transfer', { amount: Number('9999999999.99999999') }))).toBe('cannot-rebuild');
   });
 });
 

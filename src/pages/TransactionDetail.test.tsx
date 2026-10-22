@@ -120,7 +120,7 @@ describe('TransactionDetail', () => {
   });
 
   it('keeps the page when the node sends a time or an amount it cannot read', async () => {
-    vi.mocked(getTransaction).mockResolvedValue(stored('notarization', { timestamp: 'not a date', fee: 9999999999.99999999 }));
+    vi.mocked(getTransaction).mockResolvedValue(stored('notarization', { timestamp: 'not a date', fee: Number('9999999999.99999999') }));
     vi.mocked(getBlock).mockResolvedValue({ timestamp: 'soon' } as FullBlock);
     renderPage();
 
