@@ -12,8 +12,8 @@ function texts() {
   }
 }
 
-// The shell or the login threw while drawing (VLW-35), so nothing around this can be trusted: it needs no router,
-// store or API, and offers the one thing that helps, a reload. public/theme.js has already set the theme.
+// The shell or the login threw while drawing, so nothing around this can be trusted: it works without a router, a
+// store hook or the API, and offers the one thing that helps, a reload. public/theme.js has already set the theme.
 export function AppFailed({ onReload = () => window.location.reload() }: { onReload?: () => void }) {
   const t = texts();
   return (

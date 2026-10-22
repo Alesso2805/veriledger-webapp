@@ -51,7 +51,7 @@ function readable(iso: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-// In the reader's own time zone; tests pass one so they do not depend on the machine's. "20 Oct 2026", "20 oct 2026".
+// In the reader's time zone unless one is given (the transaction page passes UTC). "20 Oct 2026", "20 oct 2026".
 export function formatSealed(iso: string, timeZone?: string, language: Language = 'en'): string {
   const date = readable(iso);
   if (!date) return '—';

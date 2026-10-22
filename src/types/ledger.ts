@@ -9,7 +9,7 @@ export type TransactionStatus = Schemas['TransactionStatus'];
 // block_number and block_hash are null while the transaction waits in the mempool (VLA-20).
 export type Transaction = Schemas['TransactionResponseDTO'];
 
-// transaction_hashes are the hashes that transaction links use, in the order of transaction_ids (VLA-20).
+// transaction_hashes hold each transaction's tx_hash, in the order of transaction_ids.
 export type Block = Schemas['BlockResponseDTO'];
 
 // GET /blocks/{block_hash}: the block with its transactions instead of their ids.

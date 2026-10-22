@@ -1,6 +1,7 @@
 import { PALETTE } from '../lib/fingerprint';
 
-// The failure cards' drawing (DESIGN.md › Failure): a tile, a broken connector and an empty tile, in the danger colour.
+// The failure cards' drawing (DESIGN.md › Failure): a tile of palette bars, then a broken connector and an empty tile
+// in the danger colour.
 // Nothing is missing this time, something broke.
 const BARS = [PALETTE[0], PALETTE[2], PALETTE[3], PALETTE[7]];
 

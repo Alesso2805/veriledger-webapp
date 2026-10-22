@@ -30,7 +30,7 @@ function renderLogin(state?: LoginRedirectState) {
             </PublicRoute>
           }
         />
-        <Route path="/" element={<p>tower page</p>} />
+        <Route path="/" element={<p>chain page</p>} />
         <Route path="/wallet" element={<p>wallet page</p>} />
       </Routes>
     </MemoryRouter>,
@@ -138,13 +138,13 @@ describe('Login', () => {
     expect(login).toHaveBeenCalledWith('trader@veriledger.test', 'a password');
   });
 
-  it('opens the tower when there is no page to return to', async () => {
+  it('opens the chain when there is no page to return to', async () => {
     vi.mocked(login).mockResolvedValue('abc.def.ghi');
     renderLogin();
 
     signIn();
 
-    expect(await screen.findByText('tower page')).toBeInTheDocument();
+    expect(await screen.findByText('chain page')).toBeInTheDocument();
   });
 
   it('shakes the form and explains a 401', async () => {

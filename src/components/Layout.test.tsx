@@ -36,7 +36,7 @@ function renderShell(path = '/wallet') {
       <Routes>
         <Route path="/login" element={<LoginProbe />} />
         <Route element={<Layout />}>
-          <Route path="/" element={<p>tower page</p>} />
+          <Route path="/" element={<p>chain page</p>} />
           <Route path="/wallet" element={<p>wallet page</p>} />
           <Route path="/transaction/:hash" element={<p>transaction page</p>} />
           <Route path="/broken" element={<Broken />} />
@@ -194,7 +194,7 @@ describe('Layout (the shell)', () => {
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main');
   });
 
-  it('keeps the shell when a page throws while drawing, and leaves that page for the tower (VLW-35)', async () => {
+  it('keeps the shell when a page throws while drawing, and leaves that page for the chain (VLW-35)', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     renderShell('/broken');
 
@@ -205,12 +205,12 @@ describe('Layout (the shell)', () => {
 
     fireEvent.click(screen.getByRole('link', { name: 'Back to the chain' }));
 
-    expect(await screen.findByText('tower page')).toBeInTheDocument();
+    expect(await screen.findByText('chain page')).toBeInTheDocument();
     expect(screen.queryByText('This page ran into a problem')).not.toBeInTheDocument();
     vi.mocked(console.error).mockRestore();
   });
 
-  it('offers only "Try again" when the page that failed is the tower', async () => {
+  it('offers only "Try again" when the page that failed is the chain', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     render(
       <MemoryRouter initialEntries={['/']}>
