@@ -4,10 +4,12 @@ import { useHealthStore } from '../store/useHealthStore';
 import { useKeyStore } from '../store/useKeyStore';
 import { useToastStore } from '../store/useToastStore';
 import type { LoginRedirectState } from '../types/session';
+import { ErrorBoundary } from './ErrorBoundary';
 import { HeaderSearch } from './HeaderSearch';
 import { HealthStatus } from './HealthStatus';
 import { LogoMark } from './LogoMark';
 import { OfflineBanner } from './OfflineBanner';
+import { PageFailed } from './PageFailed';
 import { UserChip } from './UserChip';
 import { useSessionToken } from './useSessionToken';
 import { useStartDemo } from './useStartDemo';
@@ -104,7 +106,10 @@ export function Layout() {
         key={pathname}
         className="mx-auto max-w-[1320px] animate-vl-fade-up px-3 pt-7 pb-16 focus:outline-none sm:px-6"
       >
-        <Outlet />
+        {/* A page that throws while drawing fails alone, inside the shell; the key above clears it on another route. */}
+        <ErrorBoundary fallback={(retry) => <PageFailed onRetry={retry} />}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );
