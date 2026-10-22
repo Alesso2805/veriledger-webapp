@@ -17,7 +17,7 @@ Each rule is one sentence that a test can prove or refute. A rule about "every" 
 | AR-07 | No module under `src` contains an absolute `http(s)://` URL, other than XML namespaces and form placeholders (example text shown to the user, never requested); the API base URL comes from runtime configuration. | SPEC › Deployment; ADR-0003 | Vitest `src/architecture/no-absolute-urls.test.ts` reads every module under `src` and fails on an `http://` or `https://` URL with a host (not text that only names the scheme) outside the allowlist (`http://www.w3.org/2000/svg`) and outside `placeholder="…"`. | Checked |
 | AR-08 | Every route except the public ones renders only with a session. The public ones are `/login` and the pages whose data the API serves to anyone: `/`, `/transaction/:hash`, `/network` and the 404 (ADR-0005). | SPEC › Architecture (`ProtectedRoute`, `OpenRoute`) | Vitest `src/architecture/protected-routes.test.tsx` walks the route table that `src/Router.tsx` exports and renders each path without a token: a protected path must end at `/login`, a public one must stay. The public paths are listed in the test, so a new route is protected unless it is added there and here. | Checked |
 | AR-09 | The types of the API's responses are generated from the API's OpenAPI document, not written by hand. | SPEC › API usage | The API's `docs/openapi.json` is copied unchanged into `src/types/openapi.json`, pinned to an API commit (SPEC › API usage). CI runs `npm run types:api` (`openapi-typescript`) into `src/types/api.ts` and fails on `git diff`; `tsc` then catches every mismatch with the code. `src/types/ledger.ts`, `network.ts` and `session.ts` only name the generated schemas. | Checked (VLW-19, after VLA-37) |
-| AR-10 | `src/index.css` is the CSS block of DESIGN.md › Tokens and motion, character for character. | DESIGN.md › The promise (same tokens in the canvas and the code); ADR-0004 | Vitest `src/architecture/design-tokens.test.ts` reads both files as text and compares them. | Checked |
+| AR-10 | `src/index.css` is the CSS block of DESIGN.md › Tokens and motion, character for character, and its two lists of dark values (a dark choice, and the system's dark preference) are the same. | DESIGN.md › The promise (same tokens in the canvas and the code); ADR-0004, ADR-0006, ADR-0008 | Vitest `src/architecture/design-tokens.test.ts` reads both files as text and compares them, then compares the two dark lists. | Checked; the dark lists since VLW-39 |
 
 ## Known violations
 
@@ -95,6 +95,7 @@ Alternatives considered:
 | A route outside `ProtectedRoute` | AR-08 fails for that path |
 | `/wallet` moved under `OpenRoute` | AR-08 fails for `/wallet` |
 | One token changed in `index.css` only, then in DESIGN.md only | AR-10 fails both times |
+| One dark value changed in the system's list only, in both files (2026-10-22) | AR-10's dark-lists test fails |
 | A file in `src/types` imports `src/lib` | AR-03-types-import-nothing fails (2026-10-21) |
 | `src/types/api.ts` edited by hand; then `openapi.json` changed without regenerating | AR-09's diff fails both times (2026-10-21) |
 

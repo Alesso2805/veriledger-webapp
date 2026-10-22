@@ -1,41 +1,49 @@
 @import "tailwindcss" source("../src");
-@import "@fontsource/instrument-sans/400.css";
-@import "@fontsource/instrument-sans/500.css";
-@import "@fontsource/instrument-sans/600.css";
-@import "@fontsource/instrument-sans/700.css";
-@import "@fontsource/martian-mono/400.css";
-@import "@fontsource/martian-mono/500.css";
+@import "@fontsource-variable/bricolage-grotesque/opsz.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
 
 @theme {
-  --color-vl-bg: #0E1014;
-  --color-vl-surface: #161920;
-  --color-vl-raised: #1D212A;
-  --color-vl-line: #2A2F3A;
-  --color-vl-line-soft: #22262F;
-  --color-vl-text: #E8EAEE;
-  --color-vl-muted: #9AA1AD;
-  --color-vl-faint: #6B7280;
-  --color-vl-accent: #FFB547;
-  --color-vl-on-accent: #0E1014;
-  --color-vl-ok: #5AD19A;
-  --color-vl-danger: #FF7A6B;
-  --color-vl-cube-top: #3A4150;
-  --color-vl-cube-left: #262B35;
-  --color-vl-cube-right: #2F3541;
-  --color-vl-cube-left-on: #4A4F5C;
-  --color-vl-cube-right-on: #3A3F4B;
-  --color-vl-shadow: #12151B;
-  --color-vl-danger-soft: #2A1714;
-  --color-vl-inset: #090A0D;
-  --font-vl-sans: "Instrument Sans", system-ui, sans-serif;
-  --font-vl-mono: "Martian Mono", ui-monospace, monospace;
+  --color-vl-bg: #EEF1F4;
+  --color-vl-surface: #FFFFFF;
+  --color-vl-raised: #F6F8FA;
+  --color-vl-line: #7D8895;
+  --color-vl-line-soft: #E3E8ED;
+  --color-vl-text: #101418;
+  --color-vl-muted: #55606B;
+  --color-vl-faint: #9AA6B2;
+  --color-vl-accent: #2F45FF;
+  --color-vl-on-accent: #FFFFFF;
+  --color-vl-ok: #0F7B5F;
+  --color-vl-ok-soft: #E3F6EE;
+  --color-vl-danger: #B42318;
+  --color-vl-danger-soft: #FDECEA;
+  --color-vl-wait: #F5C400;
+  --color-vl-wait-soft: #FFF4C2;
+  --color-vl-on-wait: #101418;
+  --color-vl-skeleton: #E3E8ED;
+  --color-vl-ink: #101418;
+  --color-vl-on-ink: #FFFFFF;
+  --color-vl-on-ink-muted: #C3CBD3;
+  --color-vl-ink-raised: #1C232A;
+  --color-vl-ink-line: #62707C;
+  --color-vl-ink-danger: #2A1A1C;
+  --color-vl-inset: #101418;
+  --color-vl-strong: #101418;
+  --color-vl-on-strong: #FFFFFF;
+  --color-vl-on-strong-muted: #C3CBD3;
+  --color-vl-fp-ring: rgb(16 20 24 / 0.06);
+  --color-vl-logo-tile: #FFFFFF;
+  --color-vl-shadow: rgb(16 20 24 / 0.16);
+  --font-vl-sans: "Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, sans-serif;
+  --font-vl-mono: "JetBrains Mono", ui-monospace, monospace;
   --ease-vl-out: cubic-bezier(.2, .7, .2, 1);
   --ease-vl-in-out: cubic-bezier(.45, 0, .2, 1);
-  --ease-vl-drop: cubic-bezier(.3, .6, .2, 1);
+  --ease-vl-spring: cubic-bezier(.2, .8, .2, 1);
   --animate-vl-fade-up: vl-fade-up 280ms var(--ease-vl-out) both;
   --animate-vl-fade-in: vl-fade-in 280ms ease both;
-  --animate-vl-drop: vl-drop 760ms var(--ease-vl-drop) both;
-  --animate-vl-float: vl-float 900ms ease-in-out infinite;
+  --animate-vl-tile-in: vl-tile-in 560ms var(--ease-vl-out) both;
+  --animate-vl-bars-in: vl-bars-in 520ms var(--ease-vl-spring) both;
   --animate-vl-travel: vl-travel 760ms var(--ease-vl-in-out) both;
   --animate-vl-pop: vl-pop 420ms ease both;
   --animate-vl-shake: vl-shake 360ms ease both;
@@ -44,21 +52,95 @@
   --animate-vl-toast-in: vl-toast-in 280ms var(--ease-vl-out) both;
 }
 
-:root { color-scheme: dark; --vl-dur-fast: 160ms; --vl-dur-base: 280ms; --vl-dur-slow: 420ms; --vl-dur-drop: 760ms; }
+:root { color-scheme: light; --vl-dur-fast: 160ms; --vl-dur-base: 280ms; --vl-dur-slow: 420ms; }
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-vl-bg: #0E1116;
+  --color-vl-surface: #171B22;
+  --color-vl-raised: #1F242C;
+  --color-vl-line: #6E7A89;
+  --color-vl-line-soft: #2A3039;
+  --color-vl-text: #EEF1F4;
+  --color-vl-muted: #A3ADB9;
+  --color-vl-faint: #4A5360;
+  --color-vl-accent: #8392FF;
+  --color-vl-on-accent: #0E1116;
+  --color-vl-ok: #4FD1A5;
+  --color-vl-ok-soft: #12302A;
+  --color-vl-danger: #FF8A8A;
+  --color-vl-danger-soft: #3A1C1F;
+  --color-vl-wait-soft: #3A3214;
+  --color-vl-skeleton: #232933;
+  --color-vl-ink: #262D38;
+  --color-vl-ink-raised: #313946;
+  --color-vl-ink-line: #74808F;
+  --color-vl-inset: #07090C;
+  --color-vl-strong: #EEF1F4;
+  --color-vl-on-strong: #0E1116;
+  --color-vl-on-strong-muted: #4A5360;
+  --color-vl-fp-ring: rgb(255 255 255 / 0.34);
+  --color-vl-shadow: rgb(0 0 0 / 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-vl-bg: #0E1116;
+    --color-vl-surface: #171B22;
+    --color-vl-raised: #1F242C;
+    --color-vl-line: #6E7A89;
+    --color-vl-line-soft: #2A3039;
+    --color-vl-text: #EEF1F4;
+    --color-vl-muted: #A3ADB9;
+    --color-vl-faint: #4A5360;
+    --color-vl-accent: #8392FF;
+    --color-vl-on-accent: #0E1116;
+    --color-vl-ok: #4FD1A5;
+    --color-vl-ok-soft: #12302A;
+    --color-vl-danger: #FF8A8A;
+    --color-vl-danger-soft: #3A1C1F;
+    --color-vl-wait-soft: #3A3214;
+    --color-vl-skeleton: #232933;
+    --color-vl-ink: #262D38;
+    --color-vl-ink-raised: #313946;
+    --color-vl-ink-line: #74808F;
+    --color-vl-inset: #07090C;
+    --color-vl-strong: #EEF1F4;
+    --color-vl-on-strong: #0E1116;
+    --color-vl-on-strong-muted: #4A5360;
+    --color-vl-fp-ring: rgb(255 255 255 / 0.34);
+    --color-vl-shadow: rgb(0 0 0 / 0.5);
+  }
+}
 
 body { background: var(--color-vl-bg); color: var(--color-vl-text); font-family: var(--font-vl-sans); }
-:focus-visible { outline: 2px solid var(--color-vl-accent); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--color-vl-accent); outline-offset: 2px; }
 
 @keyframes vl-fade-up { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
 @keyframes vl-fade-in { from { opacity: 0 } to { opacity: 1 } }
-@keyframes vl-drop { 0% { opacity: 0; transform: translateY(-140px) } 70% { opacity: 1; transform: translateY(6px) } 85% { transform: translateY(-3px) } 100% { opacity: 1; transform: none } }
-@keyframes vl-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+@keyframes vl-tile-in { from { opacity: 0; transform: translateX(32px) scale(.96) } to { opacity: 1; transform: none } }
+@keyframes vl-bars-in { from { opacity: 0; transform: scaleY(.2) } to { opacity: 1; transform: none } }
 @keyframes vl-travel { 0% { offset-distance: 0%; opacity: 0 } 12% { opacity: 1 } 88% { opacity: 1 } 100% { offset-distance: 100%; opacity: 0 } }
 @keyframes vl-pop { 0% { transform: scale(1) } 40% { transform: scale(1.16) } 100% { transform: scale(1) } }
 @keyframes vl-shake { 0%, 100% { transform: none } 20% { transform: translateX(-6px) } 40% { transform: translateX(6px) } 60% { transform: translateX(-3px) } 80% { transform: translateX(3px) } }
 @keyframes vl-reveal { from { opacity: 0; filter: blur(6px) } to { opacity: 1; filter: none } }
 @keyframes vl-pulse { 0%, 100% { opacity: 1 } 50% { opacity: .45 } }
 @keyframes vl-toast-in { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
+
+/* Design E's leftovers, for the views not yet redrawn in C. VLW-48 removes them. */
+@theme {
+  --color-vl-cube-top: #3A4150;
+  --color-vl-cube-left: #262B35;
+  --color-vl-cube-right: #2F3541;
+  --color-vl-cube-left-on: #4A4F5C;
+  --color-vl-cube-right-on: #3A3F4B;
+  --ease-vl-drop: cubic-bezier(.3, .6, .2, 1);
+  --animate-vl-drop: vl-drop 760ms var(--ease-vl-drop) both;
+  --animate-vl-float: vl-float 900ms ease-in-out infinite;
+}
+@keyframes vl-drop { 0% { opacity: 0; transform: translateY(-140px) } 70% { opacity: 1; transform: translateY(6px) } 85% { transform: translateY(-3px) } 100% { opacity: 1; transform: none } }
+@keyframes vl-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -59,7 +59,7 @@ A single-page app built by Vite into static files (ADR-0001).
 
 ## Design
 
-Design direction C ("Fingerprint", ADR-0006) replaces E ("Network", ADR-0004), in light and dark themes that follow the system (ADR-0008) and in English and Spanish (ADR-0007). DESIGN.md describes C since VLW-38. The code draws E until epic E6 rebuilds each view, and `src/index.css` holds E's tokens until VLW-39, kept at the end of DESIGN.md so that AR-10 holds. [DESIGN.md](DESIGN.md) is the specification of the look and behaviour of every page. It covers:
+Design direction C ("Fingerprint", ADR-0006) replaces E ("Network", ADR-0004), in light and dark themes that follow the system (ADR-0008) and in English and Spanish (ADR-0007). DESIGN.md describes C since VLW-38, and `src/index.css` holds C's tokens since VLW-39. The views keep E's layout until epic E6 rebuilds each one, with E's cube tokens at the end of the block until VLW-48. [DESIGN.md](DESIGN.md) is the specification of the look and behaviour of every page. It covers:
 
 - the CSS tokens and animations that go into `src/index.css`, unchanged;
 - which real event triggers each animation;
@@ -140,7 +140,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 
 ## Engineering rules
 
-**Stack.** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Zustand 5, axios, lucide-react, `@noble/curves` 2; @fontsource Instrument Sans and Martian Mono; oxlint; Vitest, Testing Library and jsdom; axe-core and @axe-core/playwright; Playwright; dependency-cruiser; openapi-typescript. Node 22 LTS, 22.13 or later.
+**Stack.** React 19, TypeScript, Vite 8, Tailwind CSS 4, React Router 7, Zustand 5, axios, lucide-react, `@noble/curves` 2; @fontsource Bricolage Grotesque (variable, with optical sizes) and JetBrains Mono; oxlint; Vitest, Testing Library and jsdom; axe-core and @axe-core/playwright; Playwright; dependency-cruiser; openapi-typescript. Node 22 LTS, 22.13 or later.
 
 **Architecture rules.** The folder rules of the Architecture section, written as verifiable rules AR-01 to AR-09 in [ARCHITECTURE_RULES.md](ARCHITECTURE_RULES.md), each with the test that checks it (VLW-13).
 
@@ -178,13 +178,13 @@ veriledger-webapp/
 │   ├── Router.tsx                # the route table
 │   ├── App.tsx
 │   ├── main.tsx
-│   └── index.css                 # design E tokens: the CSS block of DESIGN.md (AR-10)
+│   └── index.css                 # design C tokens, light and dark: the CSS block of DESIGN.md (AR-10)
 ├── public/favicon.svg            # the logo on the background colour (VLW-26)
 ├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); robustness.spec.ts on the same fixtures (VLW-36); flows.spec.ts against the API's stack (VLW-23)
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh
 ├── docs/
 │   ├── SPEC.md                   # this document
-│   ├── DESIGN.md                 # design C: tokens for both themes, motion, languages, views; E's tokens until VLW-39
+│   ├── DESIGN.md                 # design C: tokens for both themes, motion, languages, views
 │   ├── BACKLOG.md
 │   ├── ARCHITECTURE_RULES.md
 │   ├── AUDIT.md
