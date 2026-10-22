@@ -29,7 +29,7 @@ This block goes into `src/index.css` as is (VLW-39). A test (AR-10) fails if the
 - **The light values** are the theme's defaults, in `@theme`. **The dark values** override the same names, once for a dark choice in the navbar (`data-theme="dark"`) and once for the system's preference when nothing is chosen (ADR-0008). The two dark lists are the same, and AR-10's test keeps them so.
 - Each theme sets `color-scheme`, so the browser's own scrollbars and form controls follow it.
 - Tokens that do not change with the theme (`wait`, `on-wait`, `on-ink`, `on-ink-muted`, `ink-danger`, `logo-tile`) are declared once.
-- **E's leftovers** close the block, marked: the cube colours, `drop` and `float`. The views not yet redrawn in C still use them (the tower, the 404's and the failures' towers, the login's tower, the identity cube and the logo). VLW-48 removes them with the last of those views.
+- **E's leftovers** close the block, marked: the cube colours, `drop` and `float`. Only the network's peer cards still use one (`cube-top`, until VLW-47). VLW-48 removes them.
 
 ```css
 @import "tailwindcss" source("../src");
@@ -420,7 +420,7 @@ Each view lists its artboard, its data and the stories that build it. Its texts 
   - "1 · Save the key file" with "Download .json" (`wait`), which saves `{"public_key", "private_key"}` (`keyFileText`) as `veriledger-<first 8>.json` and turns into a mint "Saved"; "2 · I stored it somewhere safe", a checkbox. The current step has a `wait` ring, and the steps fold away once both are done (`grid-template-rows`);
   - the store remembers whether a file of the key exists, and a key opened from its file counts as saved (VLW-31a);
   - "Forget this key in this tab" asks inline on `ink-danger` with a coral ring, with no browser dialog: "Forget it" (coral) and "Keep it". Forgetting returns to create or open.
-- **Activity** (VLW-31b): the 20 newest of `GET /wallets/{address}/transactions`. Each is linked to its page, with the other party's avatar, "Mining reward", "Notarized a document", "Sent to …" or "Received from …", its detail, a chip ("Waiting" on `wait-soft`, "Block #n" on `ok-soft`) and what it does to the balance ("+50.00", "−5.10"). Rows fade up 40 ms apart. Without activity: "No transactions yet. Mine a block with this address as the reward address, or ask someone to send you VL." and "Go to the chain".
+- **Activity** (VLW-31b): the 20 newest of `GET /wallets/{address}/transactions`. Each is linked to its page, with the other party's avatar (this address's own for a reward or a notarization), "Mining reward", "Notarized a document", "Sent to …" or "Received from …", its detail, a chip ("Waiting" on `wait-soft`, "Block #n" on `ok-soft`, and "Failed" on `danger-soft`, which the artboard does not draw) and what it does to the balance ("+50.00", "−5.10"). Rows fade up 40 ms apart. Without activity: "No transactions yet. Mine a block with this address as the reward address, or ask someone to send you VL." and "Go to the chain".
 - **Look up any address:** its 12-bar fingerprint builds as the person types; a bar stays `skeleton` until its byte is complete, and the counter reads "n / 64". The border is the accent colour while the address is incomplete, and ok when it is valid. "Show balance" gives "Balance of <address>" and the balance, or the 64-character rule with a shake.
 - **Stories:** VLW-46; before it VLW-31, VLW-16.
 
@@ -527,19 +527,3 @@ They exist in the canvas to review the design and are not built:
 - **Colour is never alone:** every status has text next to its dot or colour, and every fingerprint has its hash or address beside it.
 - **Language:** `<html lang>` is the page's language, so a screen reader reads each in its own voice.
 - VLW-24 checks all of it with axe-core and Playwright at 360 px, and VLW-48 runs the same pass in both themes and both languages.
-
-## Identity cube (design E, until VLW-46)
-
-Until VLW-46 and VLW-48 remove it, an address on the wallet and in "Signing as" is drawn as E's isometric cube, whose faces come from its first three bytes. `src/lib/identicon.ts` implements exactly this:
-
-```ts
-const PALETTE = ['#FFB547', '#7CC4FF', '#5AD19A', '#FF8A65', '#B79CFF', '#F2E56B', '#6FD3D8', '#E8EAEE'];
-const shade = (hex: string, f: number) =>
-  '#' + [1, 3, 5].map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * f).toString(16).padStart(2, '0')).join('');
-export function addressCube(address: string) {
-  const pick = (i: number) => PALETTE[parseInt(address.slice(i * 2, i * 2 + 2), 16) % 8];
-  return { top: pick(0), left: shade(pick(1), 0.55), right: shade(pick(2), 0.75) };
-}
-```
-
-The cube is decoration next to the address text, never instead of it.
