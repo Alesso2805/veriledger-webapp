@@ -2,7 +2,7 @@
 
 Oct 20, 2026 · @Alessandro David
 
-32 stories in 6 epics (E0 to E5). E0 records what was built on July 29, 2026, retroactively, so that the audit can check each criterion against a test; VLW-07 is the documentation of October 20. E1 to E4 come from the audit of the same day ([AUDIT.md](AUDIT.md)). E5 (VLW-27 to VLW-34) builds design direction E, chosen the same day ([ADR-0004](adr/0004-design-direction-e.md), [DESIGN.md](DESIGN.md)), and absorbs VLW-20; VLW-34 follows the API's ADR-0006 (visitors browse without an account and start a demo with one click). MoSCoW priority (M = Must, S = Should, C = Could) and estimate in points (1, 2, 3, 5, 8). IDs VLW-08, VLW-09 are left free.
+34 stories in 6 epics (E0 to E5). E0 records what was built on July 29, 2026, retroactively, so that the audit can check each criterion against a test; VLW-07 is the documentation of October 20. E1 to E4 come from the audit of the same day ([AUDIT.md](AUDIT.md)). E5 (VLW-27 to VLW-34) builds design direction E, chosen the same day ([ADR-0004](adr/0004-design-direction-e.md), [DESIGN.md](DESIGN.md)), and absorbs VLW-20; VLW-34 follows the API's ADR-0006 (visitors browse without an account and start a demo with one click). VLW-35 and VLW-36 come from the audit of October 21 that looked for anything able to blank the app (#53, #54). MoSCoW priority (M = Must, S = Should, C = Could) and estimate in points (1, 2, 3, 5, 8). IDs VLW-08, VLW-09 are left free.
 
 **Redesign early, in order** (product owner, 2026-10-20). The redesign does not wait for the rest of the plan, and it does not run ahead of the API either:
 
@@ -49,6 +49,8 @@ The API's stories (VLA-NN) live in `veriledger-api/docs/BACKLOG.md`. Both backlo
 | VLW-32 | E5 Design E | As an admin I want to see and manage the peers | Artboard "E · Red": ring map with `transform` transitions, resolve pulses while the request is pending and replies when it settles, register with the API's errors, read-only for other roles. After VLA-19 | S | 3 | 3 | Done: 32a map, list and adding peers (#36), 32b resolving and the end of `legacy.css` (#37) |
 | VLW-33 | E5 Design E | As a user I want the sign-in and the shell states | Artboards "E · Login y demo con un clic" and "E · Estados del shell": empty login form, 401 shake, session-expired notice and return to the previous page, offline banner and "Back online" toast from `/health`, the 404 tower. The "Try the demo" part is VLW-34 | M | 2 | 1 | Done: 33a login (#12), 33b connection (#13), 33c 404 (#14) |
 | VLW-34 | E5 Design E | As a visitor I want to look around and try the demo without signing up | Tower, transactions and the peer list open without a token (after VLA-36); signed out, the header shows "Sign in" and "Try the demo", and the mine button says "Try the demo to mine"; "Try the demo" (header, login page, mine button) calls `POST /auth/demo` and continues where the visitor was; the user chip shows "Guest XXXX · demo · N h left"; a 401 from an expired demo opens the login with "Your demo ended…"; the API's 429 messages are shown. After VLA-35, VLA-36 | M | 3 | 3 | Done: 34a the pages open without a session (#38), 34b-1 "Try the demo" (#39), 34b-2 the demo's chip and its end (#40) |
+| VLW-35 | E5 Design E | As a user I want a page that fails to say so instead of going blank | A page that throws while drawing shows "This page ran into a problem" inside the shell, with "Try again" (no reload, so the key held in the tab stays) and "Back to the tower"; another route starts without the failure; the shell or the login throwing shows a full-screen card with "Reload", which says a reload forgets the key; both enter with `animate-vl-fade-up`, use only tokens and pass axe; the artboard "E · Estados del shell" draws both | S | 2 | 4 | Done (this PR) |
+| VLW-36 | E1 Green repository | As a developer I want CI to find anything that blanks a page | `e2e/robustness.spec.ts`, run by `npm run test:a11y` in CI at 1280 and 360 px against the mocked API: every route with odd parameters, odd text in every field, files that are not key files, a corrupted stored session, and API or `config.json` answers of the wrong shape; a step fails on a page error or when VLW-35's fallback shows; a deliberately broken page fails it | S | 2 | 4 | To do |
 
 ## Sprint plan
 
@@ -60,7 +62,7 @@ Two-week sprints, the same as the API's. Each sprint closes with a demonstrable 
 | 1 | Oct 26 – Nov 8 | Builds from a clean clone, with tests and CI, inside design E's shell and sign-in. Done on 2026-10-20 (#2 to #15) | VLW-10 to 14, 27, 33 | 14 | — |
 | 2 | Nov 9 – 22 | The tower, and signing that works with keys that never leave the browser. Done on 2026-10-21 (#18 to #29) | VLW-15 to 18, 21, 22, 28, 30 | 22 | VLA-15, VLA-16, VLA-20, VLA-33 |
 | 3 | Nov 23 – Dec 6 | Every other view in design E, open to visitors, and the production image. Done on 2026-10-21 (#31 to #41) | VLW-19, 29, 31, 32, 34 | 14 | VLA-19, VLA-34, VLA-35, VLA-36, VLA-37 |
-| 4 | Dec 7 – 20 | End-to-end and accessibility checks, deployed with the API, released as 1.0.0 | VLW-23, 24, 25, 26 | 13 | VLA-21, VLA-22, VLA-23, VLA-24, VLA-27 |
+| 4 | Dec 7 – 20 | End-to-end and accessibility checks, a page that fails without blanking the app, deployed with the API, released as 1.0.0 | VLW-23 to 26, 35, 36 | 17 | VLA-21, VLA-22, VLA-23, VLA-24, VLA-27 |
 
 **Order inside Sprint 1.** VLW-11 first (nothing else is green without it), then VLW-12, VLW-10, VLW-13, VLW-27, VLW-33, and VLW-14 last on the files that survive.
 
@@ -74,6 +76,7 @@ Two-week sprints, the same as the API's. Each sprint closes with a demonstrable 
 2. VLW-23 once VLA-21 (`CORS_ORIGINS`) and VLA-24 (seeded users from the environment) are merged. It runs against the API's published image (VLA-22) and its Compose (VLA-23), both already merged.
 3. VLW-25 with VLA-27.
 4. VLW-26 last, because its screenshots come from the deployed instance.
+5. VLW-35, then VLW-36, added by the product owner on 2026-10-21 while the deployment waits for its server. The fuzzer checks that the fallback never shows, so the fallback comes first.
 
 **Buffer.** Sprints 2 and 3 carry 17 points each. If a sprint does not close, move out the "Should" stories (VLW-14, VLW-19, VLW-24, VLW-26, VLW-32) before cutting quality on a "Must". A view whose API data is late waits; it is never built on invented data (DESIGN.md).
 
