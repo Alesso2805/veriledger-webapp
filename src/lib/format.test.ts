@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   formatAmount,
-  formatCertified,
+  certifiedParts,
   formatClock,
   formatCount,
   formatSealed,
@@ -88,7 +88,8 @@ describe('times', () => {
   });
 
   it('writes the moment a certificate states, in UTC whatever the reader’s zone', () => {
-    expect(formatCertified(sealed)).toBe('20 October 2026 at 21:34:47 UTC');
+    expect(certifiedParts(sealed)).toEqual({ day: '20 October 2026', time: '21:34:47' });
+    expect(certifiedParts(sealed, 'es')).toEqual({ day: '20 de octubre de 2026', time: '21:34:47' });
   });
 
   it('writes the clock time for lists', () => {
@@ -103,7 +104,7 @@ describe('times', () => {
   it('writes a dash for a time it cannot read, where Intl would throw, and states no certified moment', () => {
     expect(formatSealed('not a date', 'UTC')).toBe('—');
     expect(formatClock('', 'UTC')).toBe('—');
-    expect(formatCertified('soon')).toBeNull();
+    expect(certifiedParts('soon')).toBeNull();
   });
 
   it('says how the API is, and never "offline" when only its database is down', () => {

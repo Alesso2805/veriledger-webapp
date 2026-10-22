@@ -5,6 +5,7 @@ import vectors from '../lib/__fixtures__/signing-vectors.json';
 import { statusOf } from '../services/api';
 import { getBlock, getBlocks, getTransaction } from '../services/ledger';
 import { useHealthStore } from '../store/useHealthStore';
+import { usePreferencesStore } from '../store/usePreferencesStore';
 import type { Block, FullBlock, Paginated, Transaction } from '../types/ledger';
 import { TransactionDetail } from './TransactionDetail';
 
@@ -63,6 +64,19 @@ describe('TransactionDetail', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.clearAllMocks();
+    usePreferencesStore.setState({ language: 'en' });
+  });
+
+  it('speaks Spanish when that is the language, with the dates in Spanish and still in UTC', async () => {
+    usePreferencesStore.setState({ language: 'es' });
+    vi.mocked(getTransaction).mockResolvedValue(stored('transfer'));
+    renderPage();
+
+    expect(await screen.findByRole('heading', { level: 1, name: '10.00 VL de d75a…511a a 3d40…660c' })).toBeInTheDocument();
+    expect(screen.getByText('21 oct 2026 · 15:00:00 UTC')).toBeInTheDocument();
+    expect(screen.getByText('En el bloque #3')).toBeInTheDocument();
+    expect(step('Enterrada, hecho')).toBeInTheDocument();
+    expect(screen.getByText('Firma verificada en este navegador con la dirección del remitente')).toBeInTheDocument();
   });
 
   it('shows a sealed transfer: its journey, its details and its block, with the signature checked here', async () => {

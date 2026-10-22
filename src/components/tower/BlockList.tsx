@@ -1,13 +1,8 @@
 import { formatClock } from '../../lib/format';
 import type { Block } from '../../types/ledger';
+import { useT } from '../useT';
 
 export type OlderState = 'more' | 'loading' | 'all';
-
-const OLDER_LABEL: Record<OlderState, string> = {
-  more: 'Load older blocks',
-  loading: 'Loading older blocks…',
-  all: 'All blocks loaded',
-};
 
 interface Props {
   blocks: Block[];
@@ -21,10 +16,12 @@ interface Props {
 }
 
 export function BlockList({ blocks, loading, selected, fresh, older, onPick, onPeek, onLoadOlder }: Props) {
+  const t = useT();
+  const olderLabel: Record<OlderState, string> = { more: t.chain.list.more, loading: t.chain.list.loading, all: t.chain.list.all };
   return (
     <div>
       <h2 id="list-h" className="mb-2.5 text-[13px] font-medium text-vl-muted">
-        Blocks · newest first
+        {t.chain.list.title}
       </h2>
       {loading && (
         <div className="flex flex-col gap-1.5">
@@ -35,7 +32,7 @@ export function BlockList({ blocks, loading, selected, fresh, older, onPick, onP
       )}
       {!loading && blocks.length === 0 && (
         <p className="animate-vl-fade-in rounded-xl border border-dashed border-vl-line p-4 text-vl-muted">
-          No blocks yet. The first block mined becomes the genesis block, number 0.
+          {t.chain.list.empty}
         </p>
       )}
       <ul className="flex flex-col gap-1.5">
@@ -57,9 +54,9 @@ export function BlockList({ blocks, loading, selected, fresh, older, onPick, onP
                 }`}
               >
                 {/* The spaces between spans keep the accessible name readable: "Block #2 1 tx", not "Block #21 tx". */}
-                <span>Block #{number}</span>{' '}
+                <span>{t.chain.list.block(number)}</span>{' '}
                 <span className="font-vl-mono text-[11px] text-vl-muted">
-                  {count} {count === 1 ? 'tx' : 'txs'} · {formatClock(block.timestamp)}
+                  {t.chain.list.txs(count)} · {formatClock(block.timestamp)}
                 </span>
               </button>
             </li>
@@ -73,7 +70,7 @@ export function BlockList({ blocks, loading, selected, fresh, older, onPick, onP
           disabled={older !== 'more'}
           className="mt-2 h-10 w-full rounded-[10px] border border-dashed border-vl-line text-sm font-medium text-vl-muted"
         >
-          {OLDER_LABEL[older]}
+          {olderLabel[older]}
         </button>
       )}
     </div>

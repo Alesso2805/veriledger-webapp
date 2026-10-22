@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-
-const ago = (seconds: number) => (seconds < 60 ? `${seconds} s ago` : `${Math.floor(seconds / 60)} min ago`);
+import { useT } from '../useT';
 
 // Counts in the browser since the last answer. Not a live region: a screen reader would read it every second.
 export function Freshness({ updatedAt, retrying }: { updatedAt: number | null; retrying: boolean }) {
+  const words = useT().chain.freshness;
+  const ago = (seconds: number) => (seconds < 60 ? words.secondsAgo(seconds) : words.minutesAgo(Math.floor(seconds / 60)));
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -13,10 +14,10 @@ export function Freshness({ updatedAt, retrying }: { updatedAt: number | null; r
 
   let text: string;
   if (updatedAt === null) {
-    text = retrying ? 'Not loaded yet · retrying every 10 s' : 'Loading blocks…';
+    text = retrying ? words.notLoaded : words.loading;
   } else {
     const seconds = Math.max(0, Math.floor((now - updatedAt) / 1000));
-    text = retrying ? `Last update ${ago(seconds)} · retrying` : `Updated ${seconds} s ago · refreshes every 10 s`;
+    text = retrying ? words.lastUpdate(ago(seconds)) : words.updated(seconds);
   }
 
   return <p className="mt-1 font-vl-mono text-xs text-vl-muted">{text}</p>;

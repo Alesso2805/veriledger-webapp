@@ -5,6 +5,7 @@ import { startDemo } from '../services/auth';
 import { getBlock, getBlocks, getPendingTransactions, mineBlock } from '../services/ledger';
 import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
+import { usePreferencesStore } from '../store/usePreferencesStore';
 import { useToastStore } from '../store/useToastStore';
 import type { Block, Paginated, Transaction } from '../types/ledger';
 import { Tower } from './Tower';
@@ -102,6 +103,19 @@ describe('Tower', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.clearAllMocks();
+    usePreferencesStore.setState({ language: 'en' });
+  });
+
+  it('speaks Spanish when that is the language', async () => {
+    usePreferencesStore.setState({ language: 'es' });
+    serve(chainOf(3), [transfer]);
+    renderTower();
+
+    expect(await screen.findByRole('img', { name: 'Torre de los 3 bloques más nuevos, #0 abajo y #2 arriba' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Torre de bloques' })).toBeInTheDocument();
+    expect(screen.getByText('Altura')).toBeInTheDocument();
+    expect(screen.getByText('Nada aún: es la cima de la torre')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Transferencia/ })).toHaveTextContent('comisión 0.10');
   });
 
   it('draws a skeleton until the first answer', () => {

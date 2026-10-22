@@ -7,8 +7,10 @@ import { MineCard } from '../components/tower/MineCard';
 import { TowerDrawing } from '../components/tower/TowerDrawing';
 import { WaitingList } from '../components/tower/WaitingList';
 import { useStartDemo } from '../components/useStartDemo';
+import { useLanguage, useT } from '../components/useT';
 import { mergeBlocks } from '../lib/chain';
 import { formatAmount, formatClock, formatCount } from '../lib/format';
+import type { Messages } from '../lib/i18n';
 import { detailOf } from '../services/api';
 import { getBlock, getBlocks, getPendingTransactions, mineBlock } from '../services/ledger';
 import { useAppStore } from '../store/useAppStore';
@@ -30,14 +32,21 @@ interface Chain {
 
 const blockNumber = (value: string | null) => (value !== null && /^\d+$/.test(value) ? Number(value) : null);
 
-function olderText(tower: Block[], lowest: number | undefined): string {
+function olderText(tower: Block[], lowest: number | undefined, t: Messages): string {
   const bottom = tower[tower.length - 1]?.block_number ?? 0;
   if (bottom === 0) return '';
-  if (lowest === 0) return 'all blocks loaded';
-  return bottom === 1 ? '+ 1 older block below (#0)' : `+ ${bottom} older blocks below (#0 to #${bottom - 1})`;
+  if (lowest === 0) return t.chain.olderAll;
+  return bottom === 1 ? t.chain.olderOne : t.chain.olderMany(bottom);
 }
 
 export function Tower() {
+  const t = useT();
+  const language = useLanguage();
+  // The latest texts for callbacks that outlive a render, such as the poll's toast.
+  const texts = useRef(t);
+  useEffect(() => {
+    texts.current = t;
+  }, [t]);
   const [chain, setChain] = useState<Chain | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [arrivals, setArrivals] = useState(0);
@@ -85,10 +94,10 @@ export function Tower() {
         const joined = Array.from({ length: top - before }, (_, index) => before + 1 + index);
         setFresh((current) => new Set([...current, ...joined]));
         setArrivals((count) => count + 1);
-        show(joined.length === 1 ? `Block #${top} joined the chain.` : `Blocks #${before + 1} to #${top} joined the chain.`);
+        show(joined.length === 1 ? texts.current.chain.joinedOne(top) : texts.current.chain.joinedMany(before + 1, top));
       }
     } catch (error) {
-      if (mounted.current) setFailure(detailOf(error, 'The API did not answer'));
+      if (mounted.current) setFailure(detailOf(error, texts.current.chain.noAnswer));
     } finally {
       inFlight.current = false;
     }
@@ -119,7 +128,7 @@ export function Tower() {
     let active = true;
     getBlocks(top - selectedNumber, 1).then(
       (page) => active && setLinked(page.items[0] ?? null),
-      (error: unknown) => active && show(detailOf(error, `Could not load block #${selectedNumber}`), 'err'),
+      (error: unknown) => active && show(detailOf(error, texts.current.chain.blockFailed(selectedNumber)), 'err'),
     );
     return () => {
       active = false;
@@ -140,7 +149,7 @@ export function Tower() {
       chainRef.current = next;
       setChain(next);
     } catch (error) {
-      show(detailOf(error, 'Could not load older blocks'), 'err');
+      show(detailOf(error, t.chain.olderFailed), 'err');
     } finally {
       setLoadingOlder(false);
     }
@@ -166,11 +175,12 @@ export function Tower() {
         (full) => full.transactions.find((transaction) => transaction.sender_address === 'SYSTEM')?.amount,
         () => undefined,
       );
-      const rewardText = reward === undefined ? '' : ` · reward ${formatAmount(reward)} VL`;
-      show(`Block #${block.block_number} sealed · nonce ${formatCount(block.nonce)}${rewardText}`);
+      const words = texts.current;
+      const rewardText = reward === undefined ? '' : words.chain.reward(formatAmount(reward));
+      show(`${words.chain.sealed(block.block_number, formatCount(block.nonce, language))}${rewardText}`);
       void refresh(true);
     } catch (error) {
-      show(detailOf(error, 'The block could not be mined'), 'err');
+      show(detailOf(error, texts.current.chain.mineFailed), 'err');
     } finally {
       if (mounted.current) setMining(false);
     }
@@ -182,16 +192,16 @@ export function Tower() {
   const lowest = blocks[blocks.length - 1]?.block_number;
   const older: OlderState = lowest === 0 ? 'all' : loadingOlder ? 'loading' : 'more';
   const stats = [
-    { label: 'Height', value: top ?? '—', pops: true },
-    { label: 'Waiting', value: chain?.waitingTotal ?? '—', pops: true },
-    { label: 'Last block', value: blocks[0] ? formatClock(blocks[0].timestamp) : '—', pops: false },
+    { label: t.chain.stats.height, value: top ?? '—', pops: true },
+    { label: t.chain.stats.waiting, value: chain?.waitingTotal ?? '—', pops: true },
+    { label: t.chain.stats.last, value: blocks[0] ? formatClock(blocks[0].timestamp) : '—', pops: false },
   ];
 
   return (
     <>
       <section className="mb-6 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
         <div>
-          <h1 className="text-[30px] font-bold tracking-[-0.02em]">Block tower</h1>
+          <h1 className="text-[30px] font-bold tracking-[-0.02em]">{t.chain.title}</h1>
           <Freshness updatedAt={chain?.updatedAt ?? null} retrying={failure !== null} />
         </div>
         <dl className="flex gap-7">
@@ -224,8 +234,7 @@ export function Tower() {
               <path d="M9 7v3.5M9 12.5v.5" />
             </svg>
             <span>
-              Can’t load the blocks: {failure.replace(/\.$/, '')}.{' '}
-              {chain ? 'Showing the last blocks we had; retrying every 10 s.' : 'Retrying every 10 s.'}
+              {t.chain.cantLoad(failure.replace(/\.$/, ''))} {chain ? t.chain.keptLast : t.chain.retrying}
             </span>
           </span>
           <button
@@ -233,14 +242,14 @@ export function Tower() {
             onClick={() => void refresh()}
             className="h-10 rounded-[10px] border border-vl-line px-3.5 text-sm font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised"
           >
-            Retry now
+            {t.shell.offline.retry}
           </button>
         </div>
       )}
 
       <div className="flex flex-wrap items-start gap-5">
         <section
-          aria-label="Tower"
+          aria-label={t.chain.drawing}
           className="flex min-w-0 flex-[1_1_420px] flex-col gap-3.5 rounded-2xl border border-vl-line bg-vl-surface p-4"
         >
           <TowerDrawing
@@ -255,7 +264,7 @@ export function Tower() {
                   ? { number: 0, floating: false }
                   : null
             }
-            olderText={olderText(tower, lowest)}
+            olderText={olderText(tower, lowest, t)}
           />
           <MineCard
             next={nextNumber}
@@ -287,14 +296,14 @@ export function Tower() {
         </section>
 
         <section
-          aria-label="Selected block"
+          aria-label={t.chain.selected}
           aria-live="polite"
           className="min-w-0 flex-[1_1_380px] rounded-2xl border border-vl-line bg-vl-surface p-[22px]"
         >
           {selected && top !== null ? (
             <BlockDetail key={selected.block_hash} block={selected} top={top} />
           ) : (
-            <p className="text-vl-muted">{loading || needsLink ? 'Loading…' : 'Choose a block to see what is inside.'}</p>
+            <p className="text-vl-muted">{loading || needsLink ? t.chain.loading : t.chain.choose}</p>
           )}
         </section>
       </div>

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Transaction } from '../types/ledger';
 import vectors from './__fixtures__/signing-vectors.json';
-import { blocksOnTop, checkSignature, fingerprintGroups, journeyOf, signedFieldsOf, transactionTitle } from './transaction';
+import { en } from './i18n/en';
+import { es } from './i18n/es';
+import { checkSignature, fingerprintGroups, journeyOf, signedFieldsOf, transactionTitle } from './transaction';
 
 const vector = (name: string) => vectors.vectors.find((candidate) => candidate.name === name)!;
 
@@ -64,7 +66,8 @@ describe('journeyOf', () => {
   });
 
   it('says how many blocks are on top', () => {
-    expect([0, 1, 2].map(blocksOnTop)).toEqual(['nothing on top yet', '1 block on top', '2 blocks on top']);
+    expect([0, 1, 2].map(en.transaction.blocksOnTop)).toEqual(['nothing on top yet', '1 block on top', '2 blocks on top']);
+    expect([0, 1, 2].map(es.transaction.blocksOnTop)).toEqual(['aún nada encima', '1 bloque encima', '2 bloques encima']);
   });
 });
 
@@ -83,6 +86,7 @@ describe('transactionTitle', () => {
 
   it('names a notarization by its author, or as waiting', () => {
     expect(transactionTitle(stored('notarization'))).toBe('A document notarized by fc51…8025');
+    expect(transactionTitle(stored('notarization'), es.transaction.titles)).toBe('Un documento notarizado por fc51…8025');
     expect(transactionTitle(stored('notarization', { status: 'PENDING' }))).toBe('A document waiting to be sealed');
   });
 

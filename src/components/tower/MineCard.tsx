@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
+import { formatSeconds } from '../../lib/format';
 import type { LoginRedirectState, UserRole } from '../../types/session';
+import { useLanguage, useT } from '../useT';
 
 interface Props {
   // The number the next block will get; null until the chain has loaded.
@@ -34,6 +36,9 @@ export function MineCard({
   mining,
   onMine,
 }: Props) {
+  const t = useT();
+  const words = t.chain.mine;
+  const language = useLanguage();
   const [address, setAddress] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const { pathname, search } = useLocation();
@@ -55,24 +60,21 @@ export function MineCard({
     // The seconds are hidden from screen readers, which would otherwise read them ten times a second.
     note = (
       <>
-        Mining… <span aria-hidden="true">{(elapsed / 1000).toFixed(1)} s.</span> The node answers when it finds a hash
-        that starts with 0000.
+        {words.mining} <span aria-hidden="true">{formatSeconds(elapsed, language)} s.</span> {words.explain}
       </>
     );
   } else if (!signedIn) {
-    note = demoMode ? 'Anyone can look. To mine, start a demo: one click, no email.' : 'Anyone can look. To mine, sign in.';
+    note = demoMode ? words.visitorDemo : words.visitor;
   } else if (!allowed) {
-    note = 'Mining needs the trader or admin role.';
+    note = words.role;
   } else if (offline) {
-    note = databaseDown
-      ? 'Mining is unavailable while the API’s database does not answer.'
-      : 'Mining is unavailable while the API is unreachable.';
+    note = databaseDown ? words.noDatabase : words.offline;
   } else if (next === 0) {
-    note = 'The first block you mine becomes the genesis block.';
+    note = words.genesis;
   } else if (next !== null && waiting === 0) {
-    note = 'Nothing waiting: the next block will hold only the reward.';
+    note = words.onlyReward;
   } else if (next !== null && waiting !== null) {
-    note = `${waiting} ${waiting === 1 ? 'transaction' : 'transactions'} will go into block #${next}.`;
+    note = words.willGo(waiting, next);
   }
 
   const submit = (event: FormEvent) => {
@@ -83,7 +85,7 @@ export function MineCard({
   return (
     <form onSubmit={submit} className="flex flex-col gap-2.5 border-t border-vl-line pt-3.5">
       <label htmlFor="miner" className="text-[13px] font-medium">
-        Reward address
+        {words.address}
       </label>
       <input
         id="miner"
@@ -105,7 +107,7 @@ export function MineCard({
               ready ? 'bg-vl-accent text-vl-on-accent' : 'bg-vl-line text-vl-muted'
             }`}
           >
-            {mining ? 'Mining…' : next === 0 ? 'Mine the genesis block' : `Mine block${next === null ? '' : ` #${next}`}`}
+            {mining ? words.mining : next === 0 ? words.mineGenesis : words.mineBlock(next)}
           </button>
         ) : demoMode ? (
           <button
@@ -114,7 +116,7 @@ export function MineCard({
             disabled={startingDemo}
             className="h-11 rounded-[10px] bg-vl-accent px-[18px] font-semibold text-vl-on-accent"
           >
-            {startingDemo ? 'Starting a demo…' : 'Try the demo to mine'}
+            {startingDemo ? words.startingDemo : words.tryDemo}
           </button>
         ) : (
           <Link
@@ -122,7 +124,7 @@ export function MineCard({
             state={{ from: { pathname, search } } satisfies LoginRedirectState}
             className="inline-flex h-11 items-center rounded-[10px] bg-vl-accent px-[18px] font-semibold text-vl-on-accent"
           >
-            Sign in to mine
+            {words.signIn}
           </Link>
         )}
       </div>

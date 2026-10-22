@@ -60,14 +60,20 @@ export function formatSealed(iso: string, timeZone?: string, language: Language 
   return `${day.format(date)} · ${time.format(date)}`;
 }
 
-// The moment a certificate states, always in UTC: "20 October 2026 at 16:21:55 UTC". null when the time cannot
-// be read, so the certificate states no moment rather than a dash.
-export function formatCertified(iso: string): string | null {
+// The moment a certificate states, always in UTC; the dictionary words it: "20 October 2026 at 16:21:55 UTC",
+// "20 de octubre de 2026 a las 16:21:55 UTC". null when the time cannot be read, so the certificate states no
+// moment rather than a dash.
+export function certifiedParts(iso: string, language: Language = 'en'): { day: string; time: string } | null {
   const date = readable(iso);
   if (!date) return null;
-  const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const day = new Intl.DateTimeFormat(DATE_LOCALE[language], { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
   const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
-  return `${day.format(date)} at ${time.format(date)} UTC`;
+  return { day: day.format(date), time: time.format(date) };
+}
+
+// Seconds with one decimal in the page's language: "1.2", "1,2".
+export function formatSeconds(ms: number, language: Language = 'en'): string {
+  return new Intl.NumberFormat(NUMBER_LOCALE[language], { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(ms / 1000);
 }
 
 // What the header and the login say about the API. "no database" when it answers but its database does not

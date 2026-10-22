@@ -1,4 +1,5 @@
 import type { Transaction } from '../../types/ledger';
+import { useT } from '../useT';
 import { TransactionRow } from './TransactionRow';
 
 interface Props {
@@ -10,11 +11,12 @@ interface Props {
 
 // The mempool's newest transactions; the count is the API's total, which can be more than the list shows.
 export function WaitingList({ waiting, total, dimmed }: Props) {
+  const t = useT();
   return (
     <section aria-labelledby="pool-h" className="rounded-2xl border border-vl-line bg-vl-surface p-4">
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="pool-h" className="text-[15px] font-semibold">
-          Waiting for the next block
+          {t.chain.waiting.title}
         </h2>
         <span className="font-vl-mono text-xs text-vl-accent">{total ?? '—'}</span>
       </div>
@@ -29,7 +31,7 @@ export function WaitingList({ waiting, total, dimmed }: Props) {
       )}
       {waiting?.length === 0 && (
         <p className="mt-2.5 animate-vl-fade-in text-sm text-vl-muted">
-          Nothing waiting. New transactions appear here within 10 s.
+          {t.chain.waiting.empty}
         </p>
       )}
     </section>
