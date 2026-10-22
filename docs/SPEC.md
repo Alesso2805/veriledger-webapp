@@ -189,6 +189,7 @@ veriledger-webapp/
 │   ├── DESIGN.md                 # design C: tokens for both themes, motion, languages, views
 │   ├── BACKLOG.md
 │   ├── ARCHITECTURE_RULES.md
+│   ├── images/                   # the README's screenshots (VLW-26)
 │   ├── adr/
 │   └── sprints/
 ├── .github/workflows/          # ci.yml (checks), image.yml (amd64 and arm64 image, smoke test)
