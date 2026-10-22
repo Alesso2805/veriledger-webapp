@@ -129,7 +129,7 @@ describe('TransactionDetail', () => {
     expect(await screen.findByRole('heading', { name: 'No transaction with this hash on this node' })).toBeInTheDocument();
     expect(screen.getByText(txHash)).toBeInTheDocument();
     expect(screen.getByText(/Rejected transactions leave no trace/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back to the tower' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Back to the chain' })).toHaveAttribute('href', '/');
     await expect(document.body).toPassAxe();
   });
 

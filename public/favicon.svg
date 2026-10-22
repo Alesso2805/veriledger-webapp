@@ -1,11 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- The header's logo (src/components/LogoMark.tsx) on the app's background, so it reads on light and dark tab
-       strips. A static file cannot use the tokens, so their values are copied from index.css: color-vl-bg,
-       color-vl-accent, color-vl-cube-top and color-vl-cube-left. (No double hyphen: XML comments forbid it.) -->
-  <rect width="32" height="32" rx="7" fill="#0E1014"/>
-  <g transform="translate(3 3)">
-    <path d="M13 2l10 5.5-10 5.5L3 7.5z" fill="#FFB547"/>
-    <path d="M3 7.5l10 5.5v11L3 18.5z" fill="#3A4150"/>
-    <path d="M23 7.5l-10 5.5v11l10-5.5z" fill="#262B35"/>
-  </g>
+  <!-- The header's logo (src/components/LogoMark.tsx): four bars of the fingerprint palette on a white tile, which reads
+       on light and dark tab strips. A static file cannot use the tokens, so the colours are the palette's
+       (src/lib/fingerprint.ts): cobalt, tangerine, mint and ink. -->
+  <rect width="32" height="32" rx="9" fill="#FFFFFF"/>
+  <rect x="5" y="5" width="4.75" height="22" rx="2" fill="#2F45FF"/>
+  <rect x="11.08" y="5" width="4.75" height="22" rx="2" fill="#FF7A1A"/>
+  <rect x="17.17" y="5" width="4.75" height="22" rx="2" fill="#1FB58F"/>
+  <rect x="23.25" y="5" width="4.75" height="22" rx="2" fill="#101418"/>
 </svg>

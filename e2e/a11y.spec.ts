@@ -31,7 +31,7 @@ const cases: Case[] = [
   { name: 'transaction, viewer', path: `/transaction/${TRANSFER_HASH}`, role: 'viewer', ready: (page) => page.getByRole('heading', { name: 'Details' }) },
   { name: 'network, visitor', path: '/network', ready: (page) => page.getByRole('heading', { name: 'Registered peers · 2' }) },
   { name: 'network, admin', path: '/network', role: 'admin', ready: (page) => page.getByRole('button', { name: 'Add peer' }) },
-  { name: 'not found', path: '/no/such/page', ready: (page) => page.getByRole('heading', { name: 'This page is not in the tower' }) },
+  { name: 'not found', path: '/no/such/page', ready: (page) => page.getByRole('heading', { name: 'This page is not on the chain' }) },
   { name: 'wallet, no key', path: '/wallet', role: 'trader', ready: (page) => page.getByRole('button', { name: 'Create a wallet' }) },
   {
     name: 'wallet, new key',

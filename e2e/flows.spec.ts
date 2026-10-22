@@ -45,7 +45,7 @@ const tab = (page: Page, name: string) => page.getByRole('navigation', { name: '
 // That miner can also be busy, since a node mines one block at a time (429, VLA-29), or have just sealed the same
 // height (409, VLA-17). The toast says so, and, as a person would, the flow waits for Retry-After and tries again.
 async function mineTo(page: Page, address: string): Promise<number> {
-  await tab(page, 'Tower').click();
+  await tab(page, 'Chain').click();
   await page.getByLabel('Reward address', { exact: true }).fill(address);
   for (let attempt = 1; ; attempt++) {
     const [answer] = await Promise.all([

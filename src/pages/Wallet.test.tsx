@@ -171,11 +171,11 @@ describe('Wallet activity and look-up', () => {
     expect(screen.queryByText(/received ·/)).not.toBeInTheDocument();
   });
 
-  it('points a new address to the tower', async () => {
+  it('points a new address to the chain', async () => {
     renderWallet();
 
     expect(await screen.findByText(/No transactions yet/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Go to the tower' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Go to the chain' })).toHaveAttribute('href', '/');
     expect(screen.getByText('New address: nothing received yet')).toBeInTheDocument();
   });
 

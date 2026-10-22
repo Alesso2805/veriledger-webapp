@@ -66,7 +66,7 @@ export function Login() {
         className="order-last flex min-w-0 flex-[1_1_520px] flex-col justify-between gap-8 border-t border-vl-line p-10 min-[940px]:order-none min-[940px]:border-t-0 min-[940px]:border-r"
       >
         <span className="flex items-center gap-2.5">
-          <LogoMark className="size-[26px]" />
+          <LogoMark size={26} />
           <span className="text-lg font-bold">veriledger</span>
         </span>
         <svg viewBox="0 0 340 360" className="w-full max-w-[360px] self-center overflow-visible">

@@ -18,7 +18,7 @@ export function OfflineBanner() {
       <div className="min-h-0 overflow-hidden" aria-hidden={!offline} inert={!offline}>
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2.5 border-t border-vl-danger bg-vl-danger-soft px-4 py-2.5 text-sm"
+          className="mx-3 mb-2.5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2.5 rounded-2xl bg-vl-danger-soft px-4 py-2.5 text-[15px] sm:mx-6 min-[1320px]:mx-auto min-[1320px]:max-w-[1272px]"
         >
           <span>
             {databaseDown ? t.shell.offline.noDatabase(apiHost()) : t.shell.offline.unreachable(apiHost())} {t.shell.offline.retrying}
@@ -26,7 +26,7 @@ export function OfflineBanner() {
           <button
             type="button"
             onClick={() => void checkHealth()}
-            className="h-8 rounded-lg border border-vl-danger px-3 text-[13px] font-semibold"
+            className="h-10 rounded-xl bg-vl-strong px-3.5 text-sm font-bold text-vl-on-strong"
           >
             {t.shell.offline.retry}
           </button>

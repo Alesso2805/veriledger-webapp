@@ -1,36 +1,46 @@
 import { Link } from 'react-router';
+import { Fingerprint } from '../components/Fingerprint';
 import { useT } from '../components/useT';
 
+const Connector = () => (
+  <svg width="28" height="12" viewBox="0 0 28 12" className="shrink-0">
+    <path d="M2 6h24" strokeWidth="2.5" strokeDasharray="2 5" strokeLinecap="round" className="stroke-vl-faint" />
+  </svg>
+);
+
+// A link of the chain with its middle tile missing (DESIGN.md › Not found). The fingerprints are a drawing, not data.
 export function NotFound() {
   const t = useT();
   return (
     <section
       aria-labelledby="not-found-title"
-      className="flex flex-wrap items-center gap-6 rounded-2xl border border-vl-line bg-vl-surface p-7"
+      className="flex flex-wrap items-center gap-x-10 gap-y-7 rounded-[28px] bg-vl-surface p-9 max-sm:p-[22px]"
     >
-      {/* A tower with its top cube missing: the dashed cube floats where it should be. */}
-      <svg viewBox="0 0 200 220" aria-hidden="true" className="w-[170px] flex-[0_0_170px] overflow-visible">
-        <polygon points="100,150 170,182 100,214 30,182" className="fill-vl-cube-top" />
-        <polygon points="30,150 100,182 100,214 30,182" className="fill-vl-cube-left" />
-        <polygon points="100,182 170,150 170,182 100,214" className="fill-vl-cube-right" />
-        <polygon points="100,118 170,150 100,182 30,150" className="fill-vl-cube-top" />
-        <g className="animate-vl-float fill-none stroke-vl-accent" strokeWidth="1.5" strokeDasharray="5 5">
-          <polygon points="100,54 170,86 100,118 30,86" />
-          <polygon points="30,86 100,118 100,150 30,118" />
-          <polygon points="100,118 170,86 170,118 100,150" />
-        </g>
-      </svg>
-      <div className="min-w-0 flex-[1_1_260px]">
-        <p className="font-vl-mono text-xs text-vl-accent">404</p>
-        <h1 id="not-found-title" className="mt-0.5 text-[28px] font-bold tracking-[-0.02em]">
+      <div aria-hidden="true" className="flex max-w-[460px] min-w-0 flex-[1_1_320px] items-center">
+        <span className="min-w-0 flex-1 rounded-2xl bg-vl-bg p-3">
+          <Fingerprint hex="9657f8d2c4e1a07b" bars={8} className="h-[30px] gap-[2px]" radius={3} />
+        </span>
+        <Connector />
+        <span
+          className="min-w-0 flex-1 animate-vl-tile-in rounded-2xl border-2 border-dashed border-vl-accent p-3"
+          style={{ animationDelay: '200ms' }}
+        >
+          <Fingerprint hex="" bars={8} className="h-[26px] gap-[2px]" radius={3} />
+        </span>
+        <Connector />
+        <span className="min-w-0 flex-1 rounded-2xl bg-vl-bg p-3">
+          <Fingerprint hex="a3f19c7e52b8d04f" bars={8} className="h-[30px] gap-[2px]" radius={3} />
+        </span>
+      </div>
+      <div className="min-w-0 flex-[1_1_300px]">
+        <p className="font-vl-mono text-[13px] text-vl-accent">404</p>
+        <h1 id="not-found-title" className="mt-1 text-[44px] leading-[1.05] font-extrabold tracking-[-0.035em] max-sm:text-[32px]">
           {t.notFound.title}
         </h1>
-        <p className="mt-2 mb-4 text-vl-muted">
-          {t.notFound.text}
-        </p>
+        <p className="mt-3 mb-5 max-w-[480px] text-[17px] text-vl-muted">{t.notFound.text}</p>
         <Link
           to="/"
-          className="inline-flex h-[42px] items-center rounded-[10px] bg-vl-accent px-3.5 font-semibold text-vl-on-accent"
+          className="inline-flex h-[52px] items-center rounded-2xl bg-vl-strong px-6 font-bold text-vl-on-strong"
         >
           {t.notFound.back}
         </Link>

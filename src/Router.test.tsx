@@ -79,15 +79,15 @@ describe('routes', () => {
     useAppStore.setState({ token: 'abc.def.ghi' });
     visit('/no/such/page');
 
-    expect(await screen.findByRole('heading', { name: 'This page is not in the tower' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'This page is not on the chain' })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back to the tower' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Back to the chain' })).toHaveAttribute('href', '/');
   });
 
   it('shows a visitor the 404 tower too, with "Sign in" in the header', async () => {
     const path = visit('/no/such/page');
 
-    expect(await screen.findByRole('heading', { name: 'This page is not in the tower' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'This page is not on the chain' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
     expect(path).toHaveTextContent(/^\/no\/such\/page$/);
   });

@@ -68,7 +68,7 @@ export function TransactionDetail() {
     <>
       <nav aria-label={t.transaction.breadcrumb} className="flex flex-wrap gap-2 text-[13px] text-vl-muted">
         <Link to="/" className="text-vl-muted hover:text-vl-text">
-          {t.transaction.tower}
+          {t.transaction.chain}
         </Link>
         <span aria-hidden="true">/</span>
         {blockNumber !== null && (

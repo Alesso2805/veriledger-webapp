@@ -22,17 +22,18 @@ describe('ToastRegion', () => {
     });
 
     const toast = screen.getByText('Block #13 sealed · nonce 3,104,227').parentElement;
-    expect(toast).toHaveClass('animate-vl-toast-in', 'border-vl-line');
+    expect(toast).toHaveClass('animate-vl-toast-in', 'bg-vl-ink');
   });
 
-  it('marks a refusal with the danger border', () => {
+  it('marks a refusal with the coral dot of the palette, on ink in both themes', () => {
     render(<ToastRegion />);
 
     act(() => {
       useToastStore.getState().show('The node refused the request: not enough permissions.', 'err');
     });
 
-    expect(screen.getByText(/not enough permissions/).parentElement).toHaveClass('border-vl-danger');
+    const dot = screen.getByText(/not enough permissions/).previousElementSibling as HTMLElement;
+    expect(dot.style.background).toBe('rgb(255, 90, 110)');
   });
 
   it('dismisses a toast', () => {

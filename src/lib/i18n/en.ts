@@ -11,7 +11,7 @@ export const en = {
   shell: {
     skip: 'Skip to content',
     mainNav: 'Main',
-    tabs: { tower: 'Tower', transact: 'Sign and send', wallet: 'Wallet', network: 'Network' },
+    tabs: { chain: 'Chain', transact: 'Sign and send', wallet: 'Wallet', network: 'Network' },
     signIn: 'Sign in',
     signOut: 'Sign out',
     tryDemo: 'Try the demo',
@@ -54,7 +54,7 @@ export const en = {
     pageTitle: 'This page ran into a problem',
     pageText: 'Something failed while it was drawn. The other pages still work, and a key held in this tab is kept.',
     tryAgain: 'Try again',
-    backToTower: 'Back to the tower',
+    backToChain: 'Back to the chain',
     appTitle: 'VeriLedger ran into a problem',
     appText: 'Reloading usually fixes it. A reload forgets a key held in this tab, so open its key file again afterwards.',
     reload: 'Reload',
@@ -77,7 +77,7 @@ export const en = {
     demoButton: 'Try the demo · no account needed',
     demoCreating: 'Creating a demo account…',
     regular: 'Regular accounts are created by an administrator.',
-    browse: 'Browse the tower without an account →',
+    browse: 'Browse the chain without an account →',
     tagline: 'A ledger anyone can check.',
     lines: [
       'Every entry is signed by its author.',
@@ -170,7 +170,7 @@ export const en = {
 
   transaction: {
     breadcrumb: 'Breadcrumb',
-    tower: 'Tower',
+    chain: 'Chain',
     block: (number: number) => `Block #${number}`,
     transaction: 'Transaction',
     loading: 'Loading transaction',
@@ -179,7 +179,7 @@ export const en = {
     notFoundTitle: 'No transaction with this hash on this node',
     notFoundText:
       'It may still be on its way from another node, or it was refused when it was sent, so it was never recorded. Rejected transactions leave no trace.',
-    back: 'Back to the tower',
+    back: 'Back to the chain',
     utc: 'UTC',
     chips: { sealed: (number: number) => `In block #${number}`, failed: 'Failed', waiting: 'Waiting' },
     titles: {
@@ -350,7 +350,7 @@ export const en = {
       title: 'Activity',
       noAnswer: 'The node did not answer. Its activity is not shown.',
       empty: 'No transactions yet. Mine a block with this address as the reward address, or ask someone to send you VL.',
-      goToChain: 'Go to the tower',
+      goToChain: 'Go to the chain',
       newest: (shown: number, total: number) => `The ${shown} newest of ${total}.`,
       waiting: 'Waiting',
       failed: 'Failed',
@@ -416,9 +416,9 @@ export const en = {
   },
 
   notFound: {
-    title: 'This page is not in the tower',
+    title: 'This page is not on the chain',
     text: 'The address may be mistyped, or the link is from an older version of the app.',
-    back: 'Back to the tower',
+    back: 'Back to the chain',
   },
 };
 

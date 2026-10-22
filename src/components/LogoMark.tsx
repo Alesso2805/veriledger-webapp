@@ -1,9 +1,18 @@
-export function LogoMark({ className }: { className?: string }) {
+import { PALETTE } from '../lib/fingerprint';
+
+// The logo: four bars of the fingerprint palette (cobalt, tangerine, mint, ink) on a white tile, in both themes.
+const BARS = [PALETTE[0], PALETTE[1], PALETTE[2], PALETTE[4]];
+
+export function LogoMark({ size = 32 }: { size?: number }) {
   return (
-    <svg viewBox="0 0 26 26" aria-hidden="true" className={className}>
-      <path d="M13 2l10 5.5-10 5.5L3 7.5z" className="fill-vl-accent" />
-      <path d="M3 7.5l10 5.5v11L3 18.5z" className="fill-vl-cube-top" />
-      <path d="M23 7.5l-10 5.5v11l10-5.5z" className="fill-vl-cube-left" />
-    </svg>
+    <span
+      aria-hidden="true"
+      className="flex shrink-0 gap-[2px] rounded-[9px] bg-vl-logo-tile"
+      style={{ width: size, height: size, padding: Math.round(size * 0.16) }}
+    >
+      {BARS.map((color) => (
+        <span key={color} className="flex-1 rounded-[2px]" style={{ background: color }} />
+      ))}
+    </span>
   );
 }
