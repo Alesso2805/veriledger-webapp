@@ -1,6 +1,6 @@
 # Architecture rules
 
-Oct 20, 2026 · Sources: [SPEC.md](SPEC.md), [BACKLOG.md](BACKLOG.md), [CLAUDE.md](../CLAUDE.md), the README, [the ADRs](adr/) and the API's ADR-0004 and ADR-0005.
+Oct 20, 2026 · Sources: [SPEC.md](SPEC.md), [BACKLOG.md](BACKLOG.md), `CLAUDE.md` (the coding agent's instructions, local to each workstation since VLW-49), the README, [the ADRs](adr/) and the API's ADR-0004 and ADR-0005.
 
 Each rule is one sentence that a test can prove or refute. A rule about "every" module, route or file is checked by a test that walks the whole list, so something new that breaks it fails without anyone adding a case. The tests run in CI on every PR (VLW-13); two rules wait for the stories that make them testable.
 
