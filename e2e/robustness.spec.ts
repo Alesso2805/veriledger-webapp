@@ -1,9 +1,10 @@
-import { expect, test, type Page, type Route } from '@playwright/test';
+import type { Page, Route } from '@playwright/test';
+import { expect, test, type Messages } from './i18n';
 import { mockApi, TRANSFER_HASH } from './mockApi';
 
-// VLW-36: what the audit of 2026-10-21 fuzzed by hand (#53, #54), in both projects (1280 and 360 px). Every step must
-// leave the page standing: no uncaught error, and neither of VLW-35's fallbacks, which show only when something threw
-// while drawing.
+// VLW-36: what the audit of 2026-10-21 fuzzed by hand (#53, #54), at 1280 and 360 px, in the light theme in English
+// and the dark theme in Spanish (VLW-48). Every step must leave the page standing: no uncaught error, and neither of
+// VLW-35's fallbacks, which show only when something threw while drawing.
 const ODD = ['zz', 'hello', '#', '#-1', '-1', '1e5', '0x10', '９９', '😀', ' ', '%', '<b>x</b>', 'a'.repeat(300),
   '999999999999999', '9999999999999999', 'g'.repeat(64), 'F'.repeat(64), '0'.repeat(64)];
 const AMOUNTS = ['1e5', '-1', '.5', '5.', '00000000001', '99999999999', '0.123456789', '１２', 'NaN', 'Infinity', '1,5',
@@ -13,12 +14,13 @@ const AMOUNTS = ['1e5', '-1', '.5', '5.', '00000000001', '99999999999', '0.12345
 test.describe.configure({ timeout: 120_000 });
 
 // Returns a check for one step. Input events commit synchronously, and a frame later anything a throw drew is there.
-function watch(page: Page) {
+function watch(page: Page, t: Messages) {
   const uncaught: string[] = [];
   page.on('pageerror', (error) => uncaught.push(error.message));
+  const fallback = page.getByRole('heading', { name: t.failure.pageTitle }).or(page.getByRole('heading', { name: t.failure.appTitle }));
   return async (step: string) => {
     await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
-    await expect.soft(page.getByRole('heading', { name: /ran into a problem/ }), `${step}: a fallback showed`).toHaveCount(0);
+    await expect.soft(fallback, `${step}: a fallback showed`).toHaveCount(0);
     expect.soft(uncaught.splice(0), `${step}: uncaught errors`).toEqual([]);
   };
 }
@@ -27,8 +29,8 @@ const json = (body: unknown) => (route: Route) =>
   route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
 
 for (const role of [undefined, 'trader'] as const) {
-  test(`routes with odd parameters, ${role ?? 'visitor'}`, async ({ page }) => {
-    const check = watch(page);
+  test(`routes with odd parameters, ${role ?? 'visitor'}`, async ({ page, t }) => {
+    const check = watch(page, t);
     await mockApi(page, role);
     for (const path of ['/?block=abc', '/?block=-1', '/?block=1e3', '/?block=99999999999999999999', '/?block=%25',
       '/?block=0', '/transaction/zzz', `/transaction/${'a'.repeat(3000)}`, '/transaction/%00', '/nope/deeper?x=%25',
@@ -40,8 +42,8 @@ for (const role of [undefined, 'trader'] as const) {
   });
 }
 
-test('odd text in every field', async ({ page }) => {
-  const check = watch(page);
+test('odd text in every field', async ({ page, t }) => {
+  const check = watch(page, t);
   await mockApi(page, 'trader');
   await page.goto('/');
   for (const text of ODD) {
@@ -53,18 +55,18 @@ test('odd text in every field', async ({ page }) => {
   }
 
   await page.goto('/wallet');
-  await page.getByRole('button', { name: 'Create a wallet' }).click();
-  const lookUp = page.getByLabel('Address', { exact: true });
+  await page.getByRole('button', { name: t.wallet.create }).click();
+  const lookUp = page.getByLabel(t.wallet.lookup.address, { exact: true });
   for (const text of ODD) {
     await lookUp.fill(text);
     await check(`look-up "${text.slice(0, 20)}"`);
-    await page.getByRole('button', { name: 'Show balance' }).click();
+    await page.getByRole('button', { name: t.wallet.lookup.show }).click();
     await check(`look-up submitted "${text.slice(0, 20)}"`);
   }
 
   // The key lives only in the tab's memory, so Sign and send is reached through the app, not a reload.
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Sign and send' }).click();
-  await expect(page.getByText('Signing as')).toBeVisible();
+  await page.getByRole('navigation', { name: t.shell.mainNav }).getByRole('link', { name: t.shell.tabs.transact }).click();
+  await expect(page.getByText(t.transact.signingAs)).toBeVisible();
   for (const text of ODD) {
     await page.locator('#to').fill(text);
     await check(`to "${text.slice(0, 20)}"`);
@@ -76,7 +78,7 @@ test('odd text in every field', async ({ page }) => {
     await page.locator('#fee').fill(text);
     await check(`fee "${text.slice(0, 20)}"`);
   }
-  await page.getByRole('button', { name: 'Notarize a document' }).click();
+  await page.getByRole('button', { name: t.transact.notarize }).click();
   for (const [name, body] of [['empty.txt', ''], ['big.bin', 'x'.repeat(1_000_000)], ['emoji 😀.txt', '😀']]) {
     await page.locator('input[type=file]').setInputFiles({ name, mimeType: 'application/octet-stream', buffer: Buffer.from(body) });
     await expect(page.getByText(`${name} · SHA-256`)).toBeVisible();
@@ -84,20 +86,20 @@ test('odd text in every field', async ({ page }) => {
   }
 });
 
-test('odd peer addresses, admin', async ({ page }) => {
-  const check = watch(page);
+test('odd peer addresses, admin', async ({ page, t }) => {
+  const check = watch(page, t);
   await mockApi(page, 'admin');
   await page.goto('/network');
   for (const text of [...ODD, 'http://', 'https://[::1', 'ftp://node.example.org']) {
-    await page.getByLabel('Peer address', { exact: true }).fill(text);
-    await page.getByRole('button', { name: 'Add peer' }).click();
+    await page.getByLabel(t.network.add.address, { exact: true }).fill(text);
+    await page.getByRole('button', { name: t.network.add.button }).click();
     await page.waitForLoadState('networkidle');
     await check(`peer "${text.slice(0, 20)}"`);
   }
 });
 
-test('files that are not key files', async ({ page }) => {
-  const check = watch(page);
+test('files that are not key files', async ({ page, t }) => {
+  const check = watch(page, t);
   await mockApi(page, 'trader');
   for (const [name, body] of [['array.json', '[]'], ['null.json', 'null'], ['string.json', '"key"'], ['number.json', '42'],
     ['bad-hex.json', '{"private_key":"zz"}'], ['upper-case.json', `{"private_key":"${'AB'.repeat(32)}"}`],
@@ -105,14 +107,14 @@ test('files that are not key files', async ({ page }) => {
     ['object-key.json', '{"private_key":{"a":1}}'], ['binary.json', '\u0000\u0001ÿ'], ['empty.json', '']]) {
     // A reload forgets a key opened before, so each file meets the empty wallet.
     await page.goto('/wallet');
-    await page.getByLabel('Choose a key file', { exact: true }).setInputFiles({ name, mimeType: 'application/json', buffer: Buffer.from(body, 'latin1') });
-    await expect(page.getByRole('alert').or(page.getByRole('heading', { name: /^Your address/ }))).toBeVisible();
+    await page.getByLabel(t.wallet.open, { exact: true }).setInputFiles({ name, mimeType: 'application/json', buffer: Buffer.from(body, 'latin1') });
+    await expect(page.getByRole('alert').or(page.getByRole('heading', { name: t.wallet.address }))).toBeVisible();
     await check(`key file ${name}`);
   }
 });
 
-test('a stored session the app did not write', async ({ page }) => {
-  const check = watch(page);
+test('a stored session the app did not write', async ({ page, t }) => {
+  const check = watch(page, t);
   await mockApi(page);
   for (const [label, value] of [
     ['a number', JSON.stringify({ state: { token: 123 }, version: 0 })],
@@ -130,8 +132,8 @@ test('a stored session the app did not write', async ({ page }) => {
   }
 });
 
-test('stored preferences the app did not write', async ({ page }) => {
-  const check = watch(page);
+test('stored preferences the app did not write', async ({ page, t }) => {
+  const check = watch(page, t);
   await mockApi(page);
   for (const [label, value] of [
     ['a theme it does not know', JSON.stringify({ state: { theme: 'purple' }, version: 0 })],
@@ -146,7 +148,7 @@ test('stored preferences the app did not write', async ({ page }) => {
   }
 });
 
-test('answers of the wrong shape from the API and config.json', async ({ context }) => {
+test('answers of the wrong shape from the API and config.json', async ({ context, t }) => {
   const scenarios: [string, string, [string, (route: Route) => Promise<void>][]][] = [
     // No engine parses an unclosed bracket; a space in the host, Chromium does.
     ['an apiBaseUrl that is not a URL', '/', [['**/config.json', json({ apiBaseUrl: 'http://[::1/api' })]]],
@@ -162,25 +164,25 @@ test('answers of the wrong shape from the API and config.json', async ({ context
   ];
   for (const [label, path, overrides] of scenarios) {
     const page = await context.newPage();
-    const check = watch(page);
+    const check = watch(page, t);
     await mockApi(page, 'trader');
     // Routes added later are tried first, so these replace the fixtures' answers.
     for (const [pattern, handler] of overrides) await page.route(pattern, handler);
     await page.goto(path);
     await page.waitForLoadState('networkidle');
-    if (path === '/wallet') await page.getByRole('button', { name: 'Create a wallet' }).click();
+    if (path === '/wallet') await page.getByRole('button', { name: t.wallet.create }).click();
     await check(label);
     await page.close();
   }
 
   const page = await context.newPage();
-  const check = watch(page);
+  const check = watch(page, t);
   await mockApi(page);
   await page.route('**/api/auth/login', json({}));
   await page.goto('/login');
-  await page.getByLabel('Email', { exact: true }).fill('someone@veriledger.com');
-  await page.getByLabel('Password', { exact: true }).fill('whatever');
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByText('The API did not answer. Check that it is running and try again.')).toBeVisible();
+  await page.getByLabel(t.login.email, { exact: true }).fill('someone@veriledger.com');
+  await page.getByLabel(t.login.password, { exact: true }).fill('whatever');
+  await page.getByRole('button', { name: t.login.submit, exact: true }).click();
+  await expect(page.getByText(t.login.unreachable)).toBeVisible();
   await check('a sign-in answered without a token');
 });

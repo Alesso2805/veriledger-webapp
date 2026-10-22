@@ -1,6 +1,8 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, literal, numbered, startsWith, test, type Messages } from './i18n';
 
-// VLW-23: the main flows against the API's real Compose stack (`npm run test:e2e`). The stack runs with
+// VLW-23: the main flows against the API's real Compose stack (`npm run test:e2e`). They read the page in English,
+// with the dictionary's own words (VLW-48), so a text changed in the app is changed here too. The stack runs with
 // DEMO_MODE=true, a low MINING_DIFFICULTY, the demo limits off and CORS_ORIGINS set to this preview's origin.
 // E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD are the admin it seeded (VLA-24); nothing here hard-codes them.
 const API = process.env.E2E_API_URL ?? 'http://127.0.0.1:8000';
@@ -38,25 +40,27 @@ test.afterEach(({ page }) => {
 });
 
 // Moves through the app's own links, so the key held in the tab's memory survives.
-const tab = (page: Page, name: string) => page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name });
+const tab = (page: Page, t: Messages, name: keyof Messages['shell']['tabs']) =>
+  page.getByRole('navigation', { name: t.shell.mainNav }).getByRole('link', { name: t.shell.tabs[name] });
 
 // Mines and waits for the toast of the block this click sealed. Its number comes from the API's answer, not
 // from the button: another miner on the same node (here, the other flow) can take the number shown first.
 // That miner can also be busy, since a node mines one block at a time (429, VLA-29), or have just sealed the same
 // height (409, VLA-17). The toast says so, and, as a person would, the flow waits for Retry-After and tries again.
-async function mineTo(page: Page, address: string): Promise<number> {
-  await tab(page, 'Chain').click();
-  await page.getByLabel('Reward address', { exact: true }).fill(address);
+async function mineTo(page: Page, t: Messages, address: string): Promise<number> {
+  const mine = new RegExp(`^(?:${numbered(t.chain.mine.mineBlock(9999), 9999)}|${literal(t.chain.mine.mineGenesis)})$`);
+  await tab(page, t, 'chain').click();
+  await page.getByLabel(t.chain.mine.address, { exact: true }).fill(address);
   for (let attempt = 1; ; attempt++) {
     const [answer] = await Promise.all([
       page.waitForResponse((response) => response.url().endsWith('/blocks/mine') && response.request().method() === 'POST', {
         timeout: 60_000,
       }),
-      page.getByRole('button', { name: /^Mine (block #\d+|the genesis block)$/ }).click(),
+      page.getByRole('button', { name: mine }).click(),
     ]);
     if (answer.ok()) {
       const { block_number: sealed } = (await answer.json()) as { block_number: number };
-      await expect(page.getByText(new RegExp(`^Block #${sealed} sealed · nonce`))).toBeVisible();
+      await expect(page.getByText(startsWith(t.chain.sealed(sealed, '')))).toBeVisible();
       return sealed;
     }
     expect([409, 429], `POST /blocks/mine answered ${answer.status()}`).toContain(answer.status());
@@ -66,15 +70,15 @@ async function mineTo(page: Page, address: string): Promise<number> {
 }
 
 // Signs what the composer holds, sends it, and returns the hash the node accepted it under.
-async function signAndSend(page: Page): Promise<string> {
-  await page.getByRole('button', { name: 'Sign with this key' }).click();
-  await page.getByRole('button', { name: 'Send to the node' }).click();
-  await expect(page.getByText('Accepted by the node')).toBeVisible();
-  const href = await page.getByRole('link', { name: 'Open the transaction' }).getAttribute('href');
+async function signAndSend(page: Page, t: Messages): Promise<string> {
+  await page.getByRole('button', { name: t.transact.sign }).click();
+  await page.getByRole('button', { name: t.transact.send }).click();
+  await expect(page.getByText(t.transact.accepted.title)).toBeVisible();
+  const href = await page.getByRole('link', { name: t.transact.accepted.open }).getAttribute('href');
   return href!.replace('/transaction/', '');
 }
 
-test('an admin makes a wallet, mines to it, transfers and notarizes, and sees both sealed with a certificate', async ({ page }) => {
+test('an admin makes a wallet, mines to it, transfers and notarizes, and sees both sealed with a certificate', async ({ page, t }) => {
   test.setTimeout(180_000);
   const { email, password } = admin();
   // New bytes on every run, so the notarization is never a document the chain already holds.
@@ -83,73 +87,75 @@ test('an admin makes a wallet, mines to it, transfers and notarizes, and sees bo
 
   await test.step('sign in', async () => {
     await page.goto('/login');
-    await page.getByLabel('Email', { exact: true }).fill(email);
-    await page.getByLabel('Password', { exact: true }).fill(password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
+    await page.getByLabel(t.login.email, { exact: true }).fill(email);
+    await page.getByLabel(t.login.password, { exact: true }).fill(password);
+    await page.getByRole('button', { name: t.login.submit, exact: true }).click();
+    await expect(page.getByRole('button', { name: t.shell.signOut })).toBeVisible();
   });
 
   let address = '';
   await test.step('create a wallet in the browser', async () => {
-    await tab(page, 'Wallet').click();
-    await page.getByRole('button', { name: 'Create a wallet' }).click();
+    await tab(page, t, 'wallet').click();
+    await page.getByRole('button', { name: t.wallet.create }).click();
     // The address's groups follow its heading, beside the copy button.
-    const groups = page.getByRole('heading', { name: /^Your address/ }).locator('xpath=following-sibling::div[1]/p');
+    const groups = page.getByRole('heading', { name: t.wallet.address }).locator('xpath=following-sibling::div[1]/p');
     address = ((await groups.textContent()) ?? '').replace(/\s/g, '');
     expect(address).toMatch(/^[0-9a-f]{64}$/);
   });
 
   await test.step('mine a block to it', async () => {
-    await mineTo(page, address);
+    await mineTo(page, t, address);
   });
 
   let transfer = '';
   await test.step('sign and send a transfer', async () => {
-    await tab(page, 'Sign and send').click();
-    await expect(page.getByText('Signing as')).toBeVisible();
-    await page.getByLabel('To', { exact: true }).fill(RECEIVER);
-    await page.getByLabel('Amount', { exact: true }).fill('10');
-    await page.getByLabel('Fee', { exact: true }).fill('0.1');
-    transfer = await signAndSend(page);
+    await tab(page, t, 'transact').click();
+    await expect(page.getByText(t.transact.signingAs)).toBeVisible();
+    await page.getByLabel(t.transact.to, { exact: true }).fill(RECEIVER);
+    await page.getByLabel(t.transact.amount, { exact: true }).fill('10');
+    await page.getByLabel(t.transact.fee, { exact: true }).fill('0.1');
+    transfer = await signAndSend(page, t);
   });
 
   let notarization = '';
   await test.step('notarize a document', async () => {
-    await page.getByRole('button', { name: 'Send another' }).click();
-    await page.getByRole('group', { name: 'Kind' }).getByRole('button', { name: 'Notarize a document' }).click();
+    await page.getByRole('button', { name: t.transact.accepted.again }).click();
+    await page.getByRole('group', { name: t.transact.kind }).getByRole('button', { name: t.transact.notarize }).click();
     await page.locator('input[type="file"]').setInputFiles(document);
     await expect(page.getByText(/^contract\.txt · SHA-256 /)).toBeVisible();
-    notarization = await signAndSend(page);
+    notarization = await signAndSend(page, t);
   });
 
   // Whoever mines next seals what waits, so another miner's block may hold them; any block will do.
   await test.step('mine a block, which seals both', async () => {
-    await mineTo(page, address);
+    await mineTo(page, t, address);
   });
 
+  const inBlock = new RegExp(`^${numbered(t.transaction.chips.sealed(9999), 9999)}$`);
   await test.step('the transfer is sealed, and its signature checks out in the browser', async () => {
     await page.goto(`/transaction/${transfer}`);
-    await expect(page.getByText(/^In block #\d+$/).first()).toBeVisible();
-    await expect(page.getByText('Signature checked in this browser against the sender’s address')).toBeVisible();
+    await expect(page.getByText(inBlock).first()).toBeVisible();
+    await expect(page.getByText(t.transaction.details.check.valid)).toBeVisible();
   });
 
   await test.step('the notarization is sealed, with a certificate the same file matches', async () => {
     await page.goto(`/transaction/${notarization}`);
-    await expect(page.getByText(/^In block #\d+$/).first()).toBeVisible();
-    await expect(page.getByText('PROOF OF EXISTENCE')).toBeVisible();
+    await expect(page.getByText(inBlock).first()).toBeVisible();
+    await expect(page.getByText(t.transaction.certificate.kicker)).toBeVisible();
     await page.locator('input[type="file"]').setInputFiles(document);
-    await expect(page.getByText('Match', { exact: true })).toBeVisible();
+    await expect(page.getByText(t.transaction.certificate.match, { exact: true })).toBeVisible();
   });
 });
 
-test('a visitor tries the demo with one click and mines with it', async ({ page }) => {
+test('a visitor tries the demo with one click and mines with it', async ({ page, t }) => {
   test.setTimeout(90_000);
   await pointAtApi(page);
 
   await page.goto('/login');
-  await page.getByRole('button', { name: 'Try the demo · no account needed' }).click();
+  await page.getByRole('button', { name: t.login.demoButton }).click();
 
+  // The guest's name is the API's (its display_name); what follows it is the app's.
   await expect(page.getByText(/^Guest [0-9A-F]{4}$/)).toBeVisible();
-  await expect(page.getByText(/^demo · \d+ h left$/)).toBeVisible();
-  await mineTo(page, 'e'.repeat(64));
+  await expect(page.getByText(new RegExp(`^${numbered(t.shell.demoChip(t.shell.hoursLeft(9999)), 9999)}$`))).toBeVisible();
+  await mineTo(page, t, 'e'.repeat(64));
 });
