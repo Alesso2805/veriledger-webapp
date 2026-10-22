@@ -132,7 +132,7 @@ Static files served behind the same Caddy and hostname as the API (API ADR-0005,
 | Deployment | One image for any hostname; deep links survive a reload | `docker/smoke-test.sh` on the built image (VLW-21, VLW-22); the image published to GHCR for the API's Compose (VLW-25a); the end-to-end flows (VLW-23). The `rehearsal` job (VLW-25b) runs the API's production Compose (`deploy/docker-compose.prod.yml`) with the pull request's own image on `https://localhost`, and runs the flows through its Caddy: one origin, the image's `/config.json`, and its Content Security Policy, any violation of which fails the run |
 | Reproducibility | `npm ci && npm run build` from a clean clone | CI (VLW-10, VLW-11) |
 | Accessibility | Every input has a label; visible focus; usable at 360 px with no horizontal scroll; no serious or critical axe-core violation | `npm run test:a11y` (VLW-24): Playwright in Chromium against the built app, with the API answered from fixtures (`e2e/mockApi.ts`), on every page and state at 1280 and 360 px: no serious or critical axe violation, no sideways scroll, and a visible focus on every control the keyboard reaches. axe-core also runs in the component tests for refusals, empty lists and not-found states (`toPassAxe`). Both run in CI |
-| Robustness | A throw while drawing shows a fallback, never a blank page; nothing a person types, opens or navigates to, and no malformed answer from the API or `config.json`, makes a page throw | Component tests of both boundaries (VLW-35). The fuzzer of the audit of 2026-10-21, as `e2e/robustness.spec.ts` in CI (VLW-36) |
+| Robustness | A throw while drawing shows a fallback, never a blank page; nothing a person types, opens or navigates to, and no malformed answer from the API or `config.json`, makes a page throw | Component tests of both boundaries (VLW-35). `npm run test:a11y` also runs `e2e/robustness.spec.ts` (VLW-36), the audit of 2026-10-21 as a spec, in CI. It runs in Chromium at 1280 and 360 px against the mocked API, and covers odd routes, odd text in every field, files that are not key files, stored sessions the app did not write, and malformed answers. A step fails on an uncaught error or when a fallback shows |
 | Quality | `tsc` strict, oxlint without warnings, architecture tests and Vitest green | GitHub Actions (VLW-10, VLW-13) |
 
 ## Engineering rules
@@ -177,7 +177,7 @@ veriledger-webapp/
 │   ├── main.tsx
 │   └── index.css                 # design E tokens: the CSS block of DESIGN.md (AR-10)
 ├── public/favicon.svg            # the logo on the background colour (VLW-26)
-├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); flows.spec.ts against the API's stack (VLW-23)
+├── e2e/                          # Playwright: a11y.spec.ts and its API fixtures (VLW-24); robustness.spec.ts on the same fixtures (VLW-36); flows.spec.ts against the API's stack (VLW-23)
 ├── docker/                       # write-config.sh, Caddyfile, smoke-test.sh
 ├── docs/
 │   ├── SPEC.md                   # this document
