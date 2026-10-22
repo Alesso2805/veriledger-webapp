@@ -20,8 +20,8 @@
 | Story | PRs | Result | Verification |
 | --- | --- | --- | --- |
 | VLW-43 | #67 | The chain in design C, replacing the tower. The ribbon of the newest 10 blocks, each tile with its fingerprint and the fingerprint it links to; pointing at a tile lights the link, and a caption explains it; the dashed next tile counts the mining time. The detail with the block's fingerprint, the list, the mine card (it starts with the address of the key held in the tab), the waiting list with avatars, and "How to read a fingerprint". `fingerprint.ts` gains `afterProofOfWork`; `isometric.ts` and the tower's components are gone | `/` at 1440, 768 and 360 px, light and dark, English and Spanish: point at a tile and its link lights; mine a block and its tile slides in |
-| VLW-44 | this PR | The transaction and its certificate in design C. The journey on a card, the status chip on `ok-soft`, `wait-soft` or `danger-soft`, the details with the mint signature check, "Sealed in" with the block's fingerprint and "N blocks link back to it". The certificate on ink: the document's fingerprint over its hash in groups, and a checked file's fingerprint under the certified one, so a mismatch shows bar by bar. The mocked API gains a sealed notarization, so the accessibility pass draws the certificate | `/transaction/<hash>` of a transfer and of a notarization at 1440, 768 and 360 px, light and dark, English and Spanish: check the original file (Match) and an edited one (No match, its bars differ) |
-| VLW-45 | — | — | — |
+| VLW-44 | #68 | The transaction and its certificate in design C. The journey on a card, the status chip on `ok-soft`, `wait-soft` or `danger-soft`, the details with the mint signature check, "Sealed in" with the block's fingerprint and "N blocks link back to it". The certificate on ink: the document's fingerprint over its hash in groups, and a checked file's fingerprint under the certified one, so a mismatch shows bar by bar. The mocked API gains a sealed notarization, so the accessibility pass draws the certificate | `/transaction/<hash>` of a transfer and of a notarization at 1440, 768 and 360 px, light and dark, English and Spanish: check the original file (Match) and an edited one (No match, its bars differ) |
+| VLW-45 | this PR | Sign and send in design C. "Signing as" with the address's fingerprint and the balance; the kind switch as a `strong` pill; the document's fingerprint once it is hashed; the message on ink; the signature's 16-bar fingerprint growing above its hex, with an accent ring; the three tiles of what travels; refusals on `danger-soft`; "Accepted by the node" on `ok-soft`. The amount turns red only when the balance does not cover it with the fee (`checkDraft` returns `covered`) | `/transact` at 1440, 768 and 360 px, light and dark, English and Spanish: with no key; with the wallet's key, notarize a file and sign it; type more than the balance |
 | VLW-46 | — | — | — |
 | VLW-47 | — | — | — |
 | VLW-48 | — | — | — |
@@ -39,6 +39,7 @@
 
 - The tower becomes the chain (VLW-43).
 - The transaction page in design C (VLW-44).
+- Sign and send in design C (VLW-45).
 
 ## Retro
 

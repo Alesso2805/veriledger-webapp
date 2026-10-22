@@ -47,6 +47,11 @@ describe('checkDraft', () => {
   it('accepts any amount while the balance is unknown: the API has the last word', () => {
     expect(checkDraft({ ...transfer, amount: '1000' }, sender, 1, null).amountOk).toBe(true);
   });
+
+  it('tells an amount the balance does not cover from one that is wrong in itself', () => {
+    expect(checkDraft({ ...transfer, amount: '49.95', fee: '0.1' }, sender, 1, 50).covered).toBe(false);
+    expect(checkDraft({ ...transfer, amount: '0' }, sender, 1, 50).covered).toBe(true);
+  });
 });
 
 describe('messageLines', () => {

@@ -9,10 +9,10 @@ export function KindSwitch({ kind, onChange }: { kind: Kind; onChange: (kind: Ki
     ['notarize', t.transact.notarize],
   ];
   return (
-    <div role="group" aria-label={t.transact.kind} className="relative grid grid-cols-2 rounded-[10px] border border-vl-line bg-vl-bg p-1">
+    <div role="group" aria-label={t.transact.kind} className="relative grid grid-cols-2 rounded-full bg-vl-bg p-1">
       <span
         aria-hidden="true"
-        className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-[7px] bg-vl-raised transition-transform duration-300 ease-vl-out ${
+        className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-vl-strong transition-transform duration-300 ease-vl-out ${
           kind === 'notarize' ? 'translate-x-full' : ''
         }`}
       />
@@ -22,8 +22,8 @@ export function KindSwitch({ kind, onChange }: { kind: Kind; onChange: (kind: Ki
           type="button"
           aria-pressed={kind === value}
           onClick={() => onChange(value)}
-          className={`relative h-[38px] text-sm font-semibold transition-colors duration-(--vl-dur-base) ${
-            kind === value ? 'text-vl-text' : 'text-vl-muted'
+          className={`relative h-11 text-[15px] font-bold transition-colors duration-(--vl-dur-base) ${
+            kind === value ? 'text-vl-on-strong' : 'text-vl-muted'
           }`}
         >
           {label}

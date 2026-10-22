@@ -20,6 +20,10 @@ vi.mock('../services/api', async (importOriginal) => ({
 // RFC 8032 test keys from the API's vectors: published, test-only.
 const { public_key: publicKey, private_key: privateKey } = vectors.vectors[0];
 
+// "Available" draws the unit smaller, in its own element, so the amount is read from the whole line.
+const available = (text: string) =>
+  screen.findByText((_, element) => element?.tagName === 'SPAN' && element.textContent === text && element.children.length === 1);
+
 function renderPage() {
   render(
     <MemoryRouter>
@@ -59,7 +63,7 @@ describe('SignAndSend', () => {
 
     expect(await screen.findByText('Signing as')).toBeInTheDocument();
     expect(screen.getByTitle(publicKey)).toHaveTextContent('d75a9801…f707511a');
-    expect(await screen.findByText('50.10 VL')).toBeInTheDocument();
+    expect(await available('50.10 VL')).toBeInTheDocument();
     expect(useKeyStore.getState().pair).toEqual({ public_key: publicKey, private_key: privateKey });
     expect(getBalance).toHaveBeenCalledWith(publicKey);
   });
@@ -78,7 +82,7 @@ describe('SignAndSend', () => {
     renderPage();
 
     expect(screen.queryByRole('heading', { name: 'No key in this tab' })).not.toBeInTheDocument();
-    expect(await screen.findByText('50.10 VL')).toBeInTheDocument();
+    expect(await available('50.10 VL')).toBeInTheDocument();
   });
 });
 
@@ -110,7 +114,10 @@ describe('SignAndSend composing and signing', () => {
     expect(screen.getByText(`${new TextEncoder().encode(transfer.message).length} bytes · keys sorted · no spaces`)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Sign with this key' }));
 
-    expect(screen.getByText(transfer.signature)).toBeInTheDocument();
+    const shown = screen.getByText(transfer.signature);
+    expect(shown).toBeInTheDocument();
+    // The signature's fingerprint, one bar per byte of its first 16, drawn above it.
+    expect(shown.previousElementSibling?.children).toHaveLength(16);
     expect(screen.getByRole('button', { name: 'Signed' })).toBeDisabled();
   });
 
@@ -123,6 +130,18 @@ describe('SignAndSend composing and signing', () => {
     expect(screen.queryByText(transfer.signature)).not.toBeInTheDocument();
     expect(screen.getByText('You changed the message, so the old signature no longer matches. Sign again.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign with this key' })).toBeEnabled();
+  });
+
+  it('turns the amount red when the balance does not cover it with the fee', async () => {
+    await startTransfer();
+    expect(screen.getByLabelText('Amount')).not.toHaveClass('text-vl-danger');
+
+    fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '50' } });
+    fireEvent.change(screen.getByLabelText('Fee'), { target: { value: '0.1' } });
+
+    expect(screen.getByLabelText('Amount')).toHaveClass('text-vl-danger');
+    expect(screen.getByLabelText('Amount')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('button', { name: 'Sign with this key' })).toBeDisabled();
   });
 
   it('says what is wrong with the address, and does not sign', async () => {

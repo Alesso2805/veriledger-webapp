@@ -16,6 +16,8 @@ export interface Checked {
   toOk: boolean;
   amountOk: boolean;
   feeOk: boolean;
+  // Whether the balance covers the amount and the fee; true while either is unreadable or the balance unknown.
+  covered: boolean;
   // Ready to sign: every check passed and the nonce is known.
   fields: SignedFields | null;
 }
@@ -45,12 +47,13 @@ export function checkDraft(draft: Draft, sender: string, nonce: number | null, b
   const payload = transfer ? undefined : draft.payload;
 
   if (!toOk || !amountOk || !feeOk || amount === null || fee === null || nonce === null || payload === null) {
-    return { toOk, amountOk, feeOk, fields: null };
+    return { toOk, amountOk, feeOk, covered, fields: null };
   }
   return {
     toOk,
     amountOk,
     feeOk,
+    covered,
     fields: { sender_address: sender, receiver_address: transfer ? draft.to : sender, amount, fee, nonce, payload },
   };
 }
