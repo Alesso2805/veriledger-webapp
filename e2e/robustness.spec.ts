@@ -130,6 +130,22 @@ test('a stored session the app did not write', async ({ page }) => {
   }
 });
 
+test('stored preferences the app did not write', async ({ page }) => {
+  const check = watch(page);
+  await mockApi(page);
+  for (const [label, value] of [
+    ['a theme it does not know', JSON.stringify({ state: { theme: 'purple' }, version: 0 })],
+    ['a theme that is an object', JSON.stringify({ state: { theme: { a: 1 } }, version: 0 })],
+    ['storage that is not JSON', '{not json'],
+    ['a null state', JSON.stringify({ state: null, version: 0 })],
+  ]) {
+    await page.addInitScript((stored) => localStorage.setItem('veriledger-preferences', stored), value);
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await check(`stored preferences: ${label}`);
+  }
+});
+
 test('answers of the wrong shape from the API and config.json', async ({ context }) => {
   const scenarios: [string, string, [string, (route: Route) => Promise<void>][]][] = [
     // No engine parses an unclosed bracket; a space in the host, Chromium does.
