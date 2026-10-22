@@ -14,12 +14,28 @@ function admin() {
   return { email, password };
 }
 
-// The app reads its API from /config.json, as the image writes it (ADR-0003).
+// The app reads its API from /config.json, as the image writes it (ADR-0003). The preview has none, so the flows
+// give it one; a deployed image (E2E_BASE_URL) is left with its own, which says /api on the same origin.
 async function pointAtApi(page: Page) {
+  if (process.env.E2E_BASE_URL) return;
   await page.route('**/config.json', (route) =>
     route.fulfill({ contentType: 'application/json', body: JSON.stringify({ apiBaseUrl: API }) }),
   );
 }
+
+// Any Content Security Policy violation the browser reports fails the flow, even one the page survives, such as a
+// blocked font. Only a deployed image sends the policy (VLW-22), so this bites in the rehearsal (VLW-25).
+const violations = new WeakMap<Page, string[]>();
+test.beforeEach(({ page }) => {
+  const seen: string[] = [];
+  violations.set(page, seen);
+  page.on('console', (message) => {
+    if (/Content Security Policy/i.test(message.text())) seen.push(message.text());
+  });
+});
+test.afterEach(({ page }) => {
+  expect(violations.get(page), 'Content Security Policy violations').toEqual([]);
+});
 
 // Moves through the app's own links, so the key held in the tab's memory survives.
 const tab = (page: Page, name: string) => page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name });
