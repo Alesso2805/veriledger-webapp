@@ -197,6 +197,8 @@ Each view lists its artboard, its data and the stories that build it. Endpoints 
   - A signature that does not match says so in the danger colour; the artboard has only the checked state.
   - A mining reward has no signature: "the block's proof of work seals it".
   - A row from before VLA-16 has no nonce, so it cannot be checked, and the page says so.
+  - Near 10^10 a float cannot spell an amount back with 8 decimals, so the message cannot be rebuilt. The page says this browser cannot check it, in the neutral colour, and never calls it invalid (2026-10-22).
+- **A time the browser cannot read** shows as "—", here and in the tower, instead of failing the page. A certificate without a readable moment says "when block #n was sealed" (2026-10-22).
 - **Sealed in:** a card linking to `/?block=n`, with the block's hash and how many blocks are on top.
 - **Certificate** (a sealed notarization, VLW-29b):
   - "This document existed on 21 October 2026 at 15:06:45 UTC." The moment is the block's seal from `GET /blocks/{block_hash}`, which the chain backs, not the time the node received the transaction. Until it loads, the heading says the document existed when block #n was sealed.
