@@ -9,6 +9,9 @@ const ODD = ['zz', 'hello', '#', '#-1', '-1', '1e5', '0x10', '９９', '😀', '
 const AMOUNTS = ['1e5', '-1', '.5', '5.', '00000000001', '99999999999', '0.123456789', '１２', 'NaN', 'Infinity', '1,5',
   '0', '0.00000001', '9999999999.99999999', ' 3 '];
 
+// Each test walks many routes or fields, so it gets more than Playwright's 30 s.
+test.describe.configure({ timeout: 120_000 });
+
 // Returns a check for one step. Input events commit synchronously, and a frame later anything a throw drew is there.
 function watch(page: Page) {
   const uncaught: string[] = [];
