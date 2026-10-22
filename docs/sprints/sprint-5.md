@@ -25,8 +25,8 @@
 
 | Story | PRs | Result | Verification |
 | --- | --- | --- | --- |
-| VLW-37 | this PR | ADR-0006, ADR-0007 and ADR-0008; SPEC's scope and conventions; epic E6; CLAUDE.md | — |
-| VLW-38 | — | — | — |
+| VLW-37 | #58 | ADR-0006, ADR-0007 and ADR-0008; SPEC's scope and conventions; epic E6; CLAUDE.md | — |
+| VLW-38 | this PR; the canvas, versions 62 to 70 | C's dark theme on every view and frame, contrast checked; the theme and language switches in every navbar; every text in Spanish, on the pages "C · Modo oscuro" and "C · Español"; DESIGN.md rewritten for C | On the canvas: the `theme` and `lang` tweaks of each view, and its navbar switches in play mode. AR-10 still passes |
 | VLW-39 | — | — | — |
 | VLW-40 | — | — | — |
 | VLW-41 | — | — | — |
@@ -38,10 +38,14 @@
 - **A typed dictionary, no library** (product owner, 2026-10-22, ADR-0007). The Spanish dictionary has the English one's type, so a missing text fails `tsc`. Dates, numbers and plurals come from `Intl`.
 - **The API's known errors are translated in the webapp** (product owner, 2026-10-22, ADR-0007). An unknown one is shown as it came.
 - **The dark theme is designed before it is built** (product owner, 2026-10-22, ADR-0008). What the canvas shows is what ships.
+- **The Spanish copy and its numbers are approved as drawn** (product owner, 2026-10-22). Amounts keep the API's spelling with a point in both languages, other numbers and dates follow `Intl` (ADR-0007, unchanged).
+- **DESIGN.md keeps E's token block at its end until VLW-39** (VLW-38). AR-10 compares `src/index.css` with it, so the checks stay green while C is drawn but not built; VLW-39 swaps the two blocks with the code in one PR.
+- **Fixed on the canvas while writing DESIGN.md** (VLW-38): the light `ink-line` token pointed at itself, so ink panels had no borders in light; `ink-line` was raised to pass 3:1 on ink in both themes; two colours were literals that failed in dark; the forget-key panel got its own token, `ink-danger`; the header's buttons wrap at 360 px when signed out; the sans font is the variable Bricolage with its optical sizes, as in the canvas.
 
 ## Changes to the specification in this sprint
 
 - Design C, English and Spanish, and light and dark themes join the scope; "user-facing text in English" becomes "in English and Spanish" (VLW-37).
+- DESIGN.md describes C; the code keeps E's tokens until VLW-39 (VLW-38).
 
 ## Retro
 
