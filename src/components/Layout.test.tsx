@@ -5,9 +5,11 @@ import { getMe, startDemo } from '../services/auth';
 import { useAppStore } from '../store/useAppStore';
 import { useHealthStore } from '../store/useHealthStore';
 import { useKeyStore } from '../store/useKeyStore';
+import { usePreferencesStore } from '../store/usePreferencesStore';
 import { useToastStore } from '../store/useToastStore';
 import type { LoginRedirectState } from '../types/session';
 import { Layout } from './Layout';
+import { useLanguageAttribute } from './useT';
 
 vi.mock('../services/auth', () => ({ getMe: vi.fn(), startDemo: vi.fn() }));
 
@@ -47,6 +49,7 @@ function renderShell(path = '/wallet') {
 
 describe('Layout (the shell)', () => {
   beforeEach(() => {
+    usePreferencesStore.setState({ language: 'en', theme: 'system' });
     useAppStore.setState({ token: 'abc.def.ghi' });
     useHealthStore.setState({ online: true, demoMode: false });
     vi.mocked(getMe).mockResolvedValue(ME);
@@ -224,5 +227,28 @@ describe('Layout (the shell)', () => {
     expect(screen.queryByRole('link', { name: 'Back to the tower' })).not.toBeInTheDocument();
     await apiStatus('api · online');
     vi.mocked(console.error).mockRestore();
+  });
+
+  it('speaks Spanish after the language switch, on <html> too, and English again', async () => {
+    function LanguageProbe() {
+      useLanguageAttribute();
+      return null;
+    }
+    render(<LanguageProbe />);
+    renderShell('/wallet');
+    await apiStatus('api · online');
+
+    fireEvent.click(screen.getByRole('button', { name: 'EN, English. Switch to español' }));
+    expect(screen.getByRole('link', { name: 'Billetera' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Torre' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tema: Sistema. Cambiar a Claro' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('en línea');
+    expect(screen.getByPlaceholderText('Número de bloque o hash')).toBeInTheDocument();
+    expect(document.documentElement.lang).toBe('es');
+
+    fireEvent.click(screen.getByRole('button', { name: 'ES, español. Cambiar a English' }));
+    expect(screen.getByRole('link', { name: 'Wallet' })).toBeInTheDocument();
+    expect(document.documentElement.lang).toBe('en');
   });
 });

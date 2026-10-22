@@ -7,6 +7,7 @@ import type { LoginRedirectState } from '../types/session';
 import { ErrorBoundary } from './ErrorBoundary';
 import { HeaderSearch } from './HeaderSearch';
 import { HealthStatus } from './HealthStatus';
+import { LanguageSwitch } from './LanguageSwitch';
 import { LogoMark } from './LogoMark';
 import { OfflineBanner } from './OfflineBanner';
 import { PageFailed } from './PageFailed';
@@ -14,13 +15,14 @@ import { ThemeSwitch } from './ThemeSwitch';
 import { UserChip } from './UserChip';
 import { useSessionToken } from './useSessionToken';
 import { useStartDemo } from './useStartDemo';
+import { useT } from './useT';
 
 const TABS = [
-  { label: 'Tower', to: '/', end: true },
-  { label: 'Sign and send', to: '/transact', end: false },
-  { label: 'Wallet', to: '/wallet', end: false },
-  { label: 'Network', to: '/network', end: false },
-];
+  { tab: 'tower', to: '/', end: true },
+  { tab: 'transact', to: '/transact', end: false },
+  { tab: 'wallet', to: '/wallet', end: false },
+  { tab: 'network', to: '/network', end: false },
+] as const;
 
 const pillClass =
   'inline-flex h-9 items-center rounded-full border border-vl-line px-3 text-[13px] font-semibold transition-colors duration-(--vl-dur-fast) hover:bg-vl-raised';
@@ -31,6 +33,7 @@ const tabClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export function Layout() {
+  const t = useT();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const logout = useAppStore((state) => state.logout);
@@ -53,7 +56,7 @@ export function Layout() {
         href="#main"
         className="absolute top-3 left-3 z-60 -translate-y-[72px] rounded-[10px] bg-vl-accent px-3.5 py-2.5 font-semibold text-vl-on-accent transition-transform duration-(--vl-dur-fast) focus:translate-y-0"
       >
-        Skip to content
+        {t.shell.skip}
       </a>
       <header className="sticky top-0 z-30 border-b border-vl-line bg-vl-bg">
         <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-3 gap-y-2.5 px-3 pt-2.5 sm:gap-x-5 sm:px-6">
@@ -64,18 +67,19 @@ export function Layout() {
           <HeaderSearch />
           {/* Below sm the status and Sign out share the logo's row and the search drops below, as in "E · Estados del shell". */}
           <div className="order-1 ml-auto flex items-center gap-2.5 sm:order-none sm:gap-3.5">
+            <LanguageSwitch />
             <ThemeSwitch />
             <HealthStatus />
             <UserChip />
             {token ? (
               <button type="button" onClick={signOut} className={pillClass}>
-                Sign out
+                {t.shell.signOut}
               </button>
             ) : (
               <>
                 {/* After signing in, the login returns the visitor to this page; a demo starts right here. */}
                 <Link to="/login" state={{ from: { pathname, search } } satisfies LoginRedirectState} className={pillClass}>
-                  Sign in
+                  {t.shell.signIn}
                 </Link>
                 {demoMode && (
                   <button
@@ -86,16 +90,16 @@ export function Layout() {
                       demo.starting ? 'animate-vl-pulse' : ''
                     }`}
                   >
-                    {demo.starting ? 'Starting…' : 'Try the demo'}
+                    {demo.starting ? t.shell.starting : t.shell.tryDemo}
                   </button>
                 )}
               </>
             )}
           </div>
-          <nav aria-label="Main" className="order-3 flex basis-full gap-0.5 overflow-x-auto sm:order-none">
+          <nav aria-label={t.shell.mainNav} className="order-3 flex basis-full gap-0.5 overflow-x-auto sm:order-none">
             {TABS.map((tab) => (
               <NavLink key={tab.to} to={tab.to} end={tab.end} className={tabClass}>
-                {tab.label}
+                {t.shell.tabs[tab.tab]}
               </NavLink>
             ))}
           </nav>

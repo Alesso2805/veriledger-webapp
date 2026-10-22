@@ -1,6 +1,8 @@
 import axios, { isAxiosError } from 'axios';
+import { translateApiMessage } from '../lib/i18n/apiMessages';
 import { endReason } from '../lib/jwt';
 import { useAppStore } from '../store/useAppStore';
+import { usePreferencesStore } from '../store/usePreferencesStore';
 
 // Until /config.json is read (services/config.ts): VITE_API_URL in development, else the same origin's /api.
 export const api = axios.create({
@@ -38,9 +40,10 @@ export function statusOf(error: unknown): number | undefined {
   return isAxiosError(error) ? error.response?.status : undefined;
 }
 
-// What to tell the person about a failed request: the API's own detail when it sent one as text.
+// What to tell the person about a failed request: the API's own detail when it sent one as text, in the page's
+// language when it is a message the webapp knows (ADR-0007).
 export function detailOf(error: unknown, fallback: string): string {
   const detail: unknown = isAxiosError(error) ? error.response?.data?.detail : undefined;
-  if (typeof detail === 'string') return detail;
+  if (typeof detail === 'string') return translateApiMessage(detail, usePreferencesStore.getState().language);
   return error instanceof Error ? error.message : fallback;
 }

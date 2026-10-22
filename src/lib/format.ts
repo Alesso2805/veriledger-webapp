@@ -1,15 +1,18 @@
 import type { Transaction } from '../types/ledger';
+import type { Language } from '../types/preferences';
+import { DATE_LOCALE, NUMBER_LOCALE } from './i18n';
 
 const AMOUNT = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 });
-const COUNT = new Intl.NumberFormat('en-US');
 
-// Responses carry amounts as numbers: at least 2 decimals, and up to the 8 the ledger keeps.
+// Responses carry amounts as numbers: at least 2 decimals, and up to the 8 the ledger keeps. Amounts keep the
+// API's spelling, with a point, in both languages: they are what is signed (ADR-0007).
 export function formatAmount(amount: number): string {
   return AMOUNT.format(amount);
 }
 
-export function formatCount(value: number): string {
-  return COUNT.format(value);
+// Counts and nonces follow the page's language: 277,786 and 277.786.
+export function formatCount(value: number, language: Language = 'en'): string {
+  return new Intl.NumberFormat(NUMBER_LOCALE[language]).format(value);
 }
 
 // "4655ec4f…a19d" tells addresses and hashes apart in a list; the full value is on the detail. The artboards
@@ -35,8 +38,9 @@ export function transactionKind(transaction: Described): TransactionKind {
   return 'Transfer';
 }
 
-export function transactionRoute(transaction: Described): string {
-  if (transactionKind(transaction) === 'Notarization') return `document ${shortHash(transaction.payload ?? '')}`;
+// `document` is the word in the page's language.
+export function transactionRoute(transaction: Described, document = 'document'): string {
+  if (transactionKind(transaction) === 'Notarization') return `${document} ${shortHash(transaction.payload ?? '')}`;
   return `${shortHash(transaction.sender_address)} → ${shortHash(transaction.receiver_address)}`;
 }
 
@@ -47,11 +51,11 @@ function readable(iso: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-// In the reader's own time zone; tests pass one so they do not depend on the machine's.
-export function formatSealed(iso: string, timeZone?: string): string {
+// In the reader's own time zone; tests pass one so they do not depend on the machine's. "20 Oct 2026", "20 oct 2026".
+export function formatSealed(iso: string, timeZone?: string, language: Language = 'en'): string {
   const date = readable(iso);
   if (!date) return '—';
-  const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone });
+  const day = new Intl.DateTimeFormat(DATE_LOCALE[language], { day: 'numeric', month: 'short', year: 'numeric', timeZone });
   const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZone });
   return `${day.format(date)} · ${time.format(date)}`;
 }
@@ -74,10 +78,10 @@ export function healthWord(online: boolean | null, databaseDown: boolean): 'chec
   return databaseDown ? 'no database' : 'offline';
 }
 
-// What is left of a demo account: "23 h left", then "45 min left" in its last hour (VLW-34).
-export function formatTimeLeft(ms: number): string {
-  if (ms >= 3_600_000) return `${Math.floor(ms / 3_600_000)} h left`;
-  return `${Math.max(1, Math.ceil(ms / 60_000))} min left`;
+// What is left of a demo account: hours, then minutes in its last hour (VLW-34). The words are the dictionary's.
+export function timeLeft(ms: number): { hours: number } | { minutes: number } {
+  if (ms >= 3_600_000) return { hours: Math.floor(ms / 3_600_000) };
+  return { minutes: Math.max(1, Math.ceil(ms / 60_000)) };
 }
 
 export function formatClock(iso: string, timeZone?: string): string {

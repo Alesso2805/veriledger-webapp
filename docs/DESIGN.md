@@ -226,7 +226,7 @@ ADR-0008: the theme follows the system unless the person chooses one.
 
 ADR-0007: English and Spanish, from a typed dictionary.
 
-- **The switch** sits in the navbar, before the theme switch, and at the top of the login card. It shows the current language, "EN" or "ES", and its label says it in that language and offers the other: "Language: English. Switch to español", "Idioma: español. Cambiar a English".
+- **The switch** sits in the navbar, before the theme switch, and at the top of the login card. It shows the current language, "EN" or "ES", and its label says it in that language and offers the other: "EN, English. Switch to español", "ES, español. Cambiar a English".
 - **The language** is the stored choice, otherwise the browser's: the first `es-*` gives Spanish, anything else English. `<html lang>` follows it.
 - **The copy:** every text of the canvas, in both languages, is in each view's dictionary (its `T` table and its `L(en, es)` texts). The page "C · Español" shows them all, checked at 360 px on 2026-10-22. They become `src/lib/i18n/en.ts` and `es.ts` in VLW-40. The Spanish is neutral and uses *tú*.
 - **Terms:**

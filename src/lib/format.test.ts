@@ -5,7 +5,7 @@ import {
   formatClock,
   formatCount,
   formatSealed,
-  formatTimeLeft,
+  timeLeft,
   healthWord,
   shortHash,
   splitProofOfWork,
@@ -30,6 +30,7 @@ describe('amounts and counts', () => {
   it('groups thousands in counts such as a nonce', () => {
     expect(formatCount(277786)).toBe('277,786');
     expect(formatCount(7)).toBe('7');
+    expect(formatCount(277786, 'es')).toBe('277.786');
   });
 });
 
@@ -73,6 +74,7 @@ describe('transactions', () => {
     expect(transactionRoute(transfer)).toBe('4655ec4f…a19d → 9b1e77c0…3f42');
     expect(transactionRoute(reward)).toBe('SYSTEM → 9b1e77c0…3f42');
     expect(transactionRoute(notarization)).toBe('document 9b1e77c0…3f42');
+    expect(transactionRoute(notarization, 'documento')).toBe('documento 9b1e77c0…3f42');
   });
 });
 
@@ -82,6 +84,7 @@ describe('times', () => {
   it('writes a seal as date and time in the given zone', () => {
     expect(formatSealed(sealed, 'UTC')).toBe('20 Oct 2026 · 21:34:47');
     expect(formatSealed(sealed, 'America/Lima')).toBe('20 Oct 2026 · 16:34:47');
+    expect(formatSealed(sealed, 'UTC', 'es')).toBe('20 oct 2026 · 21:34:47');
   });
 
   it('writes the moment a certificate states, in UTC whatever the reader’s zone', () => {
@@ -112,11 +115,11 @@ describe('times', () => {
 
   it('writes what is left of a demo in whole hours, then minutes in its last hour', () => {
     const hour = 3_600_000;
-    expect(formatTimeLeft(24 * hour - 5_000)).toBe('23 h left');
-    expect(formatTimeLeft(hour)).toBe('1 h left');
-    expect(formatTimeLeft(hour - 1)).toBe('60 min left');
-    expect(formatTimeLeft(45 * 60_000)).toBe('45 min left');
-    // Never "0 min left" while the token is still good.
-    expect(formatTimeLeft(10_000)).toBe('1 min left');
+    expect(timeLeft(24 * hour - 5_000)).toEqual({ hours: 23 });
+    expect(timeLeft(hour)).toEqual({ hours: 1 });
+    expect(timeLeft(hour - 1)).toEqual({ minutes: 60 });
+    expect(timeLeft(45 * 60_000)).toEqual({ minutes: 45 });
+    // Never 0 minutes while the token is still good.
+    expect(timeLeft(10_000)).toEqual({ minutes: 1 });
   });
 });

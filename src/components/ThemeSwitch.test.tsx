@@ -44,10 +44,11 @@ describe('public/theme.js', () => {
     document.documentElement.removeAttribute('data-theme');
   });
 
-  it('sets the stored theme before the app loads', () => {
-    localStorage.setItem(PREFERENCES_KEY, JSON.stringify({ state: { theme: 'dark' }, version: 0 }));
+  it('sets the stored theme and language before the app loads', () => {
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify({ state: { theme: 'dark', language: 'es' }, version: 0 }));
     run();
     expect(theme()).toBe('dark');
+    expect(document.documentElement.lang).toBe('es');
   });
 
   it.each([
