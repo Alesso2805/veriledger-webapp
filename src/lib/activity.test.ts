@@ -26,19 +26,27 @@ const received = tx({ sender_address: other, receiver_address: me, amount: 50, f
 
 describe('activityRow', () => {
   it('words each kind as the artboard does, with what it does to the balance', () => {
-    expect(activityRow(me, reward)).toEqual({ title: 'Mining reward', detail: 'Block #12', change: '+50.00', status: 'Block #12' });
-    expect(activityRow(me, sent)).toEqual({ title: 'Sent to 7c2d09aa…e51b', detail: 'fee 0.10', change: '−5.10', status: 'Block #10' });
+    expect(activityRow(me, reward)).toEqual({ title: 'Mining reward', detail: 'Block #12', change: '+50.00', status: 'Block #12', peer: me });
+    expect(activityRow(me, sent)).toEqual({
+      title: 'Sent to 7c2d09aa…e51b',
+      detail: 'fee 0.10',
+      change: '−5.10',
+      status: 'Block #10',
+      peer: other,
+    });
     expect(activityRow(me, notarized)).toEqual({
       title: 'Notarized a document',
       detail: 'a8b4c92e…efef1f07 · fee 0.20',
       change: '−0.20',
       status: 'Waiting',
+      peer: me,
     });
     expect(activityRow(me, received)).toEqual({
       title: 'Received from 7c2d09aa…e51b',
       detail: 'fee 0.30, paid by the sender',
       change: '+50.00',
       status: 'Block #8',
+      peer: other,
     });
   });
 
@@ -46,6 +54,7 @@ describe('activityRow', () => {
     expect(activityRow(me, tx({ receiver_address: me, amount: 3, fee: 0.1 }))).toMatchObject({
       title: 'Sent to this address',
       change: '−0.10',
+      peer: me,
     });
   });
 

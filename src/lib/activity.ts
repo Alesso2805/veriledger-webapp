@@ -14,6 +14,8 @@ export interface ActivityRow {
   // How the transaction changes this address's balance, with its sign: "+50.00", "−5.10".
   change: string;
   status: string;
+  // The address whose avatar stands beside the line: the other side of a transfer, else this address.
+  peer: string;
 }
 
 // One line of an address's activity, worded as the artboard words it, in the page's language (`words`).
@@ -30,7 +32,7 @@ export function activityRow(address: string, transaction: Transaction, words: Wo
   const kind = transactionKind(transaction);
 
   if (kind === 'Mining reward') {
-    return { title: words.reward, detail: status, change: `+${amount(units(transaction.amount))}`, status };
+    return { title: words.reward, detail: status, change: `+${amount(units(transaction.amount))}`, status, peer: address };
   }
   if (kind === 'Notarization') {
     return {
@@ -38,6 +40,7 @@ export function activityRow(address: string, transaction: Transaction, words: Wo
       detail: `${shortHash(transaction.payload ?? '', 8)} · ${words.fee(amount(fee))}`,
       change: `−${amount(fee)}`,
       status,
+      peer: address,
     };
   }
   if (transaction.sender_address !== address) {
@@ -46,12 +49,13 @@ export function activityRow(address: string, transaction: Transaction, words: Wo
       detail: words.feePaid(amount(fee)),
       change: `+${amount(units(transaction.amount))}`,
       status,
+      peer: transaction.sender_address,
     };
   }
   // Sending to itself costs only the fee.
   const spent = transaction.receiver_address === address ? fee : units(transaction.amount) + fee;
   const to = transaction.receiver_address === address ? words.thisAddress : shortHash(transaction.receiver_address);
-  return { title: words.sent(to), detail: words.fee(amount(fee)), change: `−${amount(spent)}`, status };
+  return { title: words.sent(to), detail: words.fee(amount(fee)), change: `−${amount(spent)}`, status, peer: transaction.receiver_address };
 }
 
 // "100.00 received · 5.30 sent · 0.20 waiting", from the whole activity of the address. Received counts what
