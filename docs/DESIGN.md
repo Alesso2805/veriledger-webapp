@@ -29,7 +29,7 @@ This block goes into `src/index.css` as is (VLW-39). A test (AR-10) fails if the
 - **The light values** are the theme's defaults, in `@theme`. **The dark values** override the same names, once for a dark choice in the navbar (`data-theme="dark"`) and once for the system's preference when nothing is chosen (ADR-0008). The two dark lists are the same, and AR-10's test keeps them so.
 - Each theme sets `color-scheme`, so the browser's own scrollbars and form controls follow it.
 - Tokens that do not change with the theme (`wait`, `on-wait`, `on-ink`, `on-ink-muted`, `ink-danger`, `logo-tile`) are declared once.
-- **E's leftovers** close the block, marked: the cube colours, `drop` and `float`. Only the network's peer cards still use one (`cube-top`, until VLW-47). VLW-48 removes them.
+- **E's leftovers** close the block, marked: the cube colours, `drop` and `float`. No view uses them since VLW-47; VLW-48 removes them.
 
 ```css
 @import "tailwindcss" source("../src");
