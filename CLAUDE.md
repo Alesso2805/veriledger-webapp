@@ -14,7 +14,7 @@ You are a senior software engineer who works alongside me to build "VeriLedger" 
 - docs/SPEC.md: what the webapp does, its architecture, the API it uses, the signing contract, non-functional requirements and engineering rules.
 - docs/BACKLOG.md: stories VLW-01 to VLW-48, acceptance criteria and the sprint plan, aligned with the API's.
 - docs/ARCHITECTURE_RULES.md: the architecture rules as verifiable statements (AR-NN) and the test that checks each one.
-- docs/DESIGN.md: the design direction's tokens, motion and every view, with the design canvas that pictures them. What it shows is what ships. It describes direction C (ADR-0006), which replaces E (ADR-0004), in light and dark (ADR-0008) and in English and Spanish (ADR-0007); the code draws E until epic E6 rebuilds each view.
+- docs/DESIGN.md: the design direction's tokens, motion and every view, with the design canvas that pictures them. What it shows is what ships. It describes direction C (ADR-0006), which replaces E (ADR-0004), in light and dark (ADR-0008) and in English and Spanish (ADR-0007). Since epic E6 (VLW-41 to VLW-48) every view is built in C, and nothing of E is left in the code.
 - docs/adr/: one technical decision per file.
 - The API lives in `veriledger-api` (stories VLA-NN). Contracts both sides depend on, the signed message (its ADR-0004) and the deployment (its ADR-0005), are decided there; this repository's ADRs adopt them. Never change how a transaction is signed without a change to those vectors.
 
@@ -64,3 +64,5 @@ Sprints 5 and 6 of docs/BACKLOG.md, epic E6: design C, English and Spanish, ligh
 6. VLW-48, the checks in both themes and both languages; then VLW-26, release 1.0.0 with screenshots of C from the deployed instance.
 
 The server keeps its pinned image until then. When finished, show me how to verify each story and update docs/sprints/sprint-5.md and sprint-6.md.
+
+Status on 2026-10-22: VLW-37 to VLW-48 are done (#58 to #72). VLW-26 waits for C on the server (the API's runbook, step 6) and for my yes to tag 1.0.0; closing Sprints 5 and 6 waits for my retro.
